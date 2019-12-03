@@ -31,10 +31,10 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MenooPrinter));
             this.Menu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.NotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.salirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ajustesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.salirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.NotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.Menu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -47,19 +47,12 @@
             this.Menu.Name = "Menu";
             this.Menu.Size = new System.Drawing.Size(113, 70);
             // 
-            // NotifyIcon
+            // ajustesToolStripMenuItem
             // 
-            this.NotifyIcon.ContextMenuStrip = this.Menu;
-            this.NotifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("NotifyIcon.Icon")));
-            this.NotifyIcon.Text = "Menoo";
-            this.NotifyIcon.Visible = true;
-            // 
-            // salirToolStripMenuItem
-            // 
-            this.salirToolStripMenuItem.Name = "salirToolStripMenuItem";
-            this.salirToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
-            this.salirToolStripMenuItem.Text = "Salir";
-            this.salirToolStripMenuItem.Click += new System.EventHandler(this.SalirToolStripMenuItem_Click);
+            this.ajustesToolStripMenuItem.Name = "ajustesToolStripMenuItem";
+            this.ajustesToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.ajustesToolStripMenuItem.Text = "Ajustes";
+            this.ajustesToolStripMenuItem.Click += new System.EventHandler(this.AjustesToolStripMenuItem_Click);
             // 
             // infoToolStripMenuItem
             // 
@@ -68,12 +61,20 @@
             this.infoToolStripMenuItem.Text = "Info";
             this.infoToolStripMenuItem.Click += new System.EventHandler(this.InfoToolStripMenuItem_Click);
             // 
-            // ajustesToolStripMenuItem
+            // salirToolStripMenuItem
             // 
-            this.ajustesToolStripMenuItem.Name = "ajustesToolStripMenuItem";
-            this.ajustesToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
-            this.ajustesToolStripMenuItem.Text = "Ajustes";
-            this.ajustesToolStripMenuItem.Click += new System.EventHandler(this.AjustesToolStripMenuItem_Click);
+            this.salirToolStripMenuItem.Name = "salirToolStripMenuItem";
+            this.salirToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.salirToolStripMenuItem.Text = "Salir";
+            this.salirToolStripMenuItem.Click += new System.EventHandler(this.SalirToolStripMenuItem_Click);
+            // 
+            // NotifyIcon
+            // 
+            this.NotifyIcon.ContextMenuStrip = this.Menu;
+            this.NotifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("NotifyIcon.Icon")));
+            this.NotifyIcon.Text = "Menoo";
+            this.NotifyIcon.Visible = true;
+            this.NotifyIcon.DoubleClick += new System.EventHandler(this.NotifyIcon_DoubleClick);
             // 
             // MenooPrinter
             // 

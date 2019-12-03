@@ -21,6 +21,8 @@ namespace MenooPrinterService
         {
             this.TxtMenoo.Text = $"Menoo {DateTime.Now.Year} ©";
             this.TxtVersion.Text = $"Version {ProductVersion}";
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
         }
     }
 }

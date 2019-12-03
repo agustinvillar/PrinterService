@@ -29,28 +29,12 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Ajustes));
-            this.TxtRestoId = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.BtnGuardar = new System.Windows.Forms.Button();
             this.DdlImpresoras = new System.Windows.Forms.ComboBox();
+            this.TxtRestoId = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
-            // 
-            // TxtRestoId
-            // 
-            this.TxtRestoId.Location = new System.Drawing.Point(102, 22);
-            this.TxtRestoId.Name = "TxtRestoId";
-            this.TxtRestoId.Size = new System.Drawing.Size(153, 20);
-            this.TxtRestoId.TabIndex = 0;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(25, 25);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(62, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Restorán Id";
             // 
             // label2
             // 
@@ -79,6 +63,22 @@
             this.DdlImpresoras.Size = new System.Drawing.Size(153, 21);
             this.DdlImpresoras.TabIndex = 5;
             // 
+            // TxtRestoId
+            // 
+            this.TxtRestoId.Location = new System.Drawing.Point(102, 22);
+            this.TxtRestoId.Name = "TxtRestoId";
+            this.TxtRestoId.Size = new System.Drawing.Size(153, 20);
+            this.TxtRestoId.TabIndex = 0;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(25, 25);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(62, 13);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Restorán Id";
+            // 
             // Ajustes
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -98,11 +98,10 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.TextBox TxtRestoId;
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button BtnGuardar;
         private System.Windows.Forms.ComboBox DdlImpresoras;
+        private System.Windows.Forms.TextBox TxtRestoId;
+        private System.Windows.Forms.Label label1;
     }
 }

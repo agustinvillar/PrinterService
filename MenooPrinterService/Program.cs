@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,9 +15,17 @@ namespace MenooPrinterService
         [STAThread]
         static void Main()
         {
+            var procesos = Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName);
+            if (procesos.Count() > 1)
+            {
+                MessageBox.Show("La aplicación ya se encuentra abierta.", "Menoo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MenooPrinter());
+            Application.Run(new Splash());
         }
     }
 }
