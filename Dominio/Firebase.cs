@@ -59,31 +59,64 @@ namespace Dominio
             {
                 await Task.Run(() =>
                 {
-                    if (snapshot.Count > 0)
+                    try
                     {
-                        foreach (var orders in snapshot)
+                        if (snapshot.Count > 0)
                         {
-                            var ordenes = orders.ConvertTo<Orders>();
-                            orden = ordenes;
+                            foreach (var orders in snapshot)
+                            {
+                                var ordenes = orders.ConvertTo<Orders>();
+                                orden = ordenes;
+                            }
+                            if (!orden.Printed)
+                            {
+                                printFont = new Font("Arial", 13);
+                                PrintDocument pd = new PrintDocument();
+                                pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
+                                pd.PrintPage += new PrintPageEventHandler
+                                   (pd_PrintPage);
+                                pd.Print();
+                            }
                         }
-                        if (!orden.Printed)
+                        else
                         {
-                            printFont = new Font("Arial", 13);
-                            PrintDocument pd = new PrintDocument();
-                            pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-                            pd.PrintPage += new PrintPageEventHandler
-                               (pd_PrintPage);
-                            pd.Print();
+                            string error = $"{orden.OrderType} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
+                            this.LogError(error);
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        var filePath = "C:\\";
-                        var log = "No existe";
-                        File.WriteAllText(filePath + "log.txt", log);
+                        this.LogError(ex.Message);
                     }
                 });
             });
+        }
+
+        private void LogError(string error)
+        {
+            FileStream fs = null;
+            StreamWriter sw = null;
+            try
+            {
+                fs = new FileStream(AppDomain.CurrentDomain.BaseDirectory + "Log.txt", FileMode.Append);
+                sw = new StreamWriter(fs);
+
+                sw.WriteLine();
+                sw.WriteLine("***************************************************************");
+                sw.WriteLine($"Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
+                sw.WriteLine(error);
+                sw.WriteLine("***************************************************************");
+            }
+            catch
+            {
+            }
+            finally
+            {
+                if (sw != null)
+                    sw.Close();
+                if (fs != null)
+                    fs.Close();
+            }
         }
 
         private static void pd_PrintPage(object sender, PrintPageEventArgs ev)
