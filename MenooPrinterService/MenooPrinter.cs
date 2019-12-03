@@ -13,10 +13,12 @@ namespace MenooPrinterService
 {
     public partial class MenooPrinter : Form
     {
-        public MenooPrinter()
+        private readonly Form splash;
+        public MenooPrinter(Form splash)
         {
             InitializeComponent();
             Init();
+            this.splash = splash;
         }
         private void Init()
         {
@@ -31,20 +33,34 @@ namespace MenooPrinterService
 
         private void SalirToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.NotifyIcon.Dispose();
-            this.Close();
+            var dialog = MessageBox.Show("¿Desea salir?", "Salir", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (dialog == DialogResult.Yes)
+            {
+                this.Close();
+                this.splash.Close();
+                this.NotifyIcon.Dispose();
+            }
         }
 
         private void AjustesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var ajustesWindow = new Ajustes();
-            ajustesWindow.Visible = true;
+            this.ShowAjustes();
         }
 
         private void MenooPrinter_Load(object sender, EventArgs e)
         {
             Visible = false;
             ShowInTaskbar = false;
+        }
+
+        private void NotifyIcon_DoubleClick(object sender, EventArgs e)
+        {
+            this.ShowAjustes();
+        }
+        private void ShowAjustes()
+        {
+            var ajustesWindow = new Ajustes();
+            ajustesWindow.Visible = true;
         }
     }
 }

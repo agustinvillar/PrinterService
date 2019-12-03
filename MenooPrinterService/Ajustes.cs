@@ -28,7 +28,14 @@ namespace MenooPrinterService
             Printers = printers.ToArray();
 
             this.DdlImpresoras.DataSource = Printers;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
 
+            this.LoadInfo();
+        }
+
+        private void LoadInfo()
+        {
             this.DdlImpresoras.SelectedIndex = this.DdlImpresoras.FindStringExact(ConfigurationManager.AppSettings["PrinterName"]);
             this.TxtRestoId.Text = ConfigurationManager.AppSettings["StoreID"];
         }
@@ -37,17 +44,26 @@ namespace MenooPrinterService
         {
             try
             {
-                Configuration config = ConfigurationManager.OpenExeConfiguration(Application.ExecutablePath);
+                var dialog = MessageBox.Show("¿Desea guardar los cambios?", "Guardar", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-                string printerName = config.AppSettings.Settings["PrinterName"].Value;
-                config.AppSettings.Settings["PrinterName"].Value = this.DdlImpresoras.SelectedValue.ToString();
+                if (dialog == DialogResult.Yes)
+                {
+                    Configuration config = ConfigurationManager.OpenExeConfiguration(Application.ExecutablePath);
 
-                string storeID = config.AppSettings.Settings["StoreID"].Value;
-                config.AppSettings.Settings["StoreID"].Value = this.TxtRestoId.Text;
+                    string printerName = config.AppSettings.Settings["PrinterName"].Value;
+                    config.AppSettings.Settings["PrinterName"].Value = this.DdlImpresoras.SelectedValue.ToString();
 
-                config.Save(ConfigurationSaveMode.Modified);
+                    string storeID = config.AppSettings.Settings["StoreID"].Value;
+                    config.AppSettings.Settings["StoreID"].Value = this.TxtRestoId.Text;
 
-                MessageBox.Show("Guardado OK", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    config.Save(ConfigurationSaveMode.Modified);
+
+                    MessageBox.Show("Guardado OK", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    this.LoadInfo();
+                }
             }
             catch (Exception ex)
             {
