@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dominio;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -40,7 +41,7 @@ namespace MenooPrinterService
             this.TxtRestoId.Text = ConfigurationManager.AppSettings["StoreID"];
         }
 
-        private void BtnGuardar_Click(object sender, EventArgs e)
+        private async void BtnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
@@ -57,6 +58,8 @@ namespace MenooPrinterService
                     config.AppSettings.Settings["StoreID"].Value = this.TxtRestoId.Text;
 
                     config.Save(ConfigurationSaveMode.Modified);
+
+                    await Firebase.Instancia.RefreshListener(this.TxtRestoId.Text);
 
                     MessageBox.Show("Guardado OK", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
