@@ -16,6 +16,7 @@ namespace POSPrinterService
     {
         private static Font printFont;
         private static Orders orden;
+        private static TableOpening tableop;
         public Service1()
         {
             InitializeComponent();
@@ -68,9 +69,38 @@ namespace POSPrinterService
                 }
             });
         }
+        public void GetTableOpenings()
+        {
+            var storeId = ConfigurationManager.AppSettings["StoreID"];
+            var db = AccessDatabase();
+            db.Collection("tableOpeningFamily").WhereEqualTo("storeId", storeId).OrderByDescending("createdAt").Limit(1).Listen(snapshot =>
+            {
+                if (snapshot.Count > 0)
+                {
+                    foreach (var tableops in snapshot)
+                    {
+                        var tableopenings = tableops.ConvertTo<TableOpening>();
+                        tableop = tableopenings;
+                    }
+                        printFont = new Font("Arial", 13);
+                        PrintDocument pd = new PrintDocument();
+                        pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
+                        pd.PrintPage += new PrintPageEventHandler
+                           (pd_PrintPage);
+                        pd.Print();
+                }
+                else
+                {
+                    var filePath = "C:\\";
+                    var log = "No existe";
+                    File.WriteAllText(filePath + "log.txt", log);
+                }
+            });
+        }
         protected override void OnStart(string[] args)
         {
             GetOrders();
+            GetTableOpenings();
         }
         private static void pd_PrintPage(object sender, PrintPageEventArgs ev)
         {
@@ -131,6 +161,22 @@ namespace POSPrinterService
                    xPos, yPos, new StringFormat());
             }
 
+        }
+        
+        private static void pd_PrintPageTableOpenings(object sender, PrintPageEventArgs ev)
+        {
+                float yPos;
+                float xPos = 35;
+                int count = 0;
+                float leftMargin = ev.MarginBounds.Left;
+                float topMargin = ev.MarginBounds.Top;
+                string line = "Nueva Mesa Abierta" + "\n" + "\n" + "Número de Mesa" + tableop.TableNumberId + "\n" + "\n" + "Fecha de Apertura: " + tableop.OpenedAt + "\n" + "\n" + "Numero de Personas: " + tableop.GuestQuantity;
+
+                yPos = topMargin + (count *
+                   printFont.GetHeight(ev.Graphics));
+
+                ev.Graphics.DrawString(line, printFont, Brushes.Black,
+                   xPos, yPos, new StringFormat());
         }
         protected override void OnStop()
         {
