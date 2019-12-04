@@ -20,9 +20,9 @@ namespace MenooPrinterService
             Init();
             this.splash = splash;
         }
-        private async void Init()
+        private void Init()
         {
-            await Firebase.Instancia.RunListenOrders();
+            Firebase.Instancia.GetOrders();
         }
 
         private void InfoToolStripMenuItem_Click(object sender, EventArgs e)

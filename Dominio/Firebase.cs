@@ -33,12 +33,6 @@ namespace Dominio
 
         private static Font printFont;
         private static Orders orden;
-        private static FirestoreChangeListener listener;
-        public FirestoreChangeListener Listener
-        {
-            get { return listener; }
-        }
-
 
         private static FirestoreDb AccessDatabase()
         {
@@ -57,17 +51,11 @@ namespace Dominio
             var client = FirestoreClient.Create(channel);
             return FirestoreDb.Create("comemosya", client);
         }
-
-        public async Task RefreshListener(string storeId)
+        public void GetOrders()
         {
-            await listener.StopAsync();
-            await this.RefreshCallback(storeId);
-        }
-
-        private async Task RefreshCallback(string storeId)
-        {
+            var storeId = ConfigurationManager.AppSettings["StoreID"];
             var db = AccessDatabase();
-            listener = db.Collection("orderFamily").WhereEqualTo("storeId", storeId).OrderByDescending("createdAt").Limit(1).Listen(async snapshot =>
+            db.Collection("orderFamily").WhereEqualTo("storeId", storeId).OrderByDescending("createdAt").Limit(1).Listen(async snapshot =>
             {
                 await Task.Run(() =>
                 {
@@ -102,13 +90,6 @@ namespace Dominio
                     }
                 });
             });
-            await Task.CompletedTask;
-        }
-
-        public async Task RunListenOrders()
-        {
-            var storeId = ConfigurationManager.AppSettings["StoreID"];
-            await this.RefreshCallback(storeId);
         }
 
         private void LogError(string error)
@@ -123,9 +104,6 @@ namespace Dominio
                 sw.WriteLine();
                 sw.WriteLine("***************************************************************");
                 sw.WriteLine($"Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
-                if (orden != null && orden.Items != null)
-                    foreach (var item in orden.Items)
-                        sw.WriteLine($"{item.Name} X {item.Quantity} $ {(item.Price * item.Quantity)}");
                 sw.WriteLine(error);
                 sw.WriteLine("***************************************************************");
             }
