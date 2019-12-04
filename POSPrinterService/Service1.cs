@@ -56,7 +56,7 @@ namespace POSPrinterService
                         PrintDocument pd = new PrintDocument();
                         pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
                         pd.PrintPage += new PrintPageEventHandler
-                           (pd_PrintPageOrder);
+                           (pd_PrintPage);
                         pd.Print();
                     }
                 }
@@ -68,27 +68,11 @@ namespace POSPrinterService
                 }
             });
         }
-
-        public void getTableOpening()
-        {
-            var storeId = ConfigurationManager.AppSettings["StoreID"];
-            var db = AccessDatabase();
-            db.Collection("tableOpeningFamily").WhereEqualTo("storeId", storeId).OrderByDescending("createdAt").Limit(1).Listen(snapshot =>
-            {
-                if(snapshot.Count > 0)
-                {
-                    foreach(var tableOp in snapshot)
-                    {
-                       
-                    }
-                }
-            });
-        }
         protected override void OnStart(string[] args)
         {
             GetOrders();
         }
-        private static void pd_PrintPageOrder(object sender, PrintPageEventArgs ev)
+        private static void pd_PrintPage(object sender, PrintPageEventArgs ev)
         {
             var text = "";
             for (var i = 0; i < orden.Items.Length; i++)
@@ -147,23 +131,6 @@ namespace POSPrinterService
                    xPos, yPos, new StringFormat());
             }
 
-        }
-
-        private static void pd_PrintPageTableOpening(object sender, PrintPageEventArgs ev)
-        {
-
-            float yPos;
-            float xPos = 35;
-            int count = 0;
-            float leftMargin = ev.MarginBounds.Left;
-            float topMargin = ev.MarginBounds.Top;
-            string line = "Apertura de Mesa" + "\n" + "\n" + "Número de Mesa" + orden.UserName + "\n" + "\n" + text + "\n" + "\n" + "Numero de Mesa: " + orden.Address + "\n" + "\n" + "Total: " + orden.Total;
-
-            yPos = topMargin + (count *
-               printFont.GetHeight(ev.Graphics));
-
-            ev.Graphics.DrawString(line, printFont, Brushes.Black,
-               xPos, yPos, new StringFormat());
         }
         protected override void OnStop()
         {

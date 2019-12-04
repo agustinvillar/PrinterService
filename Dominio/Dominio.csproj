@@ -104,7 +104,6 @@
     <Compile Include="Orders.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Size.cs" />
-    <Compile Include="TableOpening.cs" />
     <Compile Include="Variation.cs" />
   </ItemGroup>
   <ItemGroup>
