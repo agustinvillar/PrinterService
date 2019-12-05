@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29424.173
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POSPrinterService", "POSPrinterService\POSPrinterService.csproj", "{22132474-ACD6-4791-9F45-78B43D2E38DC}"
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PrinterInstaller", "PrinterInstaller\PrinterInstaller.vdproj", "{5A50FEA9-9EC8-42AA-85DB-86C9FD962EE6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenooPrinterService", "MenooPrinterService\MenooPrinterService.csproj", "{9B836E2F-4074-438F-A729-37C88E4BFDA3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dominio", "Dominio\Dominio.csproj", "{F43028F3-D34D-4666-853C-1E9EBBB7A120}"
@@ -17,12 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{22132474-ACD6-4791-9F45-78B43D2E38DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{22132474-ACD6-4791-9F45-78B43D2E38DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{22132474-ACD6-4791-9F45-78B43D2E38DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{22132474-ACD6-4791-9F45-78B43D2E38DC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A50FEA9-9EC8-42AA-85DB-86C9FD962EE6}.Debug|Any CPU.ActiveCfg = Debug
-		{5A50FEA9-9EC8-42AA-85DB-86C9FD962EE6}.Release|Any CPU.ActiveCfg = Release
 		{9B836E2F-4074-438F-A729-37C88E4BFDA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9B836E2F-4074-438F-A729-37C88E4BFDA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B836E2F-4074-438F-A729-37C88E4BFDA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
