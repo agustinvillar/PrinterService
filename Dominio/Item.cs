@@ -24,8 +24,8 @@ namespace Dominio
         public int SubTotal { get; set; }
         [FirestoreProperty("thumbnail")]
         public string Thumbnail { get; set; }
-        //[FirestoreProperty("variations")]
-        //public Variation Variations { get; set; }
+        [FirestoreProperty("variations")]
+        public Variation Variations { get; set; }
 
     }
 }

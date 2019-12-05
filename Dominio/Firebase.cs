@@ -33,7 +33,7 @@ namespace Dominio
 
         private static Font printFont;
         private static Orders orden;
-        private static TableOpening tableop;
+        private static TableOpeningFamily tableop;
         private static Booking book;
         private static User usuario;
         private static FirestoreChangeListener listener;
@@ -75,7 +75,7 @@ namespace Dominio
             var db = AccessDatabase();
             listener = db.Collection("orderFamily").WhereEqualTo("storeId", storeId).OrderByDescending("createdAt").Limit(1).Listen(async snapshot =>
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     try
                     {
@@ -86,12 +86,24 @@ namespace Dominio
                                 var ordenes = orders.ConvertTo<Orders>();
                                 orden = ordenes;
                             }
-                            printFont = new Font("Arial", 13);
-                            PrintDocument pd = new PrintDocument();
-                            pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-                            pd.PrintPage += new PrintPageEventHandler
-                               (pd_PrintPage);
-                            pd.Print();
+                            if(orden.Printed == false)
+                            {
+                                printFont = new Font("Arial", 13);
+                                PrintDocument pd = new PrintDocument();
+                                pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
+                                pd.PrintPage += new PrintPageEventHandler
+                                   (pd_PrintPage);
+                                pd.Print();
+                                var docRef = db.Collection("orderFamily").WhereEqualTo("tableOpeningId", orden.TableOpeningId);
+                                var querySnapshot = await docRef.GetSnapshotAsync();
+                                if (querySnapshot.Count > 0)
+                                {
+                                    var docref2 = querySnapshot.Documents[0].Reference;
+                                    await docref2.UpdateAsync("printed", true);
+                                    var alalaa = await docref2.UpdateAsync("printed", true);
+                                    Console.WriteLine(alalaa);
+                                }
+                            }
                         }
                         else
                         {
@@ -107,7 +119,7 @@ namespace Dominio
             });
             tableOpeningListener = db.Collection("tableOpeningFamily").WhereEqualTo("storeId", storeId).OrderByDescending("createdAt").Limit(1).Listen(async snapshot =>
            {
-               await Task.Run(() =>
+               await Task.Run(async () =>
                {
                    try
                    {
@@ -115,15 +127,26 @@ namespace Dominio
                        {
                            foreach (var tableops in snapshot)
                            {
-                               var tableopenings = tableops.ConvertTo<TableOpening>();
+                               var tableopenings = tableops.ConvertTo<TableOpeningFamily>();
                                tableop = tableopenings;
                            }
-                           printFont = new Font("Arial", 13);
-                           PrintDocument pd = new PrintDocument();
-                           pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-                           pd.PrintPage += new PrintPageEventHandler
-                              (pd_PrintPageTableOpenings);
-                           pd.Print();
+                           if(tableop.Printed == false)
+                           {
+                               printFont = new Font("Arial", 13);
+                               PrintDocument pd = new PrintDocument();
+                               pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
+                               pd.PrintPage += new PrintPageEventHandler
+                                  (pd_PrintPageTableOpenings);
+                               pd.Print();
+                               var docRef = db.Collection("tableOpeningFamily").WhereEqualTo("createdAt", tableop.CreatedAt);
+                               var querySnapshot = await docRef.GetSnapshotAsync();
+                               if (querySnapshot.Count > 0)
+                               {
+                                   var docref2 = querySnapshot.Documents[0].Reference;
+                                   tableop.Printed = true;
+                                   await docref2.SetAsync(tableop);
+                               }
+                           }
                        }
                        else
                        {
@@ -282,18 +305,36 @@ namespace Dominio
         }
         private static void pd_PrintPageTableOpenings(object sender, PrintPageEventArgs ev)
         {
-            float yPos;
-            float xPos = 20;
-            int count = 0;
-            float leftMargin = ev.MarginBounds.Left;
-            float topMargin = ev.MarginBounds.Top;
-            string line = "Nueva Mesa Abierta" + "\n" + "\n" + "Número de Mesa: " + tableop.TableNumberId + "\n" + "\n" + "Fecha de Apertura: " + tableop.OpenedAt + "\n" + "\n" + "Numero de Personas: " + tableop.GuestQuantity;
+            if (tableop.Closed)
+            {
+                float yPos;
+                float xPos = 20;
+                int count = 0;
+                float leftMargin = ev.MarginBounds.Left;
+                float topMargin = ev.MarginBounds.Top;
+                string line = "Mesa Cerrada" + "\n" + "\n" + "Número de Mesa: " + tableop.TableNumberId + "\n" + "\n" + "Cerrada el: " + tableop.ClosedAt;
 
-            yPos = topMargin + (count *
-               printFont.GetHeight(ev.Graphics));
+                yPos = topMargin + (count *
+                   printFont.GetHeight(ev.Graphics));
 
-            ev.Graphics.DrawString(line, printFont, Brushes.Black,
-               xPos, yPos, new StringFormat());
+                ev.Graphics.DrawString(line, printFont, Brushes.Black,
+                   xPos, yPos, new StringFormat());
+            }
+            else
+            {
+                float yPos;
+                float xPos = 20;
+                int count = 0;
+                float leftMargin = ev.MarginBounds.Left;
+                float topMargin = ev.MarginBounds.Top;
+                string line = "Nueva Mesa Abierta" + "\n" + "\n" + "Número de Mesa: " + tableop.TableNumberId + "\n" + "\n" + "Fecha de Apertura: " + tableop.OpenedAt + "\n" + "\n" + "Numero de Personas: " + tableop.GuestQuantity;
+
+                yPos = topMargin + (count *
+                   printFont.GetHeight(ev.Graphics));
+
+                ev.Graphics.DrawString(line, printFont, Brushes.Black,
+                   xPos, yPos, new StringFormat());
+            }
         }
         private static void pd_PrintPageBookings(object sender, PrintPageEventArgs ev)
         {
