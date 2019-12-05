@@ -106,9 +106,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Ajustes.cs">
+    <Compile Include="Ajustes.cs">
       <SubType>Form</SubType>
-    </None>
+    </Compile>
     <Compile Include="Ajustes.Designer.cs">
       <DependentUpon>Ajustes.cs</DependentUpon>
     </Compile>
