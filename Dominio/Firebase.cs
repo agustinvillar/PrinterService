@@ -88,21 +88,19 @@ namespace Dominio
                             }
                             if(orden.Printed == false)
                             {
-                                printFont = new Font("Arial", 13);
-                                PrintDocument pd = new PrintDocument();
-                                pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-                                pd.PrintPage += new PrintPageEventHandler
-                                   (pd_PrintPage);
-                                pd.Print();
                                 var docRef = db.Collection("orderFamily").WhereEqualTo("tableOpeningId", orden.TableOpeningId);
                                 var querySnapshot = await docRef.GetSnapshotAsync();
                                 if (querySnapshot.Count > 0)
                                 {
                                     var docref2 = querySnapshot.Documents[0].Reference;
                                     await docref2.UpdateAsync("printed", true);
-                                    var alalaa = await docref2.UpdateAsync("printed", true);
-                                    Console.WriteLine(alalaa);
                                 }
+                                printFont = new Font("Arial", 13);
+                                PrintDocument pd = new PrintDocument();
+                                pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
+                                pd.PrintPage += new PrintPageEventHandler
+                                   (pd_PrintPage);
+                                pd.Print();
                             }
                         }
                         else
@@ -130,7 +128,7 @@ namespace Dominio
                                var tableopenings = tableops.ConvertTo<TableOpeningFamily>();
                                tableop = tableopenings;
                            }
-                           if(tableop.Printed == false)
+                           if(tableop.Printed == false || (tableop.Printed && tableop.Closed))
                            {
                                printFont = new Font("Arial", 13);
                                PrintDocument pd = new PrintDocument();
@@ -142,9 +140,8 @@ namespace Dominio
                                var querySnapshot = await docRef.GetSnapshotAsync();
                                if (querySnapshot.Count > 0)
                                {
-                                   var docref2 = querySnapshot.Documents[0].Reference;
-                                   tableop.Printed = true;
-                                   await docref2.SetAsync(tableop);
+                                   var docref = querySnapshot.Documents[0].Reference;
+                                   await docref.UpdateAsync("printed", true);
                                }
                            }
                        }
@@ -162,7 +159,7 @@ namespace Dominio
            });
             bookingListener = db.Collection("bookings").WhereEqualTo("store.id", storeId).OrderByDescending("updatedAt").Limit(1).Listen(async snapshot =>
             {
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     try
                     {
@@ -182,6 +179,13 @@ namespace Dominio
                             }
                             if(book.Printed == false)
                             {
+                                var docRef = db.Collection("bookings").WhereEqualTo("bookingNumber", book.BookingNumber);
+                                var querySnapshot = await docRef.GetSnapshotAsync();
+                                if (querySnapshot.Count > 0)
+                                {
+                                    var docref = querySnapshot.Documents[0].Reference;
+                                    await docref.UpdateAsync("printed", true);
+                                }
                                 printFont = new Font("Arial", 13);
                                 PrintDocument pd = new PrintDocument();
                                 pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
@@ -273,7 +277,7 @@ namespace Dominio
                     int count = 0;
                     float leftMargin = ev.MarginBounds.Left;
                     float topMargin = ev.MarginBounds.Top;
-                    string line = $"Orden de Reserva\n\nUsuario: {orden.UserName}\n\n{text}\n\nNumero de Mesa: {orden.Address}\n\nTotal: {orden.Total};";
+                    string line = $"Orden de Reserva\n\nUsuario: {orden.UserName}\n\n{text}\n\nTotal: {orden.Total};";
 
                     linesPerPage = ev.MarginBounds.Height /
                        printFont.GetHeight(ev.Graphics);
@@ -339,7 +343,7 @@ namespace Dominio
         private static void pd_PrintPageBookings(object sender, PrintPageEventArgs ev)
         {
             float yPos;
-            float xPos = 20;
+            float xPos = 5;
             int count = 0;
             float leftMargin = ev.MarginBounds.Left;
             float topMargin = ev.MarginBounds.Top;

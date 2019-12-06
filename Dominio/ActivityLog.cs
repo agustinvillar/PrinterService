@@ -11,7 +11,7 @@ namespace Dominio
     class ActivityLog
     {
         [FirestoreProperty("date")]
-        public string Date { get; set;  }
+        public long Date { get; set;  }
         [FirestoreProperty("message")]
         public string Message { get; set; }
         [FirestoreProperty("type")]
