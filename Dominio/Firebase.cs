@@ -268,7 +268,7 @@ namespace Dominio
                     int count = 0;
                     float leftMargin = ev.MarginBounds.Left;
                     float topMargin = ev.MarginBounds.Top;
-                    string line = $"Orden de TakeAway\n\nUsuario: {orden.UserName}\n\n{text}\n\nNumero de Mesa: {orden.Address}\n\nTotal: {orden.Total};";
+                    string line = $"Orden de TakeAway\n\nUsuario: {orden.UserName}\n\n{text}\n\nHora del TakeAway: {orden.TakeAwayHour}\n\nTotal: {orden.Total};";
 
                     linesPerPage = ev.MarginBounds.Height /
                        printFont.GetHeight(ev.Graphics);
