@@ -12,9 +12,22 @@ namespace Dominio
     {
         [FirestoreProperty("openedAt")]
         public string OpenedAt { get; set; }
+
+        [FirestoreProperty("closedAt")]
+        public string ClosedAt { get; set; }
+
         [FirestoreProperty("tableNumberId")]
         public int TableNumberId { get; set; }
-        [FirestoreProperty("guestQuantity")]
-        public int GuestQuantity { get; set; }
+
+        [FirestoreProperty("activeGuestQuantity")]
+
+        public int ActiveGuestQuantity { get; set; }
+
+        [FirestoreProperty("closed")]
+        public bool Closed { get; set; }
+
+        [FirestoreProperty("totalToPay")]
+        public double TotalToPay { get; set; }
+
     }
 }

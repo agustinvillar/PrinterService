@@ -34,11 +34,17 @@ namespace Dominio
         public string TakeAwayHour { get; set; }
         [FirestoreProperty("total")]
         public double Total { get; set; }
+
+        [FirestoreProperty("subTotal")]
+        public double SubTotal { get; set; }
         [FirestoreProperty("updatedAt")]
         public double UpdatedAt { get; set; }
         [FirestoreProperty("userId")]
         public string UserId { get; set; }
         [FirestoreProperty("userName")]
         public string UserName { get; set; }
+
+        [FirestoreProperty("guestComment")]
+        public string GuestComment { get; set; }
     }
 }
