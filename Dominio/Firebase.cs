@@ -12,6 +12,7 @@ using Grpc.Core;
 using Google.Cloud.Firestore.V1;
 using System.Configuration;
 using System.Drawing.Printing;
+using System.Runtime.CompilerServices;
 
 namespace Dominio
 {
@@ -95,8 +96,8 @@ namespace Dominio
                         }
                         else
                         {
-                            string error = $"{orden.OrderType} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
-                            this.LogError(error);
+                            //string error = $"{orden.OrderType} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
+                           // this.LogError(error);
                         }
                     }
                     catch (Exception ex)
@@ -105,7 +106,7 @@ namespace Dominio
                     }
                 });
             });
-            tableOpeningListener = db.Collection("tableOpeningFamily").WhereEqualTo("storeId", storeId).OrderByDescending("createdAt").Limit(1).Listen(async snapshot =>
+            tableOpeningListener = db.Collection("tableOpeningFamily").WhereEqualTo("store.id", storeId).OrderByDescending("createdAt").Limit(1).Listen(async snapshot =>
            {
                await Task.Run(() =>
                {
@@ -127,8 +128,8 @@ namespace Dominio
                        }
                        else
                        {
-                           string error = $"{tableop.TableNumberId} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
-                           this.LogError(error);
+                           //string error = $"{tableop.TableNumberId} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
+                           //this.LogError(error);
                        }
                    }
                    catch (Exception ex)
@@ -159,18 +160,22 @@ namespace Dominio
                             }
                             if(book.Printed == false)
                             {
-                                printFont = new Font("Arial", 13);
-                                PrintDocument pd = new PrintDocument();
-                                pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-                                pd.PrintPage += new PrintPageEventHandler
-                                   (pd_PrintPageBookings);
-                                pd.Print();
+                                if (book.BookingNumber.ToString().Length == 8)
+                                {
+                                    printFont = new Font("Arial", 12);
+                                    PrintDocument pd = new PrintDocument();
+                                    pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
+                                    pd.PrintPage += new PrintPageEventHandler
+                                        (pd_PrintPageBookings);
+                                    pd.Print();
+                                }
+                                
                             }
                         }
                         else
                         {
-                            string error = $"{book.BookingNumber} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
-                            this.LogError(error);
+                            //string error = $"{book.BookingNumber} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
+                            //this.LogError(error);
                         }
                     }
                     catch (Exception ex)
@@ -221,9 +226,14 @@ namespace Dominio
         private static void pd_PrintPage(object sender, PrintPageEventArgs ev)
         {
             var text = string.Empty;
+            double calculatedTotal = 0;
 
             foreach (var item in orden.Items)
-                text += $"{item.Name} x{item.Quantity} $ {(item.Price * item.Quantity)}\n";
+            {
+                text += $"{item.Name} x{item.Quantity} $ {(item.Price)}\n";
+                calculatedTotal = calculatedTotal + item.Price * item.Quantity;
+            }
+                
 
 
             if (orden != null && orden.OrderType != null)
@@ -235,7 +245,7 @@ namespace Dominio
                     int count = 0;
                     float leftMargin = ev.MarginBounds.Left;
                     float topMargin = ev.MarginBounds.Top;
-                    string line = $"Orden de Mesa\n\nUsuario: {orden.UserName}\n\n{text}\n\nNumero de Mesa: {orden.Address}\n\nTotal: {orden.Total};";
+                    string line = $"Nueva órden de mesa\n\nCliente: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}\n\n";
 
                     yPos = topMargin + (count *
                        printFont.GetHeight(ev.Graphics));
@@ -250,7 +260,7 @@ namespace Dominio
                     int count = 0;
                     float leftMargin = ev.MarginBounds.Left;
                     float topMargin = ev.MarginBounds.Top;
-                    string line = $"Orden de Reserva\n\nUsuario: {orden.UserName}\n\n{text}\n\nNumero de Mesa: {orden.Address}\n\nTotal: {orden.Total};";
+                    string line = $"Órden de reserva\n\nUsuario: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}\n\nTotal: ${calculatedTotal}";
 
                     linesPerPage = ev.MarginBounds.Height /
                        printFont.GetHeight(ev.Graphics);
@@ -268,7 +278,8 @@ namespace Dominio
                     int count = 0;
                     float leftMargin = ev.MarginBounds.Left;
                     float topMargin = ev.MarginBounds.Top;
-                    string line = $"Orden de TakeAway\n\nUsuario: {orden.UserName}\n\n{text}\n\nHora del TakeAway: {orden.TakeAwayHour}\n\nTotal: {orden.Total};";
+                    string line =
+                        $"Nuevo take away\n\nUsuario: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nHora del retiro: {orden.TakeAwayHour}\n\nTotal: ${calculatedTotal}";
 
                     linesPerPage = ev.MarginBounds.Height /
                        printFont.GetHeight(ev.Graphics);
@@ -287,7 +298,18 @@ namespace Dominio
             int count = 0;
             float leftMargin = ev.MarginBounds.Left;
             float topMargin = ev.MarginBounds.Top;
-            string line = "Nueva Mesa Abierta" + "\n" + "\n" + "Número de Mesa: " + tableop.TableNumberId + "\n" + "\n" + "Fecha de Apertura: " + tableop.OpenedAt + "\n" + "\n" + "Numero de Personas: " + tableop.GuestQuantity;
+            string line;
+            if (tableop.Closed)
+            {
+                line = "Mesa cerrada" + "\n" + "\n" + "Número de mesa: " + tableop.TableNumberId + "\n" + "\n" +
+                              "Fecha: " + tableop.ClosedAt + "\n" + "\n" + "Total: $ " + tableop.TotalToPay;
+            }
+            else
+            {
+                line = "Apertura de mesa" + "\n" + "\n" + "Número de mesa: " + tableop.TableNumberId + "\n" + "\n" +
+                       "Fecha: " + tableop.OpenedAt + "\n" + "\n" + "Número de Personas: " + tableop.ActiveGuestQuantity;
+            }
+            
 
             yPos = topMargin + (count *
                printFont.GetHeight(ev.Graphics));
@@ -302,7 +324,20 @@ namespace Dominio
             int count = 0;
             float leftMargin = ev.MarginBounds.Left;
             float topMargin = ev.MarginBounds.Top;
-            string line = "Reserva Creada" + "\n" + "\n" + "Cantidad de Personas: " + book.GuestQuantity + "\n" + "\n" + "Fecha de Reserva: " + book.BookingDate + "\n" + "\n" + "Nombre de Usuario: " + usuario.Name;
+            string line;
+
+            if (book.BookingState == "cancelada")
+            {
+                line = "Reserva cancelada" + "\n" + "\n" + "Nro: " + book.BookingNumber + "\n" + "\n" + "Fecha: " +
+                       book.BookingDate + "\n" + "\n" + "Cliente: " + usuario.Name;
+            }
+            else
+            {
+                line = "Nueva reserva" + "\n" + "\n" + "Nro: " + book.BookingNumber + "\n" + "\n" +
+                       "Cantidad de personas: " + book.GuestQuantity + "\n" + "\n" + "Fecha: " + book.BookingDate +
+                       "\n" + "\n" + "Cliente: " + usuario.Name + "\n" + "\n" + "Comentario: " + book.BookingObservations;
+            }
+            
 
             yPos = topMargin + (count *
                printFont.GetHeight(ev.Graphics));
