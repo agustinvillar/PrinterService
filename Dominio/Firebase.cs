@@ -19,19 +19,7 @@ namespace Dominio
     public class Firebase
     {
         private static Firebase instancia;
-
-        public static Firebase Instancia
-        {
-            get
-            {
-                if (instancia == null)
-                    instancia = new Firebase();
-                return instancia;
-            }
-        }
-
-        private Firebase() { }
-
+        private readonly FirestoreDb db;
         private static Font printFont;
         private static Orders orden;
         private static TableOpening tableop;
@@ -41,12 +29,20 @@ namespace Dominio
         private static FirestoreChangeListener tableOpeningListener;
         private static FirestoreChangeListener bookingListener;
         private static FirestoreChangeListener userListener;
-        public FirestoreChangeListener Listener
+
+        private Firebase()
         {
-            get { return listener; }
+            this.db = AccessDatabase();
         }
-
-
+        public static Firebase Instancia
+        {
+            get
+            {
+                if (instancia == null)
+                    instancia = new Firebase();
+                return instancia;
+            }
+        }
         private static FirestoreDb AccessDatabase()
         {
             var credential = GoogleCredential.FromJson("{'type':'service_account'," +
@@ -65,15 +61,14 @@ namespace Dominio
             return FirestoreDb.Create("comemosya", client);
         }
 
+
         public async Task RefreshListener(string storeId)
         {
             await listener.StopAsync();
             await this.RefreshCallback(storeId);
         }
-
         private async Task RefreshCallback(string storeId)
         {
-            var db = AccessDatabase();
             listener = db.Collection("orderFamily").WhereEqualTo("storeId", storeId).OrderByDescending("createdAt").Limit(1).Listen(async snapshot =>
             {
                 await Task.Run(() =>
@@ -97,7 +92,7 @@ namespace Dominio
                         else
                         {
                             //string error = $"{orden.OrderType} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
-                           // this.LogError(error);
+                            // this.LogError(error);
                         }
                     }
                     catch (Exception ex)
@@ -152,13 +147,13 @@ namespace Dominio
                                 book = books;
                             }
 
-                          var snapshotusu = db.Collection("customers").Document(book.UserId).GetSnapshotAsync().Result;
+                            var snapshotusu = db.Collection("customers").Document(book.UserId).GetSnapshotAsync().Result;
                             if (snapshotusu.Exists)
                             {
                                 var usus = snapshotusu.ConvertTo<User>();
                                 usuario = usus;
                             }
-                            if(book.Printed == false)
+                            if (book.Printed == false)
                             {
                                 if (book.BookingNumber.ToString().Length == 8)
                                 {
@@ -169,7 +164,7 @@ namespace Dominio
                                         (pd_PrintPageBookings);
                                     pd.Print();
                                 }
-                                
+
                             }
                         }
                         else
@@ -186,13 +181,11 @@ namespace Dominio
             });
             await Task.CompletedTask;
         }
-
         public async Task RunListenOrders()
         {
             var storeId = ConfigurationManager.AppSettings["StoreID"];
             await this.RefreshCallback(storeId);
         }
-
         private void LogError(string error)
         {
             FileStream fs = null;
@@ -222,7 +215,6 @@ namespace Dominio
                     fs.Close();
             }
         }
-
         private static void pd_PrintPage(object sender, PrintPageEventArgs ev)
         {
             var text = string.Empty;
@@ -233,7 +225,7 @@ namespace Dominio
                 text += $"{item.Name} x{item.Quantity} $ {(item.Price)}\n";
                 calculatedTotal = calculatedTotal + item.Price * item.Quantity;
             }
-                
+
 
 
             if (orden != null && orden.OrderType != null)
@@ -309,7 +301,7 @@ namespace Dominio
                 line = "Apertura de mesa" + "\n" + "\n" + "Número de mesa: " + tableop.TableNumberId + "\n" + "\n" +
                        "Fecha: " + tableop.OpenedAt + "\n" + "\n" + "Número de Personas: " + tableop.ActiveGuestQuantity;
             }
-            
+
 
             yPos = topMargin + (count *
                printFont.GetHeight(ev.Graphics));
@@ -337,7 +329,7 @@ namespace Dominio
                        "Cantidad de personas: " + book.GuestQuantity + "\n" + "\n" + "Fecha: " + book.BookingDate +
                        "\n" + "\n" + "Cliente: " + usuario.Name + "\n" + "\n" + "Comentario: " + book.BookingObservations;
             }
-            
+
 
             yPos = topMargin + (count *
                printFont.GetHeight(ev.Graphics));
