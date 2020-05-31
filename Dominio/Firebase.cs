@@ -32,6 +32,7 @@ namespace Dominio
 
         private Firebase() { }
 
+        private static Font printTitle = new Font("Arial", 13, FontStyle.Bold);
         private static Font printFont;
         private static Orders orden;
         private static TableOpening tableop;
@@ -87,7 +88,7 @@ namespace Dominio
                                 var ordenes = orders.ConvertTo<Orders>();
                                 orden = ordenes;
                             }
-                            printFont = new Font("Arial", 13);
+                            printFont = new Font("Arial", 11);
                             PrintDocument pd = new PrintDocument();
                             pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
                             pd.PrintPage += new PrintPageEventHandler
@@ -119,7 +120,7 @@ namespace Dominio
                                var tableopenings = tableops.ConvertTo<TableOpening>();
                                tableop = tableopenings;
                            }
-                           printFont = new Font("Arial", 13);
+                           printFont = new Font("Arial", 11);
                            PrintDocument pd = new PrintDocument();
                            pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
                            pd.PrintPage += new PrintPageEventHandler
@@ -162,7 +163,7 @@ namespace Dominio
                             {
                                 if (book.BookingNumber.ToString().Length == 8)
                                 {
-                                    printFont = new Font("Arial", 12);
+                                    printFont = new Font("Arial", 11);
                                     PrintDocument pd = new PrintDocument();
                                     pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
                                     pd.PrintPage += new PrintPageEventHandler
@@ -241,53 +242,69 @@ namespace Dominio
                 if (orden.OrderType.ToUpper().Trim() == "MESAS")
                 {
                     float yPos;
-                    float xPos = 35;
+                    float xPos = 15;
                     int count = 0;
                     float leftMargin = ev.MarginBounds.Left;
                     float topMargin = ev.MarginBounds.Top;
-                    string line = $"Nueva órden de mesa\n\nCliente: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}\n\n";
+                    string title = "Nueva órden de mesa";
+                    string line = $"\n\nCliente: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}\n\n";
 
                     yPos = topMargin + (count *
                        printFont.GetHeight(ev.Graphics));
+                    ev.Graphics.DrawString(title, printTitle, Brushes.Black,
+                        xPos, 0, new StringFormat());
                     ev.Graphics.DrawString(line, printFont, Brushes.Black,
-                       xPos, yPos, new StringFormat());
+                       xPos, 0, new StringFormat());
                 }
                 else if (orden.OrderType.ToUpper().Trim() == "RESERVA")
                 {
                     float linesPerPage = 0;
                     float yPos = 0;
-                    float xPos = 35;
+                    float xPos = 15;
                     int count = 0;
                     float leftMargin = ev.MarginBounds.Left;
                     float topMargin = ev.MarginBounds.Top;
-                    string line = $"Órden de reserva\n\nUsuario: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}\n\nTotal: ${calculatedTotal}";
+                    string title = "Órden de reserva";
+                    string total = $"\n\nTotal: ${calculatedTotal}";
+                    string line = $"\n\n\n\n\nCliente: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}";
 
                     linesPerPage = ev.MarginBounds.Height /
                        printFont.GetHeight(ev.Graphics);
 
                     yPos = topMargin + (count *
                        printFont.GetHeight(ev.Graphics));
+                    ev.Graphics.DrawString(title, printTitle, Brushes.Black,
+                        xPos, 0, new StringFormat());
+                    ev.Graphics.DrawString(total, printTitle, Brushes.Black,
+                        xPos, 0, new StringFormat());
                     ev.Graphics.DrawString(line, printFont, Brushes.Black,
-                       xPos, yPos, new StringFormat());
+                       xPos, 0, new StringFormat());
                 }
                 else if (orden.OrderType.ToUpper().Trim() == "TAKEAWAY")
                 {
                     float linesPerPage = 0;
                     float yPos = 0;
-                    float xPos = 35;
+                    float xPos = 15;
                     int count = 0;
                     float leftMargin = ev.MarginBounds.Left;
                     float topMargin = ev.MarginBounds.Top;
+                    string title = "Nuevo take away";
+                    string total = $"\n\nTotal: ${calculatedTotal}";
                     string line =
-                        $"Nuevo take away\n\nUsuario: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nHora del retiro: {orden.TakeAwayHour}\n\nTotal: ${calculatedTotal}";
+                        $"\n\n\n\n\nCliente: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nHora del retiro: {orden.TakeAwayHour}";
 
                     linesPerPage = ev.MarginBounds.Height /
                        printFont.GetHeight(ev.Graphics);
 
                     yPos = topMargin + (count *
                        printFont.GetHeight(ev.Graphics));
+                    ev.Graphics.DrawString(title, printTitle, Brushes.Black,
+                        xPos, 0, new StringFormat());
+                    ev.Graphics.DrawString(total, printTitle, Brushes.Black,
+                        xPos, 0, new StringFormat());
                     ev.Graphics.DrawString(line, printFont, Brushes.Black,
-                       xPos, yPos, new StringFormat());
+                       xPos, 0, new StringFormat());
+                    
                 }
             }
         }
@@ -315,7 +332,7 @@ namespace Dominio
                printFont.GetHeight(ev.Graphics));
 
             ev.Graphics.DrawString(line, printFont, Brushes.Black,
-               xPos, yPos, new StringFormat());
+               xPos, 0, new StringFormat());
         }
         private static void pd_PrintPageBookings(object sender, PrintPageEventArgs ev)
         {
@@ -324,16 +341,19 @@ namespace Dominio
             int count = 0;
             float leftMargin = ev.MarginBounds.Left;
             float topMargin = ev.MarginBounds.Top;
+            string title;
             string line;
 
             if (book.BookingState == "cancelada")
             {
-                line = "Reserva cancelada" + "\n" + "\n" + "Nro: " + book.BookingNumber + "\n" + "\n" + "Fecha: " +
+                title = "Reserva cancelada";
+                line = "\n" + "\n" + "Nro: " + book.BookingNumber + "\n" + "\n" + "Fecha: " +
                        book.BookingDate + "\n" + "\n" + "Cliente: " + usuario.Name;
             }
             else
             {
-                line = "Nueva reserva" + "\n" + "\n" + "Nro: " + book.BookingNumber + "\n" + "\n" +
+                title = "Nueva reserva";
+                line = "\n" + "\n" + "Nro: " + book.BookingNumber + "\n" + "\n" +
                        "Cantidad de personas: " + book.GuestQuantity + "\n" + "\n" + "Fecha: " + book.BookingDate +
                        "\n" + "\n" + "Cliente: " + usuario.Name + "\n" + "\n" + "Comentario: " + book.BookingObservations;
             }
@@ -341,9 +361,10 @@ namespace Dominio
 
             yPos = topMargin + (count *
                printFont.GetHeight(ev.Graphics));
-
+            ev.Graphics.DrawString(title, printTitle, Brushes.Black,
+                xPos, 0, new StringFormat());
             ev.Graphics.DrawString(line, printFont, Brushes.Black,
-               xPos, yPos, new StringFormat());
+               xPos, 0, new StringFormat());
         }
     }
 }
