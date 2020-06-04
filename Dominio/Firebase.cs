@@ -13,36 +13,19 @@ using Google.Cloud.Firestore.V1;
 using System.Configuration;
 using System.Drawing.Printing;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Dominio
 {
-    public class Firebase
+    public static class Firebase
     {
-        private static Firebase instancia;
-        private readonly FirestoreDb db;
-        private static Font printFont;
-        private static Orders orden;
-        private static TableOpening tableop;
-        private static Booking book;
-        private static User usuario;
-        private static FirestoreChangeListener listener;
-        private static FirestoreChangeListener tableOpeningListener;
-        private static FirestoreChangeListener bookingListener;
-        private static FirestoreChangeListener userListener;
+        private static FirestoreDb _db = AccessDatabase();
+        private static string _printerName = ConfigurationManager.AppSettings["PrinterName"];
+        private static FirestoreChangeListener _lastTableOpeningListener;
+        private static FirestoreChangeListener _orderFamilyListener;
+        private static FirestoreChangeListener _bookingListener;
+        private static FirestoreChangeListener _tableOpenings;
 
-        private Firebase()
-        {
-            this.db = AccessDatabase();
-        }
-        public static Firebase Instancia
-        {
-            get
-            {
-                if (instancia == null)
-                    instancia = new Firebase();
-                return instancia;
-            }
-        }
         private static FirestoreDb AccessDatabase()
         {
             var credential = GoogleCredential.FromJson("{'type':'service_account'," +
@@ -60,163 +43,70 @@ namespace Dominio
             var client = FirestoreClient.Create(channel);
             return FirestoreDb.Create("comemosya", client);
         }
-
-
-        public async Task RefreshListener(string storeId)
+        private static void StartListen(string storeId)
         {
-            await listener.StopAsync();
-            await this.RefreshCallback(storeId);
+            BookingsListen(storeId);
+            TableOpeningFamilyListen(storeId);
+            OrderFamilyListen(storeId);
         }
-        private async Task RefreshCallback(string storeId)
+        public static Task RunAsync()
         {
-            listener = db.Collection("orderFamily").WhereEqualTo("storeId", storeId).OrderByDescending("createdAt").Limit(1).Listen(async snapshot =>
+            return Task.Run(() =>
             {
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        if (snapshot.Count > 0)
-                        {
-                            foreach (var orders in snapshot)
-                            {
-                                var ordenes = orders.ConvertTo<Orders>();
-                                orden = ordenes;
-                            }
-                            printFont = new Font("Arial", 13);
-                            PrintDocument pd = new PrintDocument();
-                            pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-                            pd.PrintPage += new PrintPageEventHandler
-                               (pd_PrintPage);
-                            pd.Print();
-                        }
-                        else
-                        {
-                            //string error = $"{orden.OrderType} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
-                            // this.LogError(error);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        this.LogError(ex.Message);
-                    }
-                });
-            });
-            tableOpeningListener = db.Collection("tableOpeningFamily").WhereEqualTo("store.id", storeId).OrderByDescending("createdAt").Limit(1).Listen(async snapshot =>
-           {
-               await Task.Run(() =>
-               {
-                   try
-                   {
-                       if (snapshot.Count > 0)
-                       {
-                           foreach (var tableops in snapshot)
-                           {
-                               var tableopenings = tableops.ConvertTo<TableOpening>();
-                               tableop = tableopenings;
-                           }
-                           printFont = new Font("Arial", 13);
-                           PrintDocument pd = new PrintDocument();
-                           pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-                           pd.PrintPage += new PrintPageEventHandler
-                              (pd_PrintPageTableOpenings);
-                           pd.Print();
-                       }
-                       else
-                       {
-                           //string error = $"{tableop.TableNumberId} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
-                           //this.LogError(error);
-                       }
-                   }
-                   catch (Exception ex)
-                   {
-                       this.LogError(ex.Message);
-                   }
-               });
-           });
-            bookingListener = db.Collection("bookings").WhereEqualTo("store.id", storeId).OrderByDescending("updatedAt").Limit(1).Listen(async snapshot =>
-            {
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        if (snapshot.Count > 0)
-                        {
-                            foreach (var booking in snapshot)
-                            {
-                                var books = booking.ConvertTo<Booking>();
-                                book = books;
-                            }
+                var storeId = ConfigurationManager.AppSettings["StoreID"];
 
-                            var snapshotusu = db.Collection("customers").Document(book.UserId).GetSnapshotAsync().Result;
-                            if (snapshotusu.Exists)
-                            {
-                                var usus = snapshotusu.ConvertTo<User>();
-                                usuario = usus;
-                            }
-                            if (book.Printed == false)
-                            {
-                                if (book.BookingNumber.ToString().Length == 8)
-                                {
-                                    printFont = new Font("Arial", 12);
-                                    PrintDocument pd = new PrintDocument();
-                                    pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-                                    pd.PrintPage += new PrintPageEventHandler
-                                        (pd_PrintPageBookings);
-                                    pd.Print();
-                                }
+                if (string.IsNullOrEmpty(storeId))
+                    throw new Exception("No hay storeId");
 
-                            }
-                        }
-                        else
-                        {
-                            //string error = $"{book.BookingNumber} no se imprimió Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}";
-                            //this.LogError(error);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        this.LogError(ex.Message);
-                    }
-                });
+                StartListen(storeId);
             });
-            await Task.CompletedTask;
         }
-        public async Task RunListenOrders()
+
+        public static async Task RefreshListener(string storeId)
         {
-            var storeId = ConfigurationManager.AppSettings["StoreID"];
-            await this.RefreshCallback(storeId);
+            await _orderFamilyListener.StopAsync();
+            await _bookingListener.StopAsync();
+            await _lastTableOpeningListener.StopAsync();
+
+            StartListen(storeId);
         }
-        private void LogError(string error)
+
+        private static void TableOpeningsListen(string storeId)
         {
-            FileStream fs = null;
-            StreamWriter sw = null;
+            _tableOpenings = _db.Collection("tableOpeningFamily")
+                              .WhereEqualTo("store.id", storeId)
+                              .Listen(TableOpeningsCallback);
+        }
+        private static Action<QuerySnapshot> TableOpeningsCallback = (snapshot) =>
+        {
             try
             {
-                fs = new FileStream(AppDomain.CurrentDomain.BaseDirectory + "Log.txt", FileMode.Append);
-                sw = new StreamWriter(fs);
-
-                sw.WriteLine();
-                sw.WriteLine("***************************************************************");
-                sw.WriteLine($"Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
-                if (orden != null && orden.Items != null)
-                    foreach (var item in orden.Items)
-                        sw.WriteLine($"{item.Name} X {item.Quantity} $ {(item.Price * item.Quantity)}");
-                sw.WriteLine(error);
-                sw.WriteLine("***************************************************************");
+                foreach (var snap in snapshot)
+                {
+                    var to = snap.ConvertTo<TableOpeningFamily>();
+                    if (to.Closed)
+                    {
+                        PrintDocument pd = new PrintDocument();
+                        pd.PrinterSettings.PrinterName = _printerName;
+                        pd.PrintPage += (sender, args) => PrintCloseTableFamily(to, sender, args);
+                        pd.Print();
+                    }
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                LogErrorAsync(ex.Message);
             }
-            finally
-            {
-                if (sw != null)
-                    sw.Close();
-                if (fs != null)
-                    fs.Close();
-            }
-        }
-        private static void pd_PrintPage(object sender, PrintPageEventArgs ev)
+        };
+        private static void PrintCloseTableFamily(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
         {
+
+        }
+
+        #region ORDER FAMILY
+        private static void PrintOrder(Orders orden, object sender, PrintPageEventArgs args)
+        {
+            Font printFont = new Font("Arial", 13);
             var text = string.Empty;
             double calculatedTotal = 0;
 
@@ -226,8 +116,6 @@ namespace Dominio
                 calculatedTotal = calculatedTotal + item.Price * item.Quantity;
             }
 
-
-
             if (orden != null && orden.OrderType != null)
             {
                 if (orden.OrderType.ToUpper().Trim() == "MESAS")
@@ -235,13 +123,13 @@ namespace Dominio
                     float yPos;
                     float xPos = 35;
                     int count = 0;
-                    float leftMargin = ev.MarginBounds.Left;
-                    float topMargin = ev.MarginBounds.Top;
+                    float leftMargin = args.MarginBounds.Left;
+                    float topMargin = args.MarginBounds.Top;
                     string line = $"Nueva órden de mesa\n\nCliente: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}\n\n";
 
                     yPos = topMargin + (count *
-                       printFont.GetHeight(ev.Graphics));
-                    ev.Graphics.DrawString(line, printFont, Brushes.Black,
+                       printFont.GetHeight(args.Graphics));
+                    args.Graphics.DrawString(line, printFont, Brushes.Black,
                        xPos, yPos, new StringFormat());
                 }
                 else if (orden.OrderType.ToUpper().Trim() == "RESERVA")
@@ -250,16 +138,16 @@ namespace Dominio
                     float yPos = 0;
                     float xPos = 35;
                     int count = 0;
-                    float leftMargin = ev.MarginBounds.Left;
-                    float topMargin = ev.MarginBounds.Top;
+                    float leftMargin = args.MarginBounds.Left;
+                    float topMargin = args.MarginBounds.Top;
                     string line = $"Órden de reserva\n\nUsuario: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}\n\nTotal: ${calculatedTotal}";
 
-                    linesPerPage = ev.MarginBounds.Height /
-                       printFont.GetHeight(ev.Graphics);
+                    linesPerPage = args.MarginBounds.Height /
+                       printFont.GetHeight(args.Graphics);
 
                     yPos = topMargin + (count *
-                       printFont.GetHeight(ev.Graphics));
-                    ev.Graphics.DrawString(line, printFont, Brushes.Black,
+                       printFont.GetHeight(args.Graphics));
+                    args.Graphics.DrawString(line, printFont, Brushes.Black,
                        xPos, yPos, new StringFormat());
                 }
                 else if (orden.OrderType.ToUpper().Trim() == "TAKEAWAY")
@@ -268,74 +156,189 @@ namespace Dominio
                     float yPos = 0;
                     float xPos = 35;
                     int count = 0;
-                    float leftMargin = ev.MarginBounds.Left;
-                    float topMargin = ev.MarginBounds.Top;
+                    float leftMargin = args.MarginBounds.Left;
+                    float topMargin = args.MarginBounds.Top;
                     string line =
                         $"Nuevo take away\n\nUsuario: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nHora del retiro: {orden.TakeAwayHour}\n\nTotal: ${calculatedTotal}";
 
-                    linesPerPage = ev.MarginBounds.Height /
-                       printFont.GetHeight(ev.Graphics);
+                    linesPerPage = args.MarginBounds.Height /
+                       printFont.GetHeight(args.Graphics);
 
                     yPos = topMargin + (count *
-                       printFont.GetHeight(ev.Graphics));
-                    ev.Graphics.DrawString(line, printFont, Brushes.Black,
+                       printFont.GetHeight(args.Graphics));
+                    args.Graphics.DrawString(line, printFont, Brushes.Black,
                        xPos, yPos, new StringFormat());
                 }
             }
         }
-        private static void pd_PrintPageTableOpenings(object sender, PrintPageEventArgs ev)
+        private static void OrderFamilyListen(string storeId)
         {
+            _orderFamilyListener = _db.Collection("orderFamily")
+                                        .WhereEqualTo("storeId", storeId)
+                                        .OrderByDescending("createdAt")
+                                        .Limit(1)
+                                        .Listen(OrderFamilyListenCallback);
+        }
+        private static Action<QuerySnapshot> OrderFamilyListenCallback = (snapshot) =>
+        {
+            try
+            {
+                Orders orden = snapshot.Documents.Single().ConvertTo<Orders>();
+
+                PrintDocument pd = new PrintDocument();
+                pd.PrinterSettings.PrinterName = _printerName;
+                pd.PrintPage += (sender, args) => PrintOrder(orden, sender, args);
+                pd.Print();
+            }
+            catch (Exception ex)
+            {
+                LogErrorAsync(ex.Message);
+            }
+        };
+        #endregion
+
+        #region LAST TABLE OPENING
+        private static void TableOpeningFamilyListen(string storeId)
+        {
+            _lastTableOpeningListener = _db.Collection("tableOpeningFamily")
+                                          .WhereEqualTo("store.id", storeId)
+                                          .OrderByDescending("createdAt")
+                                          .Limit(1).Listen(TableOpeningFamilyCallback);
+        }
+        private static Action<QuerySnapshot> TableOpeningFamilyCallback = (snapshot) =>
+        {
+            try
+            {
+                TableOpeningFamily to = snapshot.Documents.Single().ConvertTo<TableOpeningFamily>();
+                PrintDocument pd = new PrintDocument();
+                pd.PrinterSettings.PrinterName = _printerName;
+                pd.PrintPage += (sender, args) => PrintLastTableOpening(to, sender, args);
+                pd.Print();
+            }
+            catch (Exception ex)
+            {
+                LogErrorAsync(ex.Message);
+            }
+        };
+        private static void PrintLastTableOpening(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
+        {
+            var printFont = new Font("Arial", 13);
+            float yPos;
+            float xPos = 20;
+            int count = 0;
+            float leftMargin = args.MarginBounds.Left;
+            float topMargin = args.MarginBounds.Top;
+            string line;
+            if (tableOpening.Closed)
+            {
+                line = "Mesa cerrada" + "\n" + "\n" + "Número de mesa: " + tableOpening.TableNumberId + "\n" + "\n" +
+                              "Fecha: " + tableOpening.ClosedAt + "\n" + "\n" + "Total: $ " + tableOpening.TotalToPay;
+            }
+            else
+            {
+                line = "Apertura de mesa" + "\n" + "\n" + "Número de mesa: " + tableOpening.TableNumberId + "\n" + "\n" +
+                       "Fecha: " + tableOpening.OpenedAt + "\n" + "\n" + "Número de Personas: " + tableOpening.ActiveGuestQuantity;
+            }
+
+            yPos = topMargin + (count * printFont.GetHeight(args.Graphics));
+            args.Graphics.DrawString(line, printFont, Brushes.Black, xPos, yPos, new StringFormat());
+        }
+        #endregion
+
+        #region BOOKINGS
+        private static void BookingsListen(string storeId)
+        {
+            _bookingListener = _db.Collection("bookings")
+                                 .WhereEqualTo("store.id", storeId)
+                                 .OrderByDescending("updatedAt")
+                                 .Limit(1)
+                                 .Listen(BookingsCallback);
+        }
+        private static Action<QuerySnapshot> BookingsCallback = async (snapshot) =>
+        {
+            try
+            {
+                Booking booking = snapshot.Single().ConvertTo<Booking>();
+                User user = null;
+
+                var snapshotUser = await _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync();
+
+                if (snapshotUser.Exists)
+                    user = snapshotUser.ConvertTo<User>();
+
+                if (!booking.Printed)
+                {
+                    if (booking.BookingNumber.ToString().Length == 8)
+                    {
+                        PrintDocument pd = new PrintDocument();
+                        pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
+                        pd.PrintPage += (sender, args) => PrintBooking(booking, user, sender, args);
+                        pd.Print();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = LogErrorAsync(ex.Message);
+            }
+        };
+        private static void PrintBooking(Booking booking, User user, object sender, PrintPageEventArgs ev)
+        {
+            var printFont = new Font("Arial", 12);
             float yPos;
             float xPos = 20;
             int count = 0;
             float leftMargin = ev.MarginBounds.Left;
             float topMargin = ev.MarginBounds.Top;
             string line;
-            if (tableop.Closed)
+
+            if (booking.BookingState == "cancelada")
             {
-                line = "Mesa cerrada" + "\n" + "\n" + "Número de mesa: " + tableop.TableNumberId + "\n" + "\n" +
-                              "Fecha: " + tableop.ClosedAt + "\n" + "\n" + "Total: $ " + tableop.TotalToPay;
+                line = "Reserva cancelada" + "\n" + "\n" + "Nro: " + booking.BookingNumber + "\n" + "\n" + "Fecha: " +
+                       booking.BookingDate + "\n" + "\n" + "Cliente: " + user.Name;
             }
             else
             {
-                line = "Apertura de mesa" + "\n" + "\n" + "Número de mesa: " + tableop.TableNumberId + "\n" + "\n" +
-                       "Fecha: " + tableop.OpenedAt + "\n" + "\n" + "Número de Personas: " + tableop.ActiveGuestQuantity;
+                line = "Nueva reserva" + "\n" + "\n" + "Nro: " + booking.BookingNumber + "\n" + "\n" +
+                       "Cantidad de personas: " + booking.GuestQuantity + "\n" + "\n" + "Fecha: " + booking.BookingDate +
+                       "\n" + "\n" + "Cliente: " + user.Name + "\n" + "\n" + "Comentario: " + booking.BookingObservations;
             }
 
-
-            yPos = topMargin + (count *
-               printFont.GetHeight(ev.Graphics));
-
-            ev.Graphics.DrawString(line, printFont, Brushes.Black,
-               xPos, yPos, new StringFormat());
+            yPos = topMargin + (count * printFont.GetHeight(ev.Graphics));
+            ev.Graphics.DrawString(line, printFont, Brushes.Black, xPos, yPos, new StringFormat());
         }
-        private static void pd_PrintPageBookings(object sender, PrintPageEventArgs ev)
+        #endregion
+
+        #region LOG
+        private static Task LogErrorAsync(string error)
         {
-            float yPos;
-            float xPos = 20;
-            int count = 0;
-            float leftMargin = ev.MarginBounds.Left;
-            float topMargin = ev.MarginBounds.Top;
-            string line;
-
-            if (book.BookingState == "cancelada")
+            return Task.Run(() =>
             {
-                line = "Reserva cancelada" + "\n" + "\n" + "Nro: " + book.BookingNumber + "\n" + "\n" + "Fecha: " +
-                       book.BookingDate + "\n" + "\n" + "Cliente: " + usuario.Name;
-            }
-            else
-            {
-                line = "Nueva reserva" + "\n" + "\n" + "Nro: " + book.BookingNumber + "\n" + "\n" +
-                       "Cantidad de personas: " + book.GuestQuantity + "\n" + "\n" + "Fecha: " + book.BookingDate +
-                       "\n" + "\n" + "Cliente: " + usuario.Name + "\n" + "\n" + "Comentario: " + book.BookingObservations;
-            }
+                FileStream fs = null;
+                StreamWriter sw = null;
+                try
+                {
+                    fs = new FileStream(AppDomain.CurrentDomain.BaseDirectory + "Log.txt", FileMode.Append);
+                    sw = new StreamWriter(fs);
 
-
-            yPos = topMargin + (count *
-               printFont.GetHeight(ev.Graphics));
-
-            ev.Graphics.DrawString(line, printFont, Brushes.Black,
-               xPos, yPos, new StringFormat());
+                    sw.WriteLine();
+                    sw.WriteLine("***************************************************************");
+                    sw.WriteLine($"Fecha {DateTime.Now.ToString("dd/MM/yyyy HH:mm")}");
+                    sw.WriteLine(error);
+                    sw.WriteLine("***************************************************************");
+                }
+                catch
+                {
+                }
+                finally
+                {
+                    if (sw != null)
+                        sw.Close();
+                    if (fs != null)
+                        fs.Close();
+                }
+            });
         }
+        #endregion
     }
 }

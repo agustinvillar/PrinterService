@@ -59,7 +59,7 @@ namespace MenooPrinterService
 
                     config.Save(ConfigurationSaveMode.Modified);
 
-                    await Firebase.Instancia.RefreshListener(this.TxtRestoId.Text);
+                    await Firebase.RefreshListener(this.TxtRestoId.Text);
 
                     MessageBox.Show("Guardado OK", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }

@@ -22,7 +22,14 @@ namespace MenooPrinterService
         }
         private async void Init()
         {
-            await Firebase.Instancia.RunListenOrders();
+            try
+            {
+                await Firebase.RunAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void InfoToolStripMenuItem_Click(object sender, EventArgs e)

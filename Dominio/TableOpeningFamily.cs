@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Dominio
 {
     [FirestoreData]
-    class TableOpening
+    public class TableOpeningFamily
     {
         [FirestoreProperty("openedAt")]
         public string OpenedAt { get; set; }
