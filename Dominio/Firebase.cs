@@ -95,13 +95,9 @@ namespace Dominio
         #region CLOSE TABLE OPENING FAMILY
         private static void TableOpeningsListen(string storeId)
         {
-            //Es la fecha de Date.now() de javascript.
-            var time = (int)(DateTime.Now.AddDays(-3).ToUniversalTime() - new DateTime(1970, 1, 1)).TotalMilliseconds + 0.5;
-
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("storeId", storeId)
                .WhereEqualTo("closed", true)
-               .WhereGreaterThanOrEqualTo("openedAtNumber", time)
                .Listen(TableOpeningsCallback, _cancellation.Token);
         }
         private static Action<QuerySnapshot> TableOpeningsCallback = (snapshot) =>
@@ -339,19 +335,27 @@ namespace Dominio
         {
             try
             {
-                Booking booking = snapshot.Single().ConvertTo<Booking>();
+                var document = snapshot.Single();
+                Booking booking = document.ConvertTo<Booking>();
                 User user = null;
                 var snapshotUser = await _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync();
                 if (snapshotUser.Exists)
                     user = snapshotUser.ConvertTo<User>();
                 if (!booking.Printed && booking.BookingNumber.ToString().Length == 8)
+                {
+                    _ = SetBookingPrintedAsync(document.Id);
                     PrintBooking(booking, user);
+                }
             }
             catch (Exception ex)
             {
                 _ = LogErrorAsync(ex.Message);
             }
         };
+        private static Task<Google.Cloud.Firestore.WriteResult> SetBookingPrintedAsync(string doc)
+        {
+            return _db.Collection("bookings").Document(doc).UpdateAsync("printed", true);
+        }
         private static void PrintBooking(Booking booking, User user, object sender, PrintPageEventArgs ev)
         {
             var printFont = new Font("Arial", 12);
