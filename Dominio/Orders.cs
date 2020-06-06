@@ -11,13 +11,13 @@ namespace Dominio
     class Orders
     {
         [FirestoreProperty("address")]
-        public string Address {get; set;}        
-        [FirestoreProperty ("printed")]
+        public string Address { get; set; }
+        [FirestoreProperty("printed")]
         public bool Printed { get; set; }
         [FirestoreProperty("bookingId")]
         public int BookingId { get; set; }
         [FirestoreProperty("items")]
-        public  Item[] Items { get; set; }
+        public Item[] Items { get; set; }
         [FirestoreProperty("madeAt")]
         public string MadeAt { get; set; }
         [FirestoreProperty("orderDate")]

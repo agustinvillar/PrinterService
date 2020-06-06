@@ -29,5 +29,16 @@ namespace Dominio
         [FirestoreProperty("totalToPay")]
         public double TotalToPay { get; set; }
 
+        [FirestoreProperty("openPrinted")]
+        public bool OpenPrinted { get; set; }
+
+        [FirestoreProperty("closedPrinted")]
+        public bool ClosedPrinted { get; set; }
+
+        public enum PRINTED_EVENT
+        {
+            OPENING,
+            CLOSING
+        }
     }
 }

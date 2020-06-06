@@ -24,10 +24,6 @@ namespace Dominio
     {
         private static string _printerName;
         private static FirestoreDb _db;
-        private static FirestoreChangeListener _lastTableOpeningListener;
-        private static FirestoreChangeListener _orderFamilyListener;
-        private static FirestoreChangeListener _bookingListener;
-        private static FirestoreChangeListener _tableOpenings;
         private static CancellationTokenSource _cancellation;
 
         private static FirestoreDb AccessDatabaseProduction()
@@ -75,7 +71,7 @@ namespace Dominio
             BookingsListen(storeId);
             TableOpeningFamilyListen(storeId);
             OrderFamilyListen(storeId);
-            //TableOpeningsListen(storeId);
+            TableOpeningsListen(storeId);
         }
         public static Task RunAsync()
         {
@@ -99,26 +95,43 @@ namespace Dominio
         #region CLOSE TABLE OPENING FAMILY
         private static void TableOpeningsListen(string storeId)
         {
-            _tableOpenings = _db.Collection("tableOpeningFamily")
-                              .WhereEqualTo("storeId", storeId)
-                              .Listen(TableOpeningsCallback, _cancellation.Token);
+            //Es la fecha de Date.now() de javascript.
+            var time = (int)(DateTime.Now.AddDays(-3).ToUniversalTime() - new DateTime(1970, 1, 1)).TotalMilliseconds + 0.5;
+
+            _db.Collection("tableOpeningFamily")
+               .WhereEqualTo("storeId", storeId)
+               .WhereEqualTo("closed", true)
+               .WhereGreaterThanOrEqualTo("openedAtNumber", time)
+               .Listen(TableOpeningsCallback, _cancellation.Token);
         }
         private static Action<QuerySnapshot> TableOpeningsCallback = (snapshot) =>
         {
             try
             {
-                List<TableOpeningFamily> tableOpeningFamilies = snapshot.Documents
-                                                                .Select(d => d.ConvertTo<TableOpeningFamily>())
-                                                                .ToList();
-                foreach (var to in tableOpeningFamilies)
-                    if (to.Closed)
+                foreach (var document in snapshot.Documents)
+                {
+                    TableOpeningFamily to = document.ConvertTo<TableOpeningFamily>();
+                    if (to.Closed && !to.ClosedPrinted)
+                    {
+                        SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PRINTED_EVENT.CLOSING);
                         PrintCloseTableFamily(to);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 LogErrorAsync(ex.Message);
             }
         };
+        private static Task<Google.Cloud.Firestore.WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PRINTED_EVENT printEvent)
+        {
+            if (printEvent == TableOpeningFamily.PRINTED_EVENT.CLOSING)
+                return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("closedPrinted", true);
+            else if (printEvent == TableOpeningFamily.PRINTED_EVENT.OPENING)
+                return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("openPrinted", true);
+            else
+                throw new Exception("No se actualizo el estado impreso de la mesa.");
+        }
         private static void PrintCloseTableFamily(TableOpeningFamily tableOpening)
         {
             //PrintDocument pd = new PrintDocument();
@@ -217,24 +230,33 @@ namespace Dominio
         }
         private static void OrderFamilyListen(string storeId)
         {
-            _orderFamilyListener = _db.Collection("orderFamily")
-                                        .WhereEqualTo("storeId", storeId)
-                                        .OrderByDescending("createdAt")
-                                        .Limit(1)
-                                        .Listen(OrderFamilyListenCallback, _cancellation.Token);
+            _db.Collection("orderFamily")
+               .WhereEqualTo("storeId", storeId)
+               .OrderByDescending("createdAt")
+               .Limit(1)
+               .Listen(OrderFamilyListenCallback, _cancellation.Token);
         }
         private static Action<QuerySnapshot> OrderFamilyListenCallback = (snapshot) =>
         {
             try
             {
-                Orders orden = snapshot.Documents.Single().ConvertTo<Orders>();
-                PrintOrder(orden);
+                var document = snapshot.Documents.Single();
+                Orders orden = document.ConvertTo<Orders>();
+                if (!orden.Printed)
+                {
+                    SetOrderFamilyPrintedAsync(document.Id);
+                    PrintOrder(orden);
+                }
             }
             catch (Exception ex)
             {
                 LogErrorAsync(ex.Message);
             }
         };
+        private static Task<Google.Cloud.Firestore.WriteResult> SetOrderFamilyPrintedAsync(string doc)
+        {
+            return _db.Collection("orderFamily").Document(doc).UpdateAsync("printed", true);
+        }
         private static void PrintOrder(Orders order)
         {
             //PrintDocument pd = new PrintDocument();
@@ -245,21 +267,25 @@ namespace Dominio
         }
         #endregion
 
-        #region LAST TABLE OPENING
+        #region OPEN TABLEOPENING
         private static void TableOpeningFamilyListen(string storeId)
         {
-            _lastTableOpeningListener = _db.Collection("tableOpeningFamily")
-                                          .WhereEqualTo("storeId", storeId)
-                                          .OrderByDescending("openedAtNumber")
-                                          .Limit(1).Listen(TableOpeningFamilyCallback, _cancellation.Token);
+            _db.Collection("tableOpeningFamily")
+               .WhereEqualTo("storeId", storeId)
+               .OrderByDescending("openedAtNumber")
+               .Limit(1).Listen(TableOpeningFamilyCallback, _cancellation.Token);
         }
         private static Action<QuerySnapshot> TableOpeningFamilyCallback = (snapshot) =>
         {
             try
             {
-                TableOpeningFamily to = snapshot.Documents.Single().ConvertTo<TableOpeningFamily>();
-                if (!to.Closed)
+                var document = snapshot.Documents.Single();
+                TableOpeningFamily to = document.ConvertTo<TableOpeningFamily>();
+                if (!to.Closed && !to.OpenPrinted)
+                {
+                    SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PRINTED_EVENT.OPENING);
                     PrintLastTableOpening(to);
+                }
             }
             catch (Exception ex)
             {
@@ -303,11 +329,11 @@ namespace Dominio
         }
         private static void BookingsListen(string storeId)
         {
-            _bookingListener = _db.Collection("bookings")
-                                 .WhereEqualTo("store.id", storeId)
-                                 .OrderByDescending("updatedAt")
-                                 .Limit(1)
-                                 .Listen(BookingsCallback, _cancellation.Token);
+            _db.Collection("bookings")
+               .WhereEqualTo("store.id", storeId)
+               .OrderByDescending("updatedAt")
+               .Limit(1)
+               .Listen(BookingsCallback, _cancellation.Token);
         }
         private static Action<QuerySnapshot> BookingsCallback = async (snapshot) =>
         {
