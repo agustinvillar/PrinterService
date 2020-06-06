@@ -14,9 +14,6 @@ using System.Configuration;
 using System.Drawing.Printing;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Google;
-using System.Reflection;
-using System.Security.Cryptography;
 
 namespace Dominio
 {
@@ -97,7 +94,10 @@ namespace Dominio
         {
             try
             {
-                foreach (var document in snapshot.Documents)
+                var filteredDocuments = snapshot.Documents.Where(d => d.CreateTime >=
+                                    Timestamp.FromDateTime(DateTime.UtcNow.AddDays(-3)));
+
+                foreach (var document in filteredDocuments)
                 {
                     TableOpeningFamily to = document.ConvertTo<TableOpeningFamily>();
                     if (to.Closed && !to.ClosedPrinted)
