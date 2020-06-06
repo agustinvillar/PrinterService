@@ -15,17 +15,18 @@ namespace MenooPrinterService
         [STAThread]
         static void Main()
         {
+            var args = Environment.GetCommandLineArgs();
             var procesos = Process.GetProcessesByName(Process.GetCurrentProcess().ProcessName);
             if (procesos.Count() > 1)
             {
                 MessageBox.Show("La aplicación ya se encuentra abierta.", "Menoo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-
+            bool runWithoutSettings = args != null && args.Any(a => a.Contains("settings"));
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Splash());
+            Application.Run(new Splash(runWithoutSettings));
         }
     }
 }

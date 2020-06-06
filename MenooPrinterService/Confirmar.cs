@@ -62,7 +62,6 @@ namespace MenooPrinterService
                 config.Save(ConfigurationSaveMode.Modified);
 
                 Firebase.RunAsync();
-                MessageBox.Show("Guardado OK", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
             });
         }
 
