@@ -1,6 +1,6 @@
 ﻿namespace MenooPrinterService
 {
-    partial class Ajustes
+    partial class Confirmar
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Ajustes));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Confirmar));
             this.label2 = new System.Windows.Forms.Label();
             this.BtnGuardar = new System.Windows.Forms.Button();
             this.DdlImpresoras = new System.Windows.Forms.ComboBox();
@@ -47,11 +47,11 @@
             // 
             // BtnGuardar
             // 
-            this.BtnGuardar.Location = new System.Drawing.Point(180, 127);
+            this.BtnGuardar.Location = new System.Drawing.Point(102, 123);
             this.BtnGuardar.Name = "BtnGuardar";
-            this.BtnGuardar.Size = new System.Drawing.Size(75, 23);
+            this.BtnGuardar.Size = new System.Drawing.Size(153, 23);
             this.BtnGuardar.TabIndex = 4;
-            this.BtnGuardar.Text = "Guardar";
+            this.BtnGuardar.Text = "Confirmar";
             this.BtnGuardar.UseVisualStyleBackColor = true;
             this.BtnGuardar.Click += new System.EventHandler(this.BtnGuardar_Click);
             // 
@@ -79,7 +79,7 @@
             this.label1.TabIndex = 2;
             this.label1.Text = "Restorán Id";
             // 
-            // Ajustes
+            // Confirmar
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -90,8 +90,8 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.TxtRestoId);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "Ajustes";
-            this.Text = "Ajustes";
+            this.Name = "Confirmar";
+            this.Text = "Confirmar";
             this.ResumeLayout(false);
             this.PerformLayout();
 

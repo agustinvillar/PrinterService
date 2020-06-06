@@ -20,11 +20,12 @@ namespace MenooPrinterService
             Init();
             this.splash = splash;
         }
-        private async void Init()
+        private void Init()
         {
             try
             {
-                await Firebase.RunAsync();
+                Confirmar confirmar = new Confirmar();
+                confirmar.Show();
             }
             catch (Exception ex)
             {
@@ -51,7 +52,6 @@ namespace MenooPrinterService
 
         private void AjustesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.ShowAjustes();
         }
 
         private void MenooPrinter_Load(object sender, EventArgs e)
@@ -62,12 +62,12 @@ namespace MenooPrinterService
 
         private void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
-            this.ShowAjustes();
+            this.ShowInfo();
         }
-        private void ShowAjustes()
+        private void ShowInfo()
         {
-            var ajustesWindow = new Ajustes();
-            ajustesWindow.Visible = true;
+            var window = new Info();
+            window.Show();
         }
     }
 }
