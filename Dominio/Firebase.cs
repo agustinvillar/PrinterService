@@ -24,7 +24,6 @@ namespace Dominio
     {
         private static string _printerName;
         private static FirestoreDb _db;
-        private static CancellationTokenSource _cancellation;
 
         private static FirestoreDb AccessDatabaseProduction()
         {
@@ -64,7 +63,6 @@ namespace Dominio
         {
             _printerName = ConfigurationManager.AppSettings["PrinterName"];
             _db = AccessDatabaseTESTING();
-            _cancellation = new CancellationTokenSource();
         }
         private static void StartListen(string storeId)
         {
@@ -86,11 +84,6 @@ namespace Dominio
                 StartListen(storeId);
             });
         }
-        public static void RefreshListener(string storeId)
-        {
-            _cancellation.Cancel();
-            StartListen(storeId);
-        }
 
         #region CLOSE TABLE OPENING FAMILY
         private static void TableOpeningsListen(string storeId)
@@ -98,7 +91,7 @@ namespace Dominio
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("storeId", storeId)
                .WhereEqualTo("closed", true)
-               .Listen(TableOpeningsCallback, _cancellation.Token);
+               .Listen(TableOpeningsCallback);
         }
         private static Action<QuerySnapshot> TableOpeningsCallback = (snapshot) =>
         {
@@ -230,7 +223,7 @@ namespace Dominio
                .WhereEqualTo("storeId", storeId)
                .OrderByDescending("createdAt")
                .Limit(1)
-               .Listen(OrderFamilyListenCallback, _cancellation.Token);
+               .Listen(OrderFamilyListenCallback);
         }
         private static Action<QuerySnapshot> OrderFamilyListenCallback = (snapshot) =>
         {
@@ -269,7 +262,7 @@ namespace Dominio
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("storeId", storeId)
                .OrderByDescending("openedAtNumber")
-               .Limit(1).Listen(TableOpeningFamilyCallback, _cancellation.Token);
+               .Limit(1).Listen(TableOpeningFamilyCallback);
         }
         private static Action<QuerySnapshot> TableOpeningFamilyCallback = (snapshot) =>
         {
@@ -329,7 +322,7 @@ namespace Dominio
                .WhereEqualTo("store.id", storeId)
                .OrderByDescending("updatedAt")
                .Limit(1)
-               .Listen(BookingsCallback, _cancellation.Token);
+               .Listen(BookingsCallback);
         }
         private static Action<QuerySnapshot> BookingsCallback = async (snapshot) =>
         {

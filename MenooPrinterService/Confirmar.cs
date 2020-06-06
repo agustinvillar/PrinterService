@@ -21,15 +21,15 @@ namespace MenooPrinterService
             InitializeComponent();
             Init();
         }
-        private void Init()
+        private async void Init()
         {
-            LoadPrintersAsync();
+            this.DdlImpresoras.DataSource = await LoadPrintersAsync();
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.LoadInfo();
         }
 
-        private Task LoadPrintersAsync()
+        private Task<string[]> LoadPrintersAsync()
         {
             return Task.Run(() =>
             {
@@ -37,7 +37,7 @@ namespace MenooPrinterService
                 foreach (string printer in System.Drawing.Printing.PrinterSettings.InstalledPrinters)
                     printers.Add(printer);
                 Printers = printers.ToArray();
-                this.DdlImpresoras.DataSource = Printers;
+                return Printers;
             });
         }
 
