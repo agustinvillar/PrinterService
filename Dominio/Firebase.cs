@@ -123,10 +123,10 @@ namespace Dominio
         }
         private static void PrintCloseTableFamily(TableOpeningFamily tableOpening)
         {
-            //PrintDocument pd = new PrintDocument();
-            //pd.PrinterSettings.PrinterName = _printerName;
-            //pd.PrintPage += (sender, args) => PrintCloseTableFamily(tableOpening, sender, args);
-            //pd.Print();
+            PrintDocument pd = new PrintDocument();
+            pd.PrinterSettings.PrinterName = _printerName;
+            pd.PrintPage += (sender, args) => PrintCloseTableFamily(tableOpening, sender, args);
+            pd.Print();
             Console.WriteLine("SE CIERRA TO");
         }
         private static void PrintCloseTableFamily(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
@@ -248,10 +248,10 @@ namespace Dominio
         }
         private static void PrintOrder(Orders order)
         {
-            //PrintDocument pd = new PrintDocument();
-            //pd.PrinterSettings.PrinterName = _printerName;
-            //pd.PrintPage += (sender, args) => PrintOrder(order, sender, args);
-            //pd.Print();
+            PrintDocument pd = new PrintDocument();
+            pd.PrinterSettings.PrinterName = _printerName;
+            pd.PrintPage += (sender, args) => PrintOrder(order, sender, args);
+            pd.Print();
             Console.WriteLine("SE IMPRIME ORDEN");
         }
         #endregion
@@ -283,10 +283,10 @@ namespace Dominio
         };
         private static void PrintLastTableOpening(TableOpeningFamily to)
         {
-            //PrintDocument pd = new PrintDocument();
-            //pd.PrinterSettings.PrinterName = _printerName;
-            //pd.PrintPage += (sender, args) => PrintLastTableOpening(to, sender, args);
-            //pd.Print();
+            PrintDocument pd = new PrintDocument();
+            pd.PrinterSettings.PrinterName = _printerName;
+            pd.PrintPage += (sender, args) => PrintLastTableOpening(to, sender, args);
+            pd.Print();
             Console.WriteLine("SE ABRE TO");
         }
         private static void PrintLastTableOpening(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
@@ -310,10 +310,10 @@ namespace Dominio
         #region BOOKINGS
         private static void PrintBooking(Booking booking, User user)
         {
-            //PrintDocument pd = new PrintDocument();
-            //pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-            //pd.PrintPage += (sender, args) => PrintBooking(booking, user, sender, args);
-            //pd.Print();
+            PrintDocument pd = new PrintDocument();
+            pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
+            pd.PrintPage += (sender, args) => PrintBooking(booking, user, sender, args);
+            pd.Print();
             Console.WriteLine("IMPRIME BOOKING");
         }
         private static void BookingsListen(string storeId)
