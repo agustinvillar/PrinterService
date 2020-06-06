@@ -41,7 +41,7 @@ namespace MenooPrinterService
             this.TxtRestoId.Text = ConfigurationManager.AppSettings["StoreID"];
         }
 
-        private async void BtnGuardar_Click(object sender, EventArgs e)
+        private void BtnGuardar_Click(object sender, EventArgs e)
         {
             try
             {
@@ -59,7 +59,7 @@ namespace MenooPrinterService
 
                     config.Save(ConfigurationSaveMode.Modified);
 
-                    await Firebase.RefreshListener(this.TxtRestoId.Text);
+                    Firebase.RefreshListener(this.TxtRestoId.Text);
 
                     MessageBox.Show("Guardado OK", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }

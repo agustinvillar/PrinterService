@@ -28,6 +28,7 @@ namespace Dominio
         private static FirestoreChangeListener _orderFamilyListener;
         private static FirestoreChangeListener _bookingListener;
         private static FirestoreChangeListener _tableOpenings;
+        private static CancellationTokenSource _cancellation;
 
         private static FirestoreDb AccessDatabaseProduction()
         {
@@ -67,12 +68,14 @@ namespace Dominio
         {
             _printerName = ConfigurationManager.AppSettings["PrinterName"];
             _db = AccessDatabaseTESTING();
+            _cancellation = new CancellationTokenSource();
         }
         private static void StartListen(string storeId)
         {
             BookingsListen(storeId);
             TableOpeningFamilyListen(storeId);
             OrderFamilyListen(storeId);
+            //TableOpeningsListen(storeId);
         }
         public static Task RunAsync()
         {
@@ -87,12 +90,9 @@ namespace Dominio
                 StartListen(storeId);
             });
         }
-        public static async Task RefreshListener(string storeId)
+        public static void RefreshListener(string storeId)
         {
-            await _orderFamilyListener.StopAsync();
-            await _bookingListener.StopAsync();
-            await _lastTableOpeningListener.StopAsync();
-
+            _cancellation.Cancel();
             StartListen(storeId);
         }
 
@@ -100,8 +100,8 @@ namespace Dominio
         private static void TableOpeningsListen(string storeId)
         {
             _tableOpenings = _db.Collection("tableOpeningFamily")
-                              .WhereEqualTo("store.id", storeId)
-                              .Listen(TableOpeningsCallback);
+                              .WhereEqualTo("storeId", storeId)
+                              .Listen(TableOpeningsCallback, _cancellation.Token);
         }
         private static Action<QuerySnapshot> TableOpeningsCallback = (snapshot) =>
         {
@@ -121,10 +121,11 @@ namespace Dominio
         };
         private static void PrintCloseTableFamily(TableOpeningFamily tableOpening)
         {
-            PrintDocument pd = new PrintDocument();
-            pd.PrinterSettings.PrinterName = _printerName;
-            pd.PrintPage += (sender, args) => PrintCloseTableFamily(tableOpening, sender, args);
-            pd.Print();
+            //PrintDocument pd = new PrintDocument();
+            //pd.PrinterSettings.PrinterName = _printerName;
+            //pd.PrintPage += (sender, args) => PrintCloseTableFamily(tableOpening, sender, args);
+            //pd.Print();
+            Console.WriteLine("SE CIERRA TO");
         }
         private static void PrintCloseTableFamily(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
         {
@@ -220,7 +221,7 @@ namespace Dominio
                                         .WhereEqualTo("storeId", storeId)
                                         .OrderByDescending("createdAt")
                                         .Limit(1)
-                                        .Listen(OrderFamilyListenCallback);
+                                        .Listen(OrderFamilyListenCallback, _cancellation.Token);
         }
         private static Action<QuerySnapshot> OrderFamilyListenCallback = (snapshot) =>
         {
@@ -236,10 +237,11 @@ namespace Dominio
         };
         private static void PrintOrder(Orders order)
         {
-            PrintDocument pd = new PrintDocument();
-            pd.PrinterSettings.PrinterName = _printerName;
-            pd.PrintPage += (sender, args) => PrintOrder(order, sender, args);
-            pd.Print();
+            //PrintDocument pd = new PrintDocument();
+            //pd.PrinterSettings.PrinterName = _printerName;
+            //pd.PrintPage += (sender, args) => PrintOrder(order, sender, args);
+            //pd.Print();
+            Console.WriteLine("SE IMPRIME ORDEN");
         }
         #endregion
 
@@ -247,16 +249,17 @@ namespace Dominio
         private static void TableOpeningFamilyListen(string storeId)
         {
             _lastTableOpeningListener = _db.Collection("tableOpeningFamily")
-                                          .WhereEqualTo("store.id", storeId)
-                                          .OrderByDescending("createdAt")
-                                          .Limit(1).Listen(TableOpeningFamilyCallback);
+                                          .WhereEqualTo("storeId", storeId)
+                                          .OrderByDescending("openedAtNumber")
+                                          .Limit(1).Listen(TableOpeningFamilyCallback, _cancellation.Token);
         }
         private static Action<QuerySnapshot> TableOpeningFamilyCallback = (snapshot) =>
         {
             try
             {
                 TableOpeningFamily to = snapshot.Documents.Single().ConvertTo<TableOpeningFamily>();
-                PrintLastTableOpening(to);
+                if (!to.Closed)
+                    PrintLastTableOpening(to);
             }
             catch (Exception ex)
             {
@@ -265,10 +268,11 @@ namespace Dominio
         };
         private static void PrintLastTableOpening(TableOpeningFamily to)
         {
-            PrintDocument pd = new PrintDocument();
-            pd.PrinterSettings.PrinterName = _printerName;
-            pd.PrintPage += (sender, args) => PrintLastTableOpening(to, sender, args);
-            pd.Print();
+            //PrintDocument pd = new PrintDocument();
+            //pd.PrinterSettings.PrinterName = _printerName;
+            //pd.PrintPage += (sender, args) => PrintLastTableOpening(to, sender, args);
+            //pd.Print();
+            Console.WriteLine("SE ABRE TO");
         }
         private static void PrintLastTableOpening(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
         {
@@ -291,10 +295,11 @@ namespace Dominio
         #region BOOKINGS
         private static void PrintBooking(Booking booking, User user)
         {
-            PrintDocument pd = new PrintDocument();
-            pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
-            pd.PrintPage += (sender, args) => PrintBooking(booking, user, sender, args);
-            pd.Print();
+            //PrintDocument pd = new PrintDocument();
+            //pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
+            //pd.PrintPage += (sender, args) => PrintBooking(booking, user, sender, args);
+            //pd.Print();
+            Console.WriteLine("IMPRIME BOOKING");
         }
         private static void BookingsListen(string storeId)
         {
@@ -302,7 +307,7 @@ namespace Dominio
                                  .WhereEqualTo("store.id", storeId)
                                  .OrderByDescending("updatedAt")
                                  .Limit(1)
-                                 .Listen(BookingsCallback);
+                                 .Listen(BookingsCallback, _cancellation.Token);
         }
         private static Action<QuerySnapshot> BookingsCallback = async (snapshot) =>
         {
