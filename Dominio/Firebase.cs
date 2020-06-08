@@ -21,6 +21,9 @@ namespace Dominio
     {
         private static string _printerName;
         private static FirestoreDb _db;
+        private static Font titleFont = new Font("Arial", 13, FontStyle.Bold);
+        private static Font bodyFont = new Font("Arial", 11);
+        private static Font variationsFont = new Font("Arial", 9, FontStyle.Italic);
 
         private static FirestoreDb AccessDatabaseProduction()
         {
@@ -59,7 +62,7 @@ namespace Dominio
         private static void Init()
         {
             _printerName = ConfigurationManager.AppSettings["PrinterName"];
-            _db = AccessDatabaseTESTING();
+            _db = AccessDatabaseProduction();
         }
         private static void StartListen(string storeId)
         {
@@ -74,7 +77,7 @@ namespace Dominio
             {
                 Init();
                 var storeId = ConfigurationManager.AppSettings["StoreID"];
-
+                
                 if (string.IsNullOrEmpty(storeId))
                     throw new Exception("No hay storeId");
 
@@ -155,11 +158,15 @@ namespace Dominio
             Font printFont = new Font("Arial", 13);
             var text = string.Empty;
             double calculatedTotal = 0;
+            string comment = string.Empty;
+            string options = string.Empty;
 
             foreach (var item in orden.Items)
             {
-                text += $"{item.Name} x{item.Quantity} $ {(item.Price)}\n";
-                calculatedTotal = calculatedTotal + item.Price * item.Quantity;
+                
+                text += $"{item.Name} x{item.Quantity} $ {(item.SubTotal)}\n " + options + "\n";
+                calculatedTotal = calculatedTotal + item.SubTotal * item.Quantity;
+                comment += item.GuestComment + " - ";
             }
 
             if (orden != null && orden.OrderType != null)
@@ -171,12 +178,15 @@ namespace Dominio
                     int count = 0;
                     float leftMargin = args.MarginBounds.Left;
                     float topMargin = args.MarginBounds.Top;
-                    string line = $"Nueva órden de mesa\n\nCliente: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}\n\n";
+                    string title = "Nueva órden de mesa";
+                    string line = $"\n\n\nCliente: {orden.UserName}\n\n{text}\n\n**  {comment} \n\nServir en mesa: {orden.Address}\n\n";
 
                     yPos = topMargin + (count *
                        printFont.GetHeight(args.Graphics));
-                    args.Graphics.DrawString(line, printFont, Brushes.Black,
-                       xPos, yPos, new StringFormat());
+                    args.Graphics.DrawString(title, titleFont, Brushes.Black,
+                        xPos, 0, new StringFormat());
+                    args.Graphics.DrawString(line, bodyFont, Brushes.Black,
+                       xPos, 0, new StringFormat());
                 }
                 else if (orden.OrderType.ToUpper().Trim() == "RESERVA")
                 {
@@ -185,16 +195,19 @@ namespace Dominio
                     float xPos = 35;
                     int count = 0;
                     float leftMargin = args.MarginBounds.Left;
-                    float topMargin = args.MarginBounds.Top;
-                    string line = $"Órden de reserva\n\nUsuario: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nServir en mesa: {orden.Address}\n\nTotal: ${calculatedTotal}";
+                    float topMargin = args.MarginBounds.Top; 
+                    string title = "Nueva órden de reserva";
+                    string line = $"\n\n\nCliente: {orden.UserName}\n\n{text}\n\n** {comment} \n\nServir en mesa: {orden.Address}\n\nTotal: ${calculatedTotal}";
 
                     linesPerPage = args.MarginBounds.Height /
                        printFont.GetHeight(args.Graphics);
 
                     yPos = topMargin + (count *
                        printFont.GetHeight(args.Graphics));
-                    args.Graphics.DrawString(line, printFont, Brushes.Black,
-                       xPos, yPos, new StringFormat());
+                    args.Graphics.DrawString(title, titleFont, Brushes.Black,
+                        xPos, 0, new StringFormat());
+                    args.Graphics.DrawString(line, bodyFont, Brushes.Black,
+                        xPos, 0, new StringFormat());
                 }
                 else if (orden.OrderType.ToUpper().Trim() == "TAKEAWAY")
                 {
@@ -204,16 +217,19 @@ namespace Dominio
                     int count = 0;
                     float leftMargin = args.MarginBounds.Left;
                     float topMargin = args.MarginBounds.Top;
+                    string title = "Nuevo Take Away";
                     string line =
-                        $"Nuevo take away\n\nUsuario: {orden.UserName}\n\n{text}\n\n** {orden.GuestComment}\n\nHora del retiro: {orden.TakeAwayHour}\n\nTotal: ${calculatedTotal}";
+                        $"\n\n\nCliente: {orden.UserName}\n\n{text}\n\n** {comment} \n\nHora del retiro: {orden.TakeAwayHour}\n\nTotal: ${calculatedTotal}";
 
                     linesPerPage = args.MarginBounds.Height /
                        printFont.GetHeight(args.Graphics);
 
                     yPos = topMargin + (count *
                        printFont.GetHeight(args.Graphics));
-                    args.Graphics.DrawString(line, printFont, Brushes.Black,
-                       xPos, yPos, new StringFormat());
+                    args.Graphics.DrawString(title, titleFont, Brushes.Black,
+                        xPos, 0, new StringFormat());
+                    args.Graphics.DrawString(line, bodyFont, Brushes.Black,
+                        xPos, 0, new StringFormat());
                 }
             }
         }

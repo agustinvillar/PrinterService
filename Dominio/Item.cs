@@ -27,5 +27,8 @@ namespace Dominio
         //[FirestoreProperty("variations")]
         //public Variation Variations { get; set; }
 
+        [FirestoreProperty("guestComment")]
+        public string GuestComment { get; set; }
+
     }
 }
