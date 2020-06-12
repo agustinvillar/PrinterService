@@ -62,7 +62,7 @@ namespace Dominio
         private static void Init()
         {
             _printerName = ConfigurationManager.AppSettings["PrinterName"];
-            _db = AccessDatabaseProduction();
+            _db = AccessDatabaseTESTING();
         }
         private static void StartListen(string storeId)
         {
@@ -77,7 +77,7 @@ namespace Dominio
             {
                 Init();
                 var storeId = ConfigurationManager.AppSettings["StoreID"];
-                
+
                 if (string.IsNullOrEmpty(storeId))
                     throw new Exception("No hay storeId");
 
@@ -88,19 +88,19 @@ namespace Dominio
         #region CLOSE TABLE OPENING FAMILY
         private static void TableOpeningsListen(string storeId)
         {
+            var date = (DateTime.UtcNow.AddDays(-3) - new DateTime(1970, 1, 1)).TotalSeconds;
+
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("storeId", storeId)
                .WhereEqualTo("closed", true)
+               .WhereGreaterThanOrEqualTo("openedAtNumber", date)
                .Listen(TableOpeningsCallback);
         }
         private static Action<QuerySnapshot> TableOpeningsCallback = (snapshot) =>
         {
             try
             {
-                var filteredDocuments = snapshot.Documents.Where(d => d.CreateTime >=
-                                    Timestamp.FromDateTime(DateTime.UtcNow.AddDays(-3)));
-
-                foreach (var document in filteredDocuments)
+                foreach (var document in snapshot.Documents)
                 {
                     TableOpeningFamily to = document.ConvertTo<TableOpeningFamily>();
                     if (to.Closed && !to.ClosedPrinted)
@@ -163,7 +163,7 @@ namespace Dominio
 
             foreach (var item in orden.Items)
             {
-                
+
                 text += $"{item.Name} x{item.Quantity} $ {(item.SubTotal)}\n " + options + "\n";
                 calculatedTotal = calculatedTotal + item.SubTotal * item.Quantity;
                 comment += item.GuestComment + " - ";
@@ -195,7 +195,7 @@ namespace Dominio
                     float xPos = 35;
                     int count = 0;
                     float leftMargin = args.MarginBounds.Left;
-                    float topMargin = args.MarginBounds.Top; 
+                    float topMargin = args.MarginBounds.Top;
                     string title = "Nueva órden de reserva";
                     string line = $"\n\n\nCliente: {orden.UserName}\n\n{text}\n\n** {comment} \n\nServir en mesa: {orden.Address}\n\nTotal: ${calculatedTotal}";
 
@@ -334,13 +334,43 @@ namespace Dominio
         }
         private static void BookingsListen(string storeId)
         {
+            //When new booking is created
             _db.Collection("bookings")
                .WhereEqualTo("store.id", storeId)
                .OrderByDescending("updatedAt")
                .Limit(1)
-               .Listen(BookingsCallback);
+               .Listen(BookingsAceptedCallback);
+
+            //When booking is cancelled
+            _db.Collection("bookings")
+               .WhereEqualTo("store.id", storeId)
+               .WhereEqualTo("bookingState", "cancelada")
+               .Listen(BookingsCancelCallback);
         }
-        private static Action<QuerySnapshot> BookingsCallback = async (snapshot) =>
+        private static Action<QuerySnapshot> BookingsCancelCallback = async (snapshot) =>
+        {
+            try
+            {
+                foreach (var document in snapshot.Documents)
+                {
+                    Booking booking = document.ConvertTo<Booking>();
+                    User user = null;
+                    var snapshotUser = await _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync();
+                    if (snapshotUser.Exists)
+                        user = snapshotUser.ConvertTo<User>();
+                    if (!booking.PrintedCancelled)
+                    {
+                        await SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.CANCELLED);
+                        PrintBooking(booking, user);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = LogErrorAsync(ex.Message);
+            }
+        };
+        private static Action<QuerySnapshot> BookingsAceptedCallback = async (snapshot) =>
         {
             try
             {
@@ -350,9 +380,9 @@ namespace Dominio
                 var snapshotUser = await _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync();
                 if (snapshotUser.Exists)
                     user = snapshotUser.ConvertTo<User>();
-                if (!booking.Printed && booking.BookingNumber.ToString().Length == 8)
+                if (!booking.PrintedAccepted)
                 {
-                    _ = SetBookingPrintedAsync(document.Id);
+                    await SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED);
                     PrintBooking(booking, user);
                 }
             }
@@ -361,9 +391,12 @@ namespace Dominio
                 _ = LogErrorAsync(ex.Message);
             }
         };
-        private static Task<Google.Cloud.Firestore.WriteResult> SetBookingPrintedAsync(string doc)
+        private static Task<Google.Cloud.Firestore.WriteResult> SetBookingPrintedAsync(string doc, Booking.PRINT_TYPE type)
         {
-            return _db.Collection("bookings").Document(doc).UpdateAsync("printed", true);
+            return _db.Collection("bookings")
+                      .Document(doc)
+                      .UpdateAsync(type == Booking.PRINT_TYPE.ACCEPTED ? "printedAccepted"
+                                                                       : "printedCancelled", true);
         }
         private static void PrintBooking(Booking booking, User user, object sender, PrintPageEventArgs ev)
         {
@@ -391,6 +424,16 @@ namespace Dominio
             ev.Graphics.DrawString(line, printFont, Brushes.Black, xPos, yPos, new StringFormat());
         }
         #endregion
+
+        private static Task<string> GetTakeAwayComments(string takeAwayOpeningId)
+        {
+            return Task.Run(async () =>
+            {
+                var snapshot = await _db.Collection("takeAwayOpenings").Document(takeAwayOpeningId).GetSnapshotAsync();
+                var takeAway = snapshot.ToDictionary();
+                return takeAway["observations"].ToString();
+            });
+        }
 
         #region LOG
         private static Task LogErrorAsync(string error)
