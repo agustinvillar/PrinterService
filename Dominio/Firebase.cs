@@ -429,6 +429,9 @@ namespace Dominio
         {
             return Task.Run(async () =>
             {
+                if (string.IsNullOrEmpty(takeAwayOpeningId))
+                    return string.Empty;
+
                 var snapshot = await _db.Collection("takeAwayOpenings").Document(takeAwayOpeningId).GetSnapshotAsync();
                 var takeAway = snapshot.ToDictionary();
                 return takeAway["observations"].ToString();
