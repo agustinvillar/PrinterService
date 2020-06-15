@@ -15,8 +15,6 @@ namespace Dominio
         public string Address { get; set; }
         [FirestoreProperty("printed")]
         public bool Printed { get; set; }
-        [FirestoreProperty("bookingId")]
-        public int BookingId { get; set; }
         [FirestoreProperty("items")]
         public Item[] Items { get; set; }
         [FirestoreProperty("madeAt")]

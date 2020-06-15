@@ -194,6 +194,7 @@ namespace Dominio
                 var y = PrintLogo(args);
                 y = PrintTitle(args, "Nueva órden de reserva", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
+                y = PrintText(args, text, y);
                 y = PrintText(args, $"Observaciones: {comment}", y);
                 y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
                 y = PrintText(args, $"Total: $ {calculatedTotal}", y);
@@ -203,6 +204,7 @@ namespace Dominio
                 var y = PrintLogo(args);
                 y = PrintTitle(args, "Nuevo Take Away", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
+                y = PrintText(args, text, y);
                 y = PrintText(args, $"Observaciones: {comment}", y);
                 y = PrintText(args, $"Hora del retiro: {orden.TakeAwayHour}", y);
                 y = PrintText(args, $"Total: $ {calculatedTotal}", y);
@@ -398,7 +400,11 @@ namespace Dominio
 
                 var snapshot = await _db.Collection("takeAwayOpenings").Document(takeAwayOpeningId).GetSnapshotAsync();
                 var takeAway = snapshot.ToDictionary();
-                return takeAway["observations"].ToString();
+
+                if (takeAway.ContainsKey("observations"))
+                    return takeAway["observations"].ToString();
+
+                return string.Empty;
             });
         }
         public static Task<List<Store>> GetStores()
@@ -422,7 +428,7 @@ namespace Dominio
         {
             Image img = Image.FromFile(AppDomain.CurrentDomain.BaseDirectory + "\\logo.png");
             Point loc = new Point(50, 0);
-            img = new Bitmap(img, new System.Drawing.Size(img.Width / 15, img.Height / 15));
+            img = new Bitmap(img, new System.Drawing.Size(img.Width / 5, img.Height / 5));
             e.Graphics.DrawImage(img, loc);
             return img.Height + 10;
         }

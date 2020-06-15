@@ -21,7 +21,7 @@ namespace Dominio
         [FirestoreProperty("size")]
         public Size Size { get; set; }
         [FirestoreProperty("subTotal")]
-        public int SubTotal { get; set; }
+        public double SubTotal { get; set; }
         [FirestoreProperty("thumbnail")]
         public string Thumbnail { get; set; }
         [FirestoreProperty("guestComment")]
