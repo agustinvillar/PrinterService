@@ -22,6 +22,9 @@ namespace Dominio
         private static string _printerName;
         private static FirestoreDb _db;
 
+        private const string TAKE_AWAY = "TAKEAWAY";
+        private const string RESERVA = "RESERVA";
+        private const string MESAS = "MESAS";
 
         private static FirestoreDb AccessDatabaseProduction()
         {
@@ -147,46 +150,62 @@ namespace Dominio
         #region ORDER FAMILY
         private static void PrintOrder(Orders orden, object sender, PrintPageEventArgs args)
         {
-            Font printFont = new Font("Arial", 13);
-            var text = string.Empty;
             double calculatedTotal = 0;
+            string text = string.Empty;
             string comment = string.Empty;
             string options = string.Empty;
 
             foreach (var item in orden.Items)
             {
-                text += $"{item.Name} x{item.Quantity} $ {(item.SubTotal)}\n " + options + "\n";
+                if (item.Options != null)
+                    foreach (var option in item.Options)
+                        if (option != null)
+                            options += option.Name + " - ";
+
+                text += $"{item.Name} x{item.Quantity} {options} $ {item.SubTotal} {Environment.NewLine}";
                 calculatedTotal = calculatedTotal + item.SubTotal * item.Quantity;
                 comment += item.GuestComment + " - ";
             }
 
-            if (orden != null && orden.OrderType != null)
+            if (orden != null && orden.GuestComment != null)
+                comment += orden.GuestComment;
+
+            bool orderOk = orden != null && orden.OrderType != null;
+
+            if (orderOk && orden.OrderType.ToUpper().Trim() == TAKE_AWAY)
             {
-                if (orden.OrderType.ToUpper().Trim() == "MESAS")
-                {
-                    var y = PrintLogo(args);
-                    y = PrintTitle(args, "Nueva órden de mesa", y);
-                    y = PrintText(args, $"Cliente: {orden.UserName}", y);
-                    y = PrintText(args, text, y);
-                    y = PrintText(args, comment, y);
-                    y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
-                }
-                else if (orden.OrderType.ToUpper().Trim() == "RESERVA")
-                {
-                    var y = PrintLogo(args);
-                    y = PrintTitle(args, "Nueva órden de reserva", y);
-                    y = PrintText(args, $"Cliente: {orden.UserName}", y);
-                    y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
-                    y = PrintText(args, $"Total: $ {calculatedTotal}", y);
-                }
-                else if (orden.OrderType.ToUpper().Trim() == "TAKEAWAY")
-                {
-                    var y = PrintLogo(args);
-                    y = PrintTitle(args, "Nuevo Take Away", y);
-                    y = PrintText(args, $"Cliente: {orden.UserName}", y);
-                    y = PrintText(args, $"Hora del retiro: {orden.TakeAwayHour}", y);
-                    y = PrintText(args, $"Total: $ {calculatedTotal}", y);
-                }
+                var task = GetTakeAwayComments(orden.TableOpeningFamilyId);
+                task.Wait();
+                comment += task.Result;
+            }
+
+            if (orderOk && orden.OrderType.ToUpper().Trim() == MESAS)
+            {
+                text = text.Substring(0, text.Length - 2); //Saco el \n
+                var y = PrintLogo(args);
+                y = PrintTitle(args, "Nueva órden de mesa", y);
+                y = PrintText(args, $"Cliente: {orden.UserName}", y);
+                y = PrintText(args, text, y);
+                y = PrintText(args, $"Observaciones: {comment}", y);
+                y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
+            }
+            else if (orderOk && orden.OrderType.ToUpper().Trim() == RESERVA)
+            {
+                var y = PrintLogo(args);
+                y = PrintTitle(args, "Nueva órden de reserva", y);
+                y = PrintText(args, $"Cliente: {orden.UserName}", y);
+                y = PrintText(args, $"Observaciones: {comment}", y);
+                y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
+                y = PrintText(args, $"Total: $ {calculatedTotal}", y);
+            }
+            else if (orderOk && orden.OrderType.ToUpper().Trim() == TAKE_AWAY)
+            {
+                var y = PrintLogo(args);
+                y = PrintTitle(args, "Nuevo Take Away", y);
+                y = PrintText(args, $"Cliente: {orden.UserName}", y);
+                y = PrintText(args, $"Observaciones: {comment}", y);
+                y = PrintText(args, $"Hora del retiro: {orden.TakeAwayHour}", y);
+                y = PrintText(args, $"Total: $ {calculatedTotal}", y);
             }
         }
         private static void OrderFamilyListen(string storeId)
@@ -267,6 +286,7 @@ namespace Dominio
             y = PrintTitle(args, "Apertura de mesa", y);
             y = PrintText(args, "Número de mesa: " + tableOpening.TableNumberId, y);
             y = PrintText(args, "Fecha: " + tableOpening.OpenedAt, y);
+            y = PrintText(args, "Comentarios: " + tableOpening.BookingObservations, y);
             y = PrintText(args, "Número de Personas: " + tableOpening.ActiveGuestQuantity, y);
         }
         #endregion
@@ -411,13 +431,14 @@ namespace Dominio
             Font font = new Font("Arial", 13, FontStyle.Bold);
             Font variationsFont = new Font("Arial", 9, FontStyle.Italic);
             e.Graphics.DrawString(title, font, Brushes.Black, 50, y);
-            return y + 30;
+            return y + 30;  //Posicion actual mas el salto de linea.
         }
         private static int PrintText(PrintPageEventArgs e, string line, int y)
         {
             Font font = new Font("Arial", 11);
-            e.Graphics.DrawString(line + "\n", font, Brushes.Black, 0, y);
-            return y + 15;
+            SizeF sizeF = e.Graphics.MeasureString(line, font, 300);
+            e.Graphics.DrawString(line, font, Brushes.Black, new RectangleF(new PointF(0, y), sizeF));
+            return y + (int)sizeF.Height; //Posicion actual mas el salto de linea.
         }
 
         #region LOG

@@ -35,6 +35,9 @@ namespace Dominio
         [FirestoreProperty("closedPrinted")]
         public bool ClosedPrinted { get; set; }
 
+        [FirestoreProperty("bookingObservations")]
+        public string BookingObservations { get; set; }
+
         public enum PRINTED_EVENT
         {
             OPENING,

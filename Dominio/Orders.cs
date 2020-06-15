@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,13 +29,12 @@ namespace Dominio
         public string OrderType { get; set; }
         [FirestoreProperty("status")]
         public string Status { get; set; }
-        [FirestoreProperty("tableOpeningId")]
-        public string TableOpeningId { get; set; }
+        [FirestoreProperty("tableOpeningFamilyId")]
+        public string TableOpeningFamilyId { get; set; }
         [FirestoreProperty("takeAwayHour")]
         public string TakeAwayHour { get; set; }
         [FirestoreProperty("total")]
         public double Total { get; set; }
-
         [FirestoreProperty("subTotal")]
         public double SubTotal { get; set; }
         [FirestoreProperty("updatedAt")]
@@ -43,7 +43,6 @@ namespace Dominio
         public string UserId { get; set; }
         [FirestoreProperty("userName")]
         public string UserName { get; set; }
-
         [FirestoreProperty("guestComment")]
         public string GuestComment { get; set; }
     }
