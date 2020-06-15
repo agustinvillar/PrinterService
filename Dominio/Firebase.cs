@@ -21,6 +21,7 @@ namespace Dominio
     {
         private static string _printerName;
         private static FirestoreDb _db;
+        private static bool _clean;
 
         private const string TAKE_AWAY = "TAKEAWAY";
         private const string RESERVA = "RESERVA";
@@ -73,10 +74,11 @@ namespace Dominio
             OrderFamilyListen(storeId);
             TableOpeningsListen(storeId);
         }
-        public static Task RunAsync()
+        public static Task RunAsync(bool clean)
         {
             return Task.Run(() =>
             {
+                _clean = clean;
                 Init();
                 var storeId = ConfigurationManager.AppSettings["StoreID"];
 
@@ -128,11 +130,13 @@ namespace Dominio
         }
         private static void PrintCloseTableFamily(TableOpeningFamily tableOpening)
         {
+            if (_clean)
+                return;
+
             PrintDocument pd = new PrintDocument();
             pd.PrinterSettings.PrinterName = _printerName;
             pd.PrintPage += (sender, args) => PrintCloseTableFamily(tableOpening, sender, args);
             pd.Print();
-            Console.WriteLine("SE CIERRA TO");
         }
         private static void PrintCloseTableFamily(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
         {
@@ -241,11 +245,13 @@ namespace Dominio
         }
         private static void PrintOrder(Orders order)
         {
+            if (_clean)
+                return;
+
             PrintDocument pd = new PrintDocument();
             pd.PrinterSettings.PrinterName = _printerName;
             pd.PrintPage += (sender, args) => PrintOrder(order, sender, args);
             pd.Print();
-            Console.WriteLine("SE IMPRIME ORDEN");
         }
         #endregion
 
@@ -276,11 +282,13 @@ namespace Dominio
         };
         private static void PrintLastTableOpening(TableOpeningFamily to)
         {
+            if (_clean)
+                return;
+
             PrintDocument pd = new PrintDocument();
             pd.PrinterSettings.PrinterName = _printerName;
             pd.PrintPage += (sender, args) => PrintLastTableOpening(to, sender, args);
             pd.Print();
-            Console.WriteLine("SE ABRE TO");
         }
         private static void PrintLastTableOpening(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
         {
@@ -296,11 +304,13 @@ namespace Dominio
         #region BOOKINGS
         private static void PrintBooking(Booking booking, User user)
         {
+            if (_clean)
+                return;
+
             PrintDocument pd = new PrintDocument();
             pd.PrinterSettings.PrinterName = ConfigurationManager.AppSettings["PrinterName"];
             pd.PrintPage += (sender, args) => PrintBooking(booking, user, sender, args);
             pd.Print();
-            Console.WriteLine("IMPRIME BOOKING");
         }
         private static void BookingsListen(string storeId)
         {

@@ -15,8 +15,11 @@ namespace MenooPrinterService
         private Timer splashTimer;
         private Timer progressBarTimer;
         private bool runWithSettings;
-        public Splash(bool runWithSettings)
+        private bool clean;
+
+        public Splash(bool runWithSettings, bool clean)
         {
+            this.clean = clean;
             this.runWithSettings = runWithSettings;
             InitializeComponent();
             Init();
@@ -48,7 +51,7 @@ namespace MenooPrinterService
         public void tmr_Tick(object sender, EventArgs e)
         {
             splashTimer.Stop();
-            MenooPrinter menooPrinter = new MenooPrinter(this, runWithSettings);
+            MenooPrinter menooPrinter = new MenooPrinter(this, this.runWithSettings, this.clean);
             menooPrinter.Show();
             this.Hide();
         }
@@ -58,7 +61,7 @@ namespace MenooPrinterService
             {
                 this.progressBar.Value += 40;
             }
-            catch (Exception ex)
+            catch
             {
                 this.progressBar.Value = this.progressBar.Maximum;
             }

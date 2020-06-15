@@ -15,9 +15,11 @@ namespace MenooPrinterService
     public partial class Confirmar : Form
     {
         private string[] Printers;
+        private readonly bool clean;
 
-        public Confirmar()
+        public Confirmar(bool clean)
         {
+            this.clean = clean;
             InitializeComponent();
             Init();
         }
@@ -71,7 +73,7 @@ namespace MenooPrinterService
 
                 config.Save(ConfigurationSaveMode.Modified);
 
-                Firebase.RunAsync();
+                Firebase.RunAsync(this.clean);
             });
         }
 

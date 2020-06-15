@@ -23,10 +23,11 @@ namespace MenooPrinterService
                 return;
             }
             bool runWithSettings = args != null && args.Any(a => a.Contains("settings"));
+            bool clean = args != null && args.Any(a => a.Contains("clean"));
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Splash(runWithSettings));
+            Application.Run(new Splash(runWithSettings, clean));
         }
     }
 }
