@@ -14,17 +14,17 @@ namespace MenooPrinterService
     public partial class MenooPrinter : Form
     {
         private readonly Form splash;
-        public MenooPrinter(Form splash, bool runWithoutSettings)
+        public MenooPrinter(Form splash, bool runWithSettings)
         {
             InitializeComponent();
-            Init(runWithoutSettings);
+            Init(runWithSettings);
             this.splash = splash;
         }
-        private void Init(bool runWithoutSettings)
+        private void Init(bool runWithSettings)
         {
             try
             {
-                if (runWithoutSettings)
+                if (runWithSettings)
                 {
                     Confirmar confirmar = new Confirmar();
                     confirmar.Show();

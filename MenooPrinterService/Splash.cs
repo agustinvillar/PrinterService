@@ -14,10 +14,10 @@ namespace MenooPrinterService
     {
         private Timer splashTimer;
         private Timer progressBarTimer;
-        private bool runWithoutSettings;
-        public Splash(bool runWithoutSettings)
+        private bool runWithSettings;
+        public Splash(bool runWithSettings)
         {
-            this.runWithoutSettings = runWithoutSettings;
+            this.runWithSettings = runWithSettings;
             InitializeComponent();
             Init();
         }
@@ -48,7 +48,7 @@ namespace MenooPrinterService
         public void tmr_Tick(object sender, EventArgs e)
         {
             splashTimer.Stop();
-            MenooPrinter menooPrinter = new MenooPrinter(this, runWithoutSettings);
+            MenooPrinter menooPrinter = new MenooPrinter(this, runWithSettings);
             menooPrinter.Show();
             this.Hide();
         }

@@ -62,7 +62,8 @@ namespace Dominio
         private static void Init()
         {
             _printerName = ConfigurationManager.AppSettings["PrinterName"];
-            _db = AccessDatabaseTESTING();
+            if (_db == null)
+                _db = AccessDatabaseTESTING();
         }
         private static void StartListen(string storeId)
         {
@@ -435,6 +436,23 @@ namespace Dominio
                 var snapshot = await _db.Collection("takeAwayOpenings").Document(takeAwayOpeningId).GetSnapshotAsync();
                 var takeAway = snapshot.ToDictionary();
                 return takeAway["observations"].ToString();
+            });
+        }
+        public static Task<List<Store>> GetStores()
+        {
+            return Task.Run(async () =>
+            {
+                Init();
+
+                List<Store> stores = new List<Store>();
+                var snapshot = await _db.Collection("stores").GetSnapshotAsync();
+                foreach (var doc in snapshot.Documents)
+                {
+                    var store = doc.ToDictionary();
+                    var storeName = store.ContainsKey("name") ? store["name"].ToString() : string.Empty; ;
+                    stores.Add(new Store { Id = doc.Id, Name = storeName });
+                }
+                return stores;
             });
         }
 

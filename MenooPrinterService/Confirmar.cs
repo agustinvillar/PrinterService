@@ -29,6 +29,15 @@ namespace MenooPrinterService
             this.LoadInfo();
         }
 
+        private async Task LoadStores()
+        {
+            DdlStores.Enabled = false;
+            DdlStores.DataSource = await Firebase.GetStores();
+            DdlStores.ValueMember = "Id";
+            DdlStores.DisplayMember = "Name";
+            DdlStores.Enabled = true;
+        }
+
         private Task<string[]> LoadPrintersAsync()
         {
             return Task.Run(() =>
@@ -41,10 +50,11 @@ namespace MenooPrinterService
             });
         }
 
-        private void LoadInfo()
+        private async void LoadInfo()
         {
             this.DdlImpresoras.SelectedIndex = this.DdlImpresoras.FindStringExact(ConfigurationManager.AppSettings["PrinterName"]);
-            this.TxtRestoId.Text = ConfigurationManager.AppSettings["StoreID"];
+            await this.LoadStores();
+            this.DdlStores.SelectedValue = ConfigurationManager.AppSettings["StoreID"];
         }
 
         private Task ConfirmRunAsync(string printer, string storeId)
@@ -75,8 +85,14 @@ namespace MenooPrinterService
                 if (dialog == DialogResult.Yes)
                 {
                     string printer = this.DdlImpresoras.SelectedValue.ToString();
-                    string storeId = this.TxtRestoId.Text;
+                    string storeId = this.DdlStores.SelectedValue.ToString();
+                    Store store = this.DdlStores.SelectedItem as Store;
+                    string storeName = store == null ? string.Empty : store.Name;
+
                     ConfirmRunAsync(printer, storeId);
+
+                    MessageBox.Show($"Se configuró el resto {storeName} con la impresora {printer}",
+                        "Menoo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else
                 {
