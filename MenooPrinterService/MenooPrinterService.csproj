@@ -175,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.png" />
+    <Content Include="logo.png" />
     <Content Include="menooIcon.ico" />
     <Content Include="menooLogo.png" />
   </ItemGroup>

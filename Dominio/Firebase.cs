@@ -21,9 +21,7 @@ namespace Dominio
     {
         private static string _printerName;
         private static FirestoreDb _db;
-        private static Font titleFont = new Font("Arial", 13, FontStyle.Bold);
-        private static Font bodyFont = new Font("Arial", 11);
-        private static Font variationsFont = new Font("Arial", 9, FontStyle.Italic);
+
 
         private static FirestoreDb AccessDatabaseProduction()
         {
@@ -135,21 +133,14 @@ namespace Dominio
         }
         private static void PrintCloseTableFamily(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
         {
-            var printFont = new Font("Arial", 13);
-            float yPos;
-            float xPos = 20;
-            int count = 0;
-            float leftMargin = args.MarginBounds.Left;
-            float topMargin = args.MarginBounds.Top;
-            string line = string.Empty;
+            var y = PrintLogo(args);
             if (tableOpening.Closed)
             {
-                line = "Mesa cerrada" + "\n" + "\n" + "Número de mesa: " + tableOpening.TableNumberId + "\n" + "\n" +
-                              "Fecha: " + tableOpening.ClosedAt + "\n" + "\n" + "Total: $ " + tableOpening.TotalToPay;
+                y = PrintTitle(args, "Mesa cerrada", y);
+                y = PrintText(args, "Número de mesa: " + tableOpening.TableNumberId, y);
+                y = PrintText(args, "Fecha: " + tableOpening.ClosedAt, y);
+                y = PrintText(args, "Total: $ " + tableOpening.TotalToPay, y);
             }
-
-            yPos = topMargin + (count * printFont.GetHeight(args.Graphics));
-            args.Graphics.DrawString(line, printFont, Brushes.Black, xPos, yPos, new StringFormat());
         }
         #endregion
 
@@ -164,7 +155,6 @@ namespace Dominio
 
             foreach (var item in orden.Items)
             {
-
                 text += $"{item.Name} x{item.Quantity} $ {(item.SubTotal)}\n " + options + "\n";
                 calculatedTotal = calculatedTotal + item.SubTotal * item.Quantity;
                 comment += item.GuestComment + " - ";
@@ -174,63 +164,28 @@ namespace Dominio
             {
                 if (orden.OrderType.ToUpper().Trim() == "MESAS")
                 {
-                    float yPos;
-                    float xPos = 35;
-                    int count = 0;
-                    float leftMargin = args.MarginBounds.Left;
-                    float topMargin = args.MarginBounds.Top;
-                    string title = "Nueva órden de mesa";
-                    string line = $"\n\n\nCliente: {orden.UserName}\n\n{text}\n\n**  {comment} \n\nServir en mesa: {orden.Address}\n\n";
-
-                    yPos = topMargin + (count *
-                       printFont.GetHeight(args.Graphics));
-                    args.Graphics.DrawString(title, titleFont, Brushes.Black,
-                        xPos, 0, new StringFormat());
-                    args.Graphics.DrawString(line, bodyFont, Brushes.Black,
-                       xPos, 0, new StringFormat());
+                    var y = PrintLogo(args);
+                    y = PrintTitle(args, "Nueva órden de mesa", y);
+                    y = PrintText(args, $"Cliente: {orden.UserName}", y);
+                    y = PrintText(args, text, y);
+                    y = PrintText(args, comment, y);
+                    y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
                 }
                 else if (orden.OrderType.ToUpper().Trim() == "RESERVA")
                 {
-                    float linesPerPage = 0;
-                    float yPos = 0;
-                    float xPos = 35;
-                    int count = 0;
-                    float leftMargin = args.MarginBounds.Left;
-                    float topMargin = args.MarginBounds.Top;
-                    string title = "Nueva órden de reserva";
-                    string line = $"\n\n\nCliente: {orden.UserName}\n\n{text}\n\n** {comment} \n\nServir en mesa: {orden.Address}\n\nTotal: ${calculatedTotal}";
-
-                    linesPerPage = args.MarginBounds.Height /
-                       printFont.GetHeight(args.Graphics);
-
-                    yPos = topMargin + (count *
-                       printFont.GetHeight(args.Graphics));
-                    args.Graphics.DrawString(title, titleFont, Brushes.Black,
-                        xPos, 0, new StringFormat());
-                    args.Graphics.DrawString(line, bodyFont, Brushes.Black,
-                        xPos, 0, new StringFormat());
+                    var y = PrintLogo(args);
+                    y = PrintTitle(args, "Nueva órden de reserva", y);
+                    y = PrintText(args, $"Cliente: {orden.UserName}", y);
+                    y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
+                    y = PrintText(args, $"Total: $ {calculatedTotal}", y);
                 }
                 else if (orden.OrderType.ToUpper().Trim() == "TAKEAWAY")
                 {
-                    float linesPerPage = 0;
-                    float yPos = 0;
-                    float xPos = 35;
-                    int count = 0;
-                    float leftMargin = args.MarginBounds.Left;
-                    float topMargin = args.MarginBounds.Top;
-                    string title = "Nuevo Take Away";
-                    string line =
-                        $"\n\n\nCliente: {orden.UserName}\n\n{text}\n\n** {comment} \n\nHora del retiro: {orden.TakeAwayHour}\n\nTotal: ${calculatedTotal}";
-
-                    linesPerPage = args.MarginBounds.Height /
-                       printFont.GetHeight(args.Graphics);
-
-                    yPos = topMargin + (count *
-                       printFont.GetHeight(args.Graphics));
-                    args.Graphics.DrawString(title, titleFont, Brushes.Black,
-                        xPos, 0, new StringFormat());
-                    args.Graphics.DrawString(line, bodyFont, Brushes.Black,
-                        xPos, 0, new StringFormat());
+                    var y = PrintLogo(args);
+                    y = PrintTitle(args, "Nuevo Take Away", y);
+                    y = PrintText(args, $"Cliente: {orden.UserName}", y);
+                    y = PrintText(args, $"Hora del retiro: {orden.TakeAwayHour}", y);
+                    y = PrintText(args, $"Total: $ {calculatedTotal}", y);
                 }
             }
         }
@@ -308,19 +263,11 @@ namespace Dominio
         }
         private static void PrintLastTableOpening(TableOpeningFamily tableOpening, object sender, PrintPageEventArgs args)
         {
-            var printFont = new Font("Arial", 13);
-            float yPos;
-            float xPos = 20;
-            int count = 0;
-            float leftMargin = args.MarginBounds.Left;
-            float topMargin = args.MarginBounds.Top;
-            string line;
-
-            line = "Apertura de mesa" + "\n" + "\n" + "Número de mesa: " + tableOpening.TableNumberId + "\n" + "\n" +
-                   "Fecha: " + tableOpening.OpenedAt + "\n" + "\n" + "Número de Personas: " + tableOpening.ActiveGuestQuantity;
-
-            yPos = topMargin + (count * printFont.GetHeight(args.Graphics));
-            args.Graphics.DrawString(line, printFont, Brushes.Black, xPos, yPos, new StringFormat());
+            var y = PrintLogo(args);
+            y = PrintTitle(args, "Apertura de mesa", y);
+            y = PrintText(args, "Número de mesa: " + tableOpening.TableNumberId, y);
+            y = PrintText(args, "Fecha: " + tableOpening.OpenedAt, y);
+            y = PrintText(args, "Número de Personas: " + tableOpening.ActiveGuestQuantity, y);
         }
         #endregion
 
@@ -401,28 +348,24 @@ namespace Dominio
         }
         private static void PrintBooking(Booking booking, User user, object sender, PrintPageEventArgs ev)
         {
-            var printFont = new Font("Arial", 12);
-            float yPos;
-            float xPos = 20;
-            int count = 0;
-            float leftMargin = ev.MarginBounds.Left;
-            float topMargin = ev.MarginBounds.Top;
-            string line;
+            var y = PrintLogo(ev);
 
             if (booking.BookingState == "cancelada")
             {
-                line = "Reserva cancelada" + "\n" + "\n" + "Nro: " + booking.BookingNumber + "\n" + "\n" + "Fecha: " +
-                       booking.BookingDate + "\n" + "\n" + "Cliente: " + user.Name;
+                y = PrintTitle(ev, "Reserva cancelada", y);
+                y = PrintText(ev, "Nro: " + booking.BookingNumber, y);
+                y = PrintText(ev, "Fecha: " + booking.BookingDate, y);
+                y = PrintText(ev, "Cliente: " + user.Name, y);
             }
             else
             {
-                line = "Nueva reserva" + "\n" + "\n" + "Nro: " + booking.BookingNumber + "\n" + "\n" +
-                       "Cantidad de personas: " + booking.GuestQuantity + "\n" + "\n" + "Fecha: " + booking.BookingDate +
-                       "\n" + "\n" + "Cliente: " + user.Name + "\n" + "\n" + "Comentario: " + booking.BookingObservations;
+                y = PrintTitle(ev, "Nueva reserva", y);
+                y = PrintText(ev, "Nro: " + booking.BookingNumber, y);
+                y = PrintText(ev, "Cantidad de personas: " + booking.GuestQuantity, y);
+                y = PrintText(ev, "Fecha: " + booking.BookingDate, y);
+                y = PrintText(ev, "Cliente: " + user.Name, y);
+                y = PrintText(ev, "Comentario: " + booking.BookingObservations, y);
             }
-
-            yPos = topMargin + (count * printFont.GetHeight(ev.Graphics));
-            ev.Graphics.DrawString(line, printFont, Brushes.Black, xPos, yPos, new StringFormat());
         }
         #endregion
 
@@ -454,6 +397,27 @@ namespace Dominio
                 }
                 return stores;
             });
+        }
+        private static int PrintLogo(PrintPageEventArgs e)
+        {
+            Image img = Image.FromFile(AppDomain.CurrentDomain.BaseDirectory + "\\logo.png");
+            Point loc = new Point(50, 0);
+            img = new Bitmap(img, new System.Drawing.Size(img.Width / 15, img.Height / 15));
+            e.Graphics.DrawImage(img, loc);
+            return img.Height + 10;
+        }
+        private static int PrintTitle(PrintPageEventArgs e, string title, int y)
+        {
+            Font font = new Font("Arial", 13, FontStyle.Bold);
+            Font variationsFont = new Font("Arial", 9, FontStyle.Italic);
+            e.Graphics.DrawString(title, font, Brushes.Black, 50, y);
+            return y + 30;
+        }
+        private static int PrintText(PrintPageEventArgs e, string line, int y)
+        {
+            Font font = new Font("Arial", 11);
+            e.Graphics.DrawString(line + "\n", font, Brushes.Black, 0, y);
+            return y + 15;
         }
 
         #region LOG
