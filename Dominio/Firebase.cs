@@ -358,9 +358,11 @@ namespace Dominio
                 Booking booking = document.ConvertTo<Booking>();
                 User user = null;
                 var snapshotUser = await _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync();
+               
                 if (snapshotUser.Exists)
                     user = snapshotUser.ConvertTo<User>();
-                if (!booking.PrintedAccepted)
+
+                if (booking != null && !booking.PrintedAccepted && booking.BookingNumber.ToString().Length == 8)
                 {
                     await SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED);
                     PrintBooking(booking, user);
