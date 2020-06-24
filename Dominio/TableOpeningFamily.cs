@@ -19,10 +19,6 @@ namespace Dominio
         [FirestoreProperty("tableNumberId")]
         public int TableNumberId { get; set; }
 
-        [FirestoreProperty("activeGuestQuantity")]
-
-        public int ActiveGuestQuantity { get; set; }
-
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }
 
@@ -37,6 +33,8 @@ namespace Dominio
 
         [FirestoreProperty("bookingObservations")]
         public string BookingObservations { get; set; }
+        [FirestoreProperty("totalToPayWithPropina")]
+        public double TotalToPayWithPropina { get; set; }
 
         public enum PRINTED_EVENT
         {

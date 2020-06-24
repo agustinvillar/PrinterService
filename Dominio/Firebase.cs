@@ -14,6 +14,7 @@ using System.Configuration;
 using System.Drawing.Printing;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Microsoft.SqlServer.Server;
 
 namespace Dominio
 {
@@ -146,7 +147,7 @@ namespace Dominio
                 y = PrintTitle(args, "Mesa cerrada", y);
                 y = PrintText(args, "Número de mesa: " + tableOpening.TableNumberId, y);
                 y = PrintText(args, "Fecha: " + tableOpening.ClosedAt, y);
-                y = PrintText(args, "Total: $ " + tableOpening.TotalToPay, y);
+                y = PrintText(args, "Total: $ " + tableOpening.TotalToPayWithPropina, y);
             }
         }
         #endregion
@@ -158,6 +159,7 @@ namespace Dominio
             string text = string.Empty;
             string comment = string.Empty;
             string options = string.Empty;
+            string textForComments = string.Empty;
 
             foreach (var item in orden.Items)
             {
@@ -166,13 +168,15 @@ namespace Dominio
                         if (option != null)
                             options += option.Name + " - ";
 
-                text += $"{item.Name} x{item.Quantity} {options} $ {item.SubTotal} {Environment.NewLine}";
+                text += $"{item.Name} x{item.Quantity} {options} $ {item.SubTotal} {Environment.NewLine} - ";
                 calculatedTotal = calculatedTotal + item.SubTotal * item.Quantity;
                 comment += item.GuestComment + " - ";
             }
 
-            if (orden != null && orden.GuestComment != null)
+            if (orden != null && orden.GuestComment != "")
                 comment += orden.GuestComment;
+
+            text = GetSeparatedComments(comment, text);
 
             bool orderOk = orden != null && orden.OrderType != null;
 
@@ -181,7 +185,16 @@ namespace Dominio
                 var task = GetTakeAwayComments(orden.TableOpeningFamilyId);
                 task.Wait();
                 comment += task.Result;
+
+
+                foreach (var item in orden.Items)
+                {
+                    textForComments += $"{item.Name} x{item.Quantity} {options}$ {item.SubTotal} - ";
+                }
+
+                textForComments = GetSeparatedComments(comment, textForComments);
             }
+
 
             if (orderOk && orden.OrderType.ToUpper().Trim() == MESAS)
             {
@@ -190,7 +203,7 @@ namespace Dominio
                 y = PrintTitle(args, "Nueva órden de mesa", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
                 y = PrintText(args, text, y);
-                y = PrintText(args, $"Observaciones: {comment}", y);
+                //y = PrintText(args, $"Observaciones: {comment}", y);
                 y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
             }
             else if (orderOk && orden.OrderType.ToUpper().Trim() == RESERVA)
@@ -198,8 +211,9 @@ namespace Dominio
                 var y = PrintLogo(args);
                 y = PrintTitle(args, "Nueva órden de reserva", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
+                
                 y = PrintText(args, text, y);
-                y = PrintText(args, $"Observaciones: {comment}", y);
+                //y = PrintText(args, $"Observaciones: {comment}", y);
                 y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
                 y = PrintText(args, $"Total: $ {calculatedTotal}", y);
             }
@@ -208,12 +222,25 @@ namespace Dominio
                 var y = PrintLogo(args);
                 y = PrintTitle(args, "Nuevo Take Away", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
-                y = PrintText(args, text, y);
-                y = PrintText(args, $"Observaciones: {comment}", y);
+                y = PrintText(args, textForComments, y);
                 y = PrintText(args, $"Hora del retiro: {orden.TakeAwayHour}", y);
                 y = PrintText(args, $"Total: $ {calculatedTotal}", y);
             }
         }
+
+        private static string GetSeparatedComments(string comment, string textForComments)
+        {
+            string[] splittedText = textForComments.Split('-');
+            string[] splittedComments = comment.Split('-');
+            textForComments = "Pedido: ";
+            for (int i = 0; i < splittedText.Length - 1; i++)
+            {
+                textForComments += splittedText[i] + " - " + splittedComments[i] + " ";
+            }
+            textForComments += "\nObservación general: " + splittedComments[splittedComments.Length - 1];
+            return textForComments;
+        }
+
         private static void OrderFamilyListen(string storeId)
         {
             _db.Collection("orderFamily")
@@ -253,10 +280,11 @@ namespace Dominio
             pd.PrintPage += (sender, args) => PrintOrder(order, sender, args);
             pd.Print();
         }
-        #endregion
 
-        #region OPEN TABLEOPENING
-        private static void TableOpeningFamilyListen(string storeId)
+    #endregion
+
+    #region OPEN TABLEOPENING
+    private static void TableOpeningFamilyListen(string storeId)
         {
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("storeId", storeId)
@@ -297,7 +325,6 @@ namespace Dominio
             y = PrintText(args, "Número de mesa: " + tableOpening.TableNumberId, y);
             y = PrintText(args, "Fecha: " + tableOpening.OpenedAt, y);
             y = PrintText(args, "Comentarios: " + tableOpening.BookingObservations, y);
-            y = PrintText(args, "Número de Personas: " + tableOpening.ActiveGuestQuantity, y);
         }
         #endregion
 
