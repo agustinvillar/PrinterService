@@ -21,11 +21,23 @@ namespace Dominio
         [FirestoreProperty("size")]
         public Size Size { get; set; }
         [FirestoreProperty("subTotal")]
-        public int SubTotal { get; set; }
+        public double SubTotal { get; set; }
         [FirestoreProperty("thumbnail")]
         public string Thumbnail { get; set; }
-        //[FirestoreProperty("variations")]
-        //public Variation Variations { get; set; }
+        [FirestoreProperty("guestComment")]
+        public string GuestComment { get; set; }
+        [FirestoreProperty("options")]
+        public ItemOption[] Options { get; set; }
+
+        [FirestoreData]
+        public class ItemOption
+        {
+            [FirestoreProperty("name")]
+            public string Name { get; set; }
+            [FirestoreProperty("price")]
+            public string Price { get; set; }
+
+        }
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +12,11 @@ namespace Dominio
     class Orders
     {
         [FirestoreProperty("address")]
-        public string Address {get; set;}        
-        [FirestoreProperty ("printed")]
+        public string Address { get; set; }
+        [FirestoreProperty("printed")]
         public bool Printed { get; set; }
-        [FirestoreProperty("bookingId")]
-        public int BookingId { get; set; }
         [FirestoreProperty("items")]
-        public  Item[] Items { get; set; }
+        public Item[] Items { get; set; }
         [FirestoreProperty("madeAt")]
         public string MadeAt { get; set; }
         [FirestoreProperty("orderDate")]
@@ -28,13 +27,12 @@ namespace Dominio
         public string OrderType { get; set; }
         [FirestoreProperty("status")]
         public string Status { get; set; }
-        [FirestoreProperty("tableOpeningId")]
-        public string TableOpeningId { get; set; }
+        [FirestoreProperty("tableOpeningFamilyId")]
+        public string TableOpeningFamilyId { get; set; }
         [FirestoreProperty("takeAwayHour")]
         public string TakeAwayHour { get; set; }
         [FirestoreProperty("total")]
         public double Total { get; set; }
-
         [FirestoreProperty("subTotal")]
         public double SubTotal { get; set; }
         [FirestoreProperty("updatedAt")]
@@ -43,7 +41,6 @@ namespace Dominio
         public string UserId { get; set; }
         [FirestoreProperty("userName")]
         public string UserName { get; set; }
-
         [FirestoreProperty("guestComment")]
         public string GuestComment { get; set; }
     }

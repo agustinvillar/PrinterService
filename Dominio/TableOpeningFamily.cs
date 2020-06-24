@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Dominio
 {
     [FirestoreData]
-    class TableOpening
+    public class TableOpeningFamily
     {
         [FirestoreProperty("openedAt")]
         public string OpenedAt { get; set; }
@@ -19,15 +19,27 @@ namespace Dominio
         [FirestoreProperty("tableNumberId")]
         public int TableNumberId { get; set; }
 
-        [FirestoreProperty("activeGuestQuantity")]
-
-        public int ActiveGuestQuantity { get; set; }
-
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }
 
         [FirestoreProperty("totalToPay")]
         public double TotalToPay { get; set; }
 
+        [FirestoreProperty("openPrinted")]
+        public bool OpenPrinted { get; set; }
+
+        [FirestoreProperty("closedPrinted")]
+        public bool ClosedPrinted { get; set; }
+
+        [FirestoreProperty("bookingObservations")]
+        public string BookingObservations { get; set; }
+        [FirestoreProperty("totalToPayWithPropina")]
+        public double TotalToPayWithPropina { get; set; }
+
+        public enum PRINTED_EVENT
+        {
+            OPENING,
+            CLOSING
+        }
     }
 }

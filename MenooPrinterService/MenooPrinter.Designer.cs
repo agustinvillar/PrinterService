@@ -31,7 +31,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MenooPrinter));
             this.Menu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.ajustesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.salirToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.NotifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
@@ -41,30 +40,22 @@
             // Menu
             // 
             this.Menu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ajustesToolStripMenuItem,
             this.infoToolStripMenuItem,
             this.salirToolStripMenuItem});
             this.Menu.Name = "Menu";
-            this.Menu.Size = new System.Drawing.Size(113, 70);
-            // 
-            // ajustesToolStripMenuItem
-            // 
-            this.ajustesToolStripMenuItem.Name = "ajustesToolStripMenuItem";
-            this.ajustesToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
-            this.ajustesToolStripMenuItem.Text = "Ajustes";
-            this.ajustesToolStripMenuItem.Click += new System.EventHandler(this.AjustesToolStripMenuItem_Click);
+            this.Menu.Size = new System.Drawing.Size(181, 70);
             // 
             // infoToolStripMenuItem
             // 
             this.infoToolStripMenuItem.Name = "infoToolStripMenuItem";
-            this.infoToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.infoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.infoToolStripMenuItem.Text = "Info";
             this.infoToolStripMenuItem.Click += new System.EventHandler(this.InfoToolStripMenuItem_Click);
             // 
             // salirToolStripMenuItem
             // 
             this.salirToolStripMenuItem.Name = "salirToolStripMenuItem";
-            this.salirToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.salirToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.salirToolStripMenuItem.Text = "Salir";
             this.salirToolStripMenuItem.Click += new System.EventHandler(this.SalirToolStripMenuItem_Click);
             // 
@@ -97,7 +88,6 @@
         private System.Windows.Forms.ContextMenuStrip Menu;
         private System.Windows.Forms.NotifyIcon NotifyIcon;
         private System.Windows.Forms.ToolStripMenuItem salirToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ajustesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem infoToolStripMenuItem;
     }
 }

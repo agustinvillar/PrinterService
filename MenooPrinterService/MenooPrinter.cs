@@ -14,15 +14,30 @@ namespace MenooPrinterService
     public partial class MenooPrinter : Form
     {
         private readonly Form splash;
-        public MenooPrinter(Form splash)
+        public MenooPrinter(Form splash, bool runWithSettings, bool clean)
         {
             InitializeComponent();
-            Init();
+            Init(runWithSettings, clean);
             this.splash = splash;
         }
-        private async void Init()
+        private void Init(bool runWithSettings, bool clean)
         {
-            await Firebase.Instancia.RunListenOrders();
+            try
+            {
+                if (runWithSettings)
+                {
+                    Confirmar confirmar = new Confirmar(clean);
+                    confirmar.Show();
+                }
+                else
+                {
+                    Firebase.RunAsync(clean);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void InfoToolStripMenuItem_Click(object sender, EventArgs e)
@@ -44,7 +59,6 @@ namespace MenooPrinterService
 
         private void AjustesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.ShowAjustes();
         }
 
         private void MenooPrinter_Load(object sender, EventArgs e)
@@ -55,12 +69,12 @@ namespace MenooPrinterService
 
         private void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
-            this.ShowAjustes();
+            this.ShowInfo();
         }
-        private void ShowAjustes()
+        private void ShowInfo()
         {
-            var ajustesWindow = new Ajustes();
-            ajustesWindow.Visible = true;
+            var window = new Info();
+            window.Show();
         }
     }
 }

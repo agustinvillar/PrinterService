@@ -106,11 +106,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Ajustes.cs">
+    <Compile Include="Confirmar.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Ajustes.Designer.cs">
-      <DependentUpon>Ajustes.cs</DependentUpon>
+    <Compile Include="Confirmar.Designer.cs">
+      <DependentUpon>Confirmar.cs</DependentUpon>
     </Compile>
     <Compile Include="Info.cs">
       <SubType>Form</SubType>
@@ -132,8 +132,8 @@
     <Compile Include="Splash.Designer.cs">
       <DependentUpon>Splash.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Ajustes.resx">
-      <DependentUpon>Ajustes.cs</DependentUpon>
+    <EmbeddedResource Include="Confirmar.resx">
+      <DependentUpon>Confirmar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Info.resx">
       <DependentUpon>Info.cs</DependentUpon>
@@ -175,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.png" />
+    <Content Include="logo.png" />
     <Content Include="menooIcon.ico" />
     <Content Include="menooLogo.png" />
   </ItemGroup>
