@@ -147,7 +147,13 @@ namespace Dominio
                 y = PrintTitle(args, "Mesa cerrada", y);
                 y = PrintText(args, "Número de mesa: " + tableOpening.TableNumberId, y);
                 y = PrintText(args, "Fecha: " + tableOpening.ClosedAt, y);
-                y = PrintText(args, "Total: $ " + tableOpening.TotalToPayWithPropina, y);
+                if (tableOpening.TableOpenings[0].CulteryPrice == tableOpening.TotalToPayWithPropina) {
+                    y = PrintText(args, "Total: $ " + 0, y);
+                }
+                else
+                {
+                    y = PrintText(args, "Total: $ " + tableOpening.TotalToPayWithPropina, y);
+                }
             }
         }
         #endregion
