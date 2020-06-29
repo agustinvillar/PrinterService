@@ -107,7 +107,15 @@ namespace Dominio
             {
                 foreach (var document in snapshot.Documents)
                 {
+                    var a = document.ToDictionary();
                     TableOpeningFamily to = document.ConvertTo<TableOpeningFamily>();
+                    var tableOpenings = new List<TableOpening>();
+                    tableOpenings.Add(new TableOpening
+                    {
+                        CulteryPrice = a.ContainsKey("culteryPrice") ? int.Parse(a["culteryPrice"].ToString()) : 0
+                    });
+                    to.TableOpenings = tableOpenings.ToArray();
+
                     if (to.Closed && !to.ClosedPrinted)
                     {
                         SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PRINTED_EVENT.CLOSING);
@@ -147,7 +155,10 @@ namespace Dominio
                 y = PrintTitle(args, "Mesa cerrada", y);
                 y = PrintText(args, "Número de mesa: " + tableOpening.TableNumberId, y);
                 y = PrintText(args, "Fecha: " + tableOpening.ClosedAt, y);
-                if (tableOpening.TableOpenings[0].CulteryPrice == tableOpening.TotalToPayWithPropina) {
+                int culteryPrice = tableOpening.TableOpenings[0].CulteryPrice;
+                //Int32.TryParse(tableOpening.TableOpenings[0].CulteryPrice, out culteryPrice);
+                if (culteryPrice == tableOpening.TotalToPayWithPropina)
+                {
                     y = PrintText(args, "Total: $ " + 0, y);
                 }
                 else
@@ -217,7 +228,7 @@ namespace Dominio
                 var y = PrintLogo(args);
                 y = PrintTitle(args, "Nueva órden de reserva", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
-                
+
                 y = PrintText(args, text, y);
                 //y = PrintText(args, $"Observaciones: {comment}", y);
                 y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
@@ -241,9 +252,8 @@ namespace Dominio
             textForComments = "Pedido: ";
             for (int i = 0; i < splittedText.Length - 1; i++)
             {
-                textForComments += splittedText[i] + " - " + splittedComments[i] + " ";
+                textForComments += "\n" + splittedText[i] + " - " + splittedComments[i] + " ";
             }
-            textForComments += "\nObservación general: " + splittedComments[splittedComments.Length - 1];
             return textForComments;
         }
 
@@ -287,10 +297,10 @@ namespace Dominio
             pd.Print();
         }
 
-    #endregion
+        #endregion
 
-    #region OPEN TABLEOPENING
-    private static void TableOpeningFamilyListen(string storeId)
+        #region OPEN TABLEOPENING
+        private static void TableOpeningFamilyListen(string storeId)
         {
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("storeId", storeId)
@@ -391,7 +401,7 @@ namespace Dominio
                 Booking booking = document.ConvertTo<Booking>();
                 User user = null;
                 var snapshotUser = await _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync();
-               
+
                 if (snapshotUser.Exists)
                     user = snapshotUser.ConvertTo<User>();
 
