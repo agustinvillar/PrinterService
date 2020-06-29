@@ -7,16 +7,8 @@ using System.Threading.Tasks;
 
 namespace Dominio
 {
-    [FirestoreData]
     public class TableOpening
     {
-        [FirestoreProperty("culteryPrice")]
         public int CulteryPrice { get; set; }
-
-        public enum PRINTED_EVENT
-        {
-            OPENING,
-            CLOSING
-        }
     }
 }

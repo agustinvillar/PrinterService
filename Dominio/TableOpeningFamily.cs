@@ -35,7 +35,6 @@ namespace Dominio
         public string BookingObservations { get; set; }
         [FirestoreProperty("totalToPayWithPropina")]
         public double TotalToPayWithPropina { get; set; }
-        [FirestoreProperty("tableOpenings")]
         public TableOpening[] TableOpenings { get; set; }
 
         public enum PRINTED_EVENT
