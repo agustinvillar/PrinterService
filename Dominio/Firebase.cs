@@ -175,25 +175,55 @@ namespace Dominio
             double calculatedTotal = 0;
             string text = string.Empty;
             string comment = string.Empty;
-            string options = string.Empty;
-            string textForComments = string.Empty;
+
+
+            string text1 = string.Empty;
+            
+
+
 
             foreach (var item in orden.Items)
             {
+            string options = string.Empty;
                 if (item.Options != null)
                     foreach (var option in item.Options)
                         if (option != null)
                             options += option.Name + " - ";
 
-                text += $"{item.Name} x{item.Quantity} {options} $ {item.SubTotal} {Environment.NewLine} - ";
+               // text += $"{item.Name} x{item.Quantity} {options} $ {item.SubTotal} {Environment.NewLine} - ";
+
+
+                text1 += $"{item.Name} x{item.Quantity} {options} ${item.SubTotal} - {item.GuestComment} {Environment.NewLine}"; 
+ 
                 calculatedTotal = calculatedTotal + item.SubTotal * item.Quantity;
-                comment += item.GuestComment + " - ";
+                if (item.GuestComment != "") {
+                    comment += item.GuestComment + " - ";
+                }                
             }
 
-            if (orden != null && orden.GuestComment != "")
-                comment += orden.GuestComment;
+            //if (orden != null && orden.GuestComment != "")
+            //    comment += orden.GuestComment;
 
-            text = GetSeparatedComments(comment, text);
+
+            //int i = 0;
+            //string[] splittedText1 = text1.Split('/');
+            //string[] splittedComments = comment.Split('-');
+            //totalComment = "Pedido: ";
+            //foreach (var item in orden.Items)
+            //{
+            //    if(item.GuestComment != "")
+            //    {
+
+            //    }
+            //}
+
+            //    for (int i = 0; i < splittedText1.Length - 1; i++)
+            //{
+            //    textForComments += "\n" + splittedText[i] + " - " + splittedComments[i] + " ";
+            //}
+
+
+
 
             bool orderOk = orden != null && orden.OrderType != null;
 
@@ -206,20 +236,20 @@ namespace Dominio
 
                 foreach (var item in orden.Items)
                 {
-                    textForComments += $"{item.Name} x{item.Quantity} {options}$ {item.SubTotal} - ";
+                    //text1 += $"{item.Name} x{item.Quantity} {options} ${item.SubTotal} - {item.GuestComment} {Environment.NewLine}";
                 }
 
-                textForComments = GetSeparatedComments(comment, textForComments);
+                //textForComments = GetSeparatedComments(comment, textForComments);
             }
 
 
             if (orderOk && orden.OrderType.ToUpper().Trim() == MESAS)
             {
-                text = text.Substring(0, text.Length - 2); //Saco el \n
+                //text = text.Substring(0, text.Length - 2); //Saco el \n
                 var y = PrintLogo(args);
                 y = PrintTitle(args, "Nueva órden de mesa", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
-                y = PrintText(args, text, y);
+                y = PrintText(args, text1, y);
                 //y = PrintText(args, $"Observaciones: {comment}", y);
                 y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
             }
@@ -229,7 +259,7 @@ namespace Dominio
                 y = PrintTitle(args, "Nueva órden de reserva", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
 
-                y = PrintText(args, text, y);
+                y = PrintText(args, text1, y);
                 //y = PrintText(args, $"Observaciones: {comment}", y);
                 y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
                 y = PrintText(args, $"Total: $ {calculatedTotal}", y);
@@ -239,7 +269,7 @@ namespace Dominio
                 var y = PrintLogo(args);
                 y = PrintTitle(args, "Nuevo Take Away", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
-                y = PrintText(args, textForComments, y);
+                y = PrintText(args, text1, y);
                 y = PrintText(args, $"Hora del retiro: {orden.TakeAwayHour}", y);
                 y = PrintText(args, $"Total: $ {calculatedTotal}", y);
             }
