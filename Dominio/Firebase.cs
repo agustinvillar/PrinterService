@@ -201,12 +201,6 @@ namespace Dominio
                 comment += task.Result;
 
 
-                foreach (var item in orden.Items)
-                {
-                    string options = string.Empty;
-                    text1 += $"{item.Name} x{item.Quantity} {options} ${item.SubTotal} - {item.GuestComment} {Environment.NewLine}";
-                }
-
             }
 
 
