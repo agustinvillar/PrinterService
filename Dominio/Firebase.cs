@@ -173,14 +173,8 @@ namespace Dominio
         private static void PrintOrder(Orders orden, object sender, PrintPageEventArgs args)
         {
             double calculatedTotal = 0;
-            string text = string.Empty;
             string comment = string.Empty;
-
-
-            string text1 = string.Empty;
-            
-
-
+            string text1 = string.Empty;         
 
             foreach (var item in orden.Items)
             {
@@ -190,9 +184,6 @@ namespace Dominio
                         if (option != null)
                             options += option.Name + " - ";
 
-               // text += $"{item.Name} x{item.Quantity} {options} $ {item.SubTotal} {Environment.NewLine} - ";
-
-
                 text1 += $"{item.Name} x{item.Quantity} {options} ${item.SubTotal} - {item.GuestComment} {Environment.NewLine}"; 
  
                 calculatedTotal = calculatedTotal + item.SubTotal * item.Quantity;
@@ -200,30 +191,6 @@ namespace Dominio
                     comment += item.GuestComment + " - ";
                 }                
             }
-
-            //if (orden != null && orden.GuestComment != "")
-            //    comment += orden.GuestComment;
-
-
-            //int i = 0;
-            //string[] splittedText1 = text1.Split('/');
-            //string[] splittedComments = comment.Split('-');
-            //totalComment = "Pedido: ";
-            //foreach (var item in orden.Items)
-            //{
-            //    if(item.GuestComment != "")
-            //    {
-
-            //    }
-            //}
-
-            //    for (int i = 0; i < splittedText1.Length - 1; i++)
-            //{
-            //    textForComments += "\n" + splittedText[i] + " - " + splittedComments[i] + " ";
-            //}
-
-
-
 
             bool orderOk = orden != null && orden.OrderType != null;
 
@@ -236,10 +203,10 @@ namespace Dominio
 
                 foreach (var item in orden.Items)
                 {
-                    //text1 += $"{item.Name} x{item.Quantity} {options} ${item.SubTotal} - {item.GuestComment} {Environment.NewLine}";
+                    string options = string.Empty;
+                    text1 += $"{item.Name} x{item.Quantity} {options} ${item.SubTotal} - {item.GuestComment} {Environment.NewLine}";
                 }
 
-                //textForComments = GetSeparatedComments(comment, textForComments);
             }
 
 
@@ -250,7 +217,6 @@ namespace Dominio
                 y = PrintTitle(args, "Nueva órden de mesa", y);
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
                 y = PrintText(args, text1, y);
-                //y = PrintText(args, $"Observaciones: {comment}", y);
                 y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
             }
             else if (orderOk && orden.OrderType.ToUpper().Trim() == RESERVA)
@@ -260,7 +226,6 @@ namespace Dominio
                 y = PrintText(args, $"Cliente: {orden.UserName}", y);
 
                 y = PrintText(args, text1, y);
-                //y = PrintText(args, $"Observaciones: {comment}", y);
                 y = PrintText(args, $"Servir en mesa: {orden.Address}", y);
                 y = PrintText(args, $"Total: $ {calculatedTotal}", y);
             }
@@ -273,18 +238,6 @@ namespace Dominio
                 y = PrintText(args, $"Hora del retiro: {orden.TakeAwayHour}", y);
                 y = PrintText(args, $"Total: $ {calculatedTotal}", y);
             }
-        }
-
-        private static string GetSeparatedComments(string comment, string textForComments)
-        {
-            string[] splittedText = textForComments.Split('-');
-            string[] splittedComments = comment.Split('-');
-            textForComments = "Pedido: ";
-            for (int i = 0; i < splittedText.Length - 1; i++)
-            {
-                textForComments += "\n" + splittedText[i] + " - " + splittedComments[i] + " ";
-            }
-            return textForComments;
         }
 
         private static void OrderFamilyListen(string storeId)
