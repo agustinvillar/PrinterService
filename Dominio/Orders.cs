@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Dominio
 {
     [FirestoreData]
-    class Orders
+    public class Orders
     {
         [FirestoreProperty("address")]
         public string Address { get; set; }

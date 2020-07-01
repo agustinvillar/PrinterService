@@ -37,6 +37,9 @@ namespace Dominio
         public double TotalToPayWithPropina { get; set; }
         public TableOpening[] TableOpenings { get; set; }
 
+        [FirestoreProperty("pending")]
+        public bool Pending { get; set; }
+
         public enum PRINTED_EVENT
         {
             OPENING,
