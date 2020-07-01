@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Dominio
 {
     [FirestoreData]
-    class Item
+    public class Item
     {
         [FirestoreProperty("id")]
         public string Id { get; set; }

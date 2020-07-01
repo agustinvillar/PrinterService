@@ -152,11 +152,14 @@ namespace Dominio
             var y = PrintLogo(args);
             if (tableOpening.Closed)
             {
-                y = PrintTitle(args, "Mesa cerrada", y);
+                bool isPending = tableOpening.Pending;
+
+                if (isPending) y = PrintTitle(args, "Mesa Abandonada", y);
+                else y = PrintTitle(args, "Mesa cerrada", y);
+
                 y = PrintText(args, "Número de mesa: " + tableOpening.TableNumberId, y);
                 y = PrintText(args, "Fecha: " + tableOpening.ClosedAt, y);
                 int culteryPrice = tableOpening.TableOpenings[0].CulteryPrice;
-                //Int32.TryParse(tableOpening.TableOpenings[0].CulteryPrice, out culteryPrice);
                 if (culteryPrice == tableOpening.TotalToPayWithPropina)
                 {
                     y = PrintText(args, "Total: $ " + 0, y);
@@ -174,22 +177,23 @@ namespace Dominio
         {
             double calculatedTotal = 0;
             string comment = string.Empty;
-            string text1 = string.Empty;         
+            string text1 = string.Empty;
 
             foreach (var item in orden.Items)
             {
-            string options = string.Empty;
+                string options = string.Empty;
                 if (item.Options != null)
                     foreach (var option in item.Options)
                         if (option != null)
                             options += option.Name + " - ";
 
-                text1 += $"{item.Name} x{item.Quantity} {options} ${item.SubTotal} - {item.GuestComment} {Environment.NewLine}"; 
- 
+                text1 += $"{item.Name} x{item.Quantity} {options} ${item.SubTotal} - {item.GuestComment} {Environment.NewLine}";
+
                 calculatedTotal = calculatedTotal + item.SubTotal * item.Quantity;
-                if (item.GuestComment != "") {
+                if (item.GuestComment != "")
+                {
                     comment += item.GuestComment + " - ";
-                }                
+                }
             }
 
             bool orderOk = orden != null && orden.OrderType != null;
