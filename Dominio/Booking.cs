@@ -28,6 +28,8 @@ namespace Dominio
         public bool PrintedAccepted { get; set; }
         [FirestoreProperty("printedCancelled")]
         public bool PrintedCancelled { get; set; }
+        [FirestoreProperty("store.id")]
+        public string StoreId { get; set; }
         public enum PRINT_TYPE { ACCEPTED, CANCELLED }
     }
 }

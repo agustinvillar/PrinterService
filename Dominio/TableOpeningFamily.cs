@@ -39,6 +39,8 @@ namespace Dominio
 
         [FirestoreProperty("pending")]
         public bool Pending { get; set; }
+        [FirestoreProperty("storeId")]
+        public string StoreId { get; set; }
 
         public enum PRINTED_EVENT
         {

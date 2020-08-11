@@ -108,6 +108,7 @@
     <Compile Include="Store.cs" />
     <Compile Include="TableOpening.cs" />
     <Compile Include="TableOpeningFamily.cs" />
+    <Compile Include="Ticket.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Variation.cs" />
   </ItemGroup>

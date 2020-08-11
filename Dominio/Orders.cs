@@ -43,5 +43,7 @@ namespace Dominio
         public string UserName { get; set; }
         [FirestoreProperty("guestComment")]
         public string GuestComment { get; set; }
+        [FirestoreProperty("storeId")]
+        public string StoreId { get; set; }
     }
 }
