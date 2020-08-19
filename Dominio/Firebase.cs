@@ -162,7 +162,7 @@ namespace Dominio
                 ticket.Data = "<!DOCTYPE html><html><body><h1>" + title + "</h1>" + nroDeMesa + "<br>" + fecha + "<br>" + cubiertos + "</body></html>";
             }
             ticket.StoreId = tableOpening.StoreId;
-
+            ticket.Expired = false;
             ticket.PrintedAt = null;
             ticket.Printed = false;
             ticket.PrintBefore = CalculatePrintBeforeDate(tableOpening.ClosedAt);
@@ -268,6 +268,7 @@ namespace Dominio
                 ticket.Data = "<!DOCTYPE html><html><body><h1>" + title + "</h1>" + cliente + "<br>" + comentarios + "<br>" + time + "<br>" + total + "</body></html>";
             }
             ticket.PrintBefore = CalculatePrintBeforeDate(order.OrderDate);
+            ticket.Expired = false;
             ticket.PrintedAt = null;
             ticket.Printed = false;
             ticket.StoreId = order.StoreId;
@@ -317,6 +318,7 @@ namespace Dominio
 
             ticket.Printed = false;
             ticket.PrintedAt = null;
+            ticket.Expired = false;
             ticket.PrintBefore = CalculatePrintBeforeDate(tableOpeningFamily.OpenedAt);
             ticket.StoreId = tableOpeningFamily.StoreId;
             collection.AddAsync(ticket);
@@ -411,6 +413,7 @@ namespace Dominio
             ticket.PrintBefore = CalculatePrintBeforeDate(booking.BookingDate);
             ticket.PrintedAt = null;
             ticket.Printed = false;
+            ticket.Expired = false;
             ticket.StoreId = booking.StoreId;
             collection.AddAsync(ticket);
         }
@@ -436,6 +439,7 @@ namespace Dominio
             ticket.PrintBefore = CalculatePrintBeforeDate(booking.BookingDate);
             ticket.PrintedAt = null;
             ticket.Printed = false;
+            ticket.Expired = false;
             ticket.StoreId = booking.StoreId;
             collection.AddAsync(ticket);
         }
