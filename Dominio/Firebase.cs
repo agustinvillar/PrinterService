@@ -10,6 +10,7 @@ using Grpc.Core;
 using Google.Cloud.Firestore.V1;
 using System.Configuration;
 using static Dominio.Ticket;
+using Google.Type;
 
 namespace Dominio
 {
@@ -451,8 +452,8 @@ namespace Dominio
             string stringDate = split[0];
             string[] splitDate = stringDate.Split('-');
             DateTime date = new DateTime(Int32.Parse(splitDate[0]), Int32.Parse(splitDate[1]), Int32.Parse(splitDate[2]));
-            DateTime dateForReturn = date.AddDays(5);
-            return dateForReturn.ToString();
+            DateTime date2 = date.AddDays(5);
+            return date2.ToString("yyyy/MM/dd HH:mm");
         }
         private static Task<string> GetTakeAwayComments(string takeAwayOpeningId)
         {
