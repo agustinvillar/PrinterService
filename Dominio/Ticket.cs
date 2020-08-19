@@ -23,6 +23,8 @@ namespace Dominio
         public string StoreId { get; set; }
         [FirestoreProperty("printBefore")]
         public string PrintBefore { get; set; }
+        [FirestoreProperty("expired")]
+        public bool Expired { get; set; }
 
         public enum TicketTypeEnum
         {
