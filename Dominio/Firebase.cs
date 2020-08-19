@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
 using System.IO;
 using Google.Cloud.Firestore;
 using Google.Apis.Auth.OAuth2;
@@ -11,12 +9,7 @@ using Grpc.Auth;
 using Grpc.Core;
 using Google.Cloud.Firestore.V1;
 using System.Configuration;
-using System.Drawing.Printing;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using Microsoft.SqlServer.Server;
 using static Dominio.Ticket;
-using Google.Type;
 
 namespace Dominio
 {
@@ -83,11 +76,6 @@ namespace Dominio
             {
                 _clean = clean;
                 Init();
-                //var storeId = ConfigurationManager.AppSettings["StoreID"];
-
-                //if (string.IsNullOrEmpty(storeId))
-                //    throw new Exception("No hay storeId");
-
                 StartListen();
             });
         }
@@ -119,7 +107,6 @@ namespace Dominio
 
                     if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinted)
                     {
-                        //ACA GUARDO EN NUEVA COLLECTION
                         SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PRINTED_EVENT.CLOSING);
                         SaveCloseTableOpeningFamily(tableOpeningFamily, document.Id);
                     }
@@ -180,8 +167,6 @@ namespace Dominio
             ticket.Printed = false;
             ticket.PrintBefore = CalculatePrintBeforeDate(tableOpening.ClosedAt);
             collection.AddAsync(ticket);
-            //collection.Document(doc).UpdateAsync("printData", ticket.Data);
-            //collection.Document(doc).UpdateAsync("ticketType", ticket.TicketType);
         }
 
         #endregion
@@ -191,7 +176,6 @@ namespace Dominio
         private static void OrderFamilyListen()
         {
             _db.Collection("orderFamily")
-               //.WhereEqualTo("allowPrinting", true)
                .OrderByDescending("createdAt")
                .Limit(1)
                .Listen(OrderFamilyListenCallback);
@@ -204,7 +188,6 @@ namespace Dominio
                 Orders orden = document.ConvertTo<Orders>();
                 if (!orden.Printed)
                 {
-                    //ACA GUARDO EN NUEVA COLLECTION
                     SetOrderFamilyPrintedAsync(document.Id);
                     SaveOrder(orden, document.Id);
                 }
@@ -289,8 +272,6 @@ namespace Dominio
             ticket.Printed = false;
             ticket.StoreId = order.StoreId;
             collection.AddAsync(ticket);
-            //collection.Document(doc).UpdateAsync("ticketType", ticket.TicketType);
-            //collection.Document(doc).UpdateAsync("printData", ticket.Data);
         }
 
         #endregion
@@ -299,7 +280,6 @@ namespace Dominio
         private static void TableOpeningFamilyListen()
         {
             _db.Collection("tableOpeningFamily")
-               //.WhereEqualTo("allowPrinting", true)
                .OrderByDescending("openedAtNumber")
                .Limit(1).Listen(TableOpeningFamilyCallback);
         }
@@ -311,7 +291,6 @@ namespace Dominio
                 TableOpeningFamily to = document.ConvertTo<TableOpeningFamily>();
                 if (!to.Closed && !to.OpenPrinted)
                 {
-                    //ACA GUARDO EN NUEVA COLLECTION
                     SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PRINTED_EVENT.OPENING);
                     SaveOpenTableOpeningFamily(to, document.Id);
                 }
@@ -341,8 +320,6 @@ namespace Dominio
             ticket.PrintBefore = CalculatePrintBeforeDate(tableOpeningFamily.OpenedAt);
             ticket.StoreId = tableOpeningFamily.StoreId;
             collection.AddAsync(ticket);
-            //collection.Document(doc).UpdateAsync("ticketType", ticket.TicketType);
-            //collection.Document(doc).UpdateAsync("printData", ticket.Data);
         }
         #endregion
 
@@ -351,14 +328,12 @@ namespace Dominio
         {
             //When new booking is created
             _db.Collection("bookings")
-               //.WhereEqualTo("allowPrinting", true)
                .OrderByDescending("updatedAt")
                .Limit(1)
                .Listen(BookingsAcceptedCallback);
 
             //When booking is cancelled
             _db.Collection("bookings")
-               //.WhereEqualTo("allowPrinting", true)
                .WhereEqualTo("bookingState", "cancelada")
                .Listen(BookingsCancelCallback);
         }
@@ -375,7 +350,6 @@ namespace Dominio
                         user = snapshotUser.ConvertTo<User>();
                     if (!booking.PrintedCancelled)
                     {
-                        //ACA GUARDO EN NUEVA COLLECTION
                         await SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.CANCELLED);
                         SaveCancelledBooking(booking, user, document.Id);
                     }
@@ -400,7 +374,6 @@ namespace Dominio
 
                 if (booking != null && !booking.PrintedAccepted && booking.BookingNumber.ToString().Length == 8)
                 {
-                    //ACA GUARDO EN NUEVA COLLECTION
                     await SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED);
                     SaveAcceptedBooking(booking, user, document.Id);
                 }
@@ -440,8 +413,6 @@ namespace Dominio
             ticket.Printed = false;
             ticket.StoreId = booking.StoreId;
             collection.AddAsync(ticket);
-            //collection.Document(doc).UpdateAsync("ticketType", ticket.TicketType);
-            //collection.Document(doc).UpdateAsync("printData", ticket.Data);
         }
 
         private static void SaveAcceptedBooking(Booking booking, User user, string doc)
@@ -467,8 +438,6 @@ namespace Dominio
             ticket.Printed = false;
             ticket.StoreId = booking.StoreId;
             collection.AddAsync(ticket);
-            //collection.Document(doc).UpdateAsync("ticketType", ticket.TicketType);
-            //collection.Document(doc).UpdateAsync("printData", ticket.Data);
         }
         #endregion
 
