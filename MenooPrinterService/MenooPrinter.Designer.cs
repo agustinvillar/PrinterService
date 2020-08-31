@@ -85,7 +85,7 @@
 
         #endregion
 
-        private System.Windows.Forms.ContextMenuStrip Menu;
+        private new System.Windows.Forms.ContextMenuStrip Menu;
         private System.Windows.Forms.NotifyIcon NotifyIcon;
         private System.Windows.Forms.ToolStripMenuItem salirToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem infoToolStripMenuItem;
