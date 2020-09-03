@@ -101,6 +101,7 @@
   <ItemGroup>
     <Compile Include="Booking.cs" />
     <Compile Include="Firebase.cs" />
+    <Compile Include="Payment.cs" />
     <Compile Include="Item.cs" />
     <Compile Include="Orders.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

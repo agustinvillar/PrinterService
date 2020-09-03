@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 
 namespace Dominio
 {
+    [FirestoreData]
     public class TableOpening
     {
         public int CulteryPrice { get; set; }
+        [FirestoreProperty("id")]
+        public string Id { get; set; }
     }
 }

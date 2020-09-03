@@ -10,6 +10,9 @@ namespace Dominio
     [FirestoreData]
     public class TableOpeningFamily
     {
+        [FirestoreProperty("id")]
+        public string Id { get; set; }
+
         [FirestoreProperty("openedAt")]
         public string OpenedAt { get; set; }
 
@@ -35,6 +38,7 @@ namespace Dominio
         public string BookingObservations { get; set; }
         [FirestoreProperty("totalToPayWithPropina")]
         public double TotalToPayWithPropina { get; set; }
+        [FirestoreProperty("tableOpenings")]
         public TableOpening[] TableOpenings { get; set; }
 
         [FirestoreProperty("pending")]
