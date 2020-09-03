@@ -99,20 +99,19 @@ namespace Dominio
         {
             try
             {
-                foreach (var document in snapshot.Documents)
+                var docs = snapshot.Documents.Select(d =>
                 {
-                    var a = document.ToDictionary();
-                    TableOpeningFamily tableOpeningFamily = document.ConvertTo<TableOpeningFamily>();
-                    var tableOpenings = new List<TableOpening>();
-                    tableOpenings.Add(new TableOpening
-                    {
-                        CulteryPrice = a.ContainsKey("culteryPrice") ? int.Parse(a["culteryPrice"].ToString()) : 0
-                    });
-                    tableOpeningFamily.TableOpenings = tableOpenings.ToArray();
-
+                    var dic = d.ToDictionary();
+                    var toFamily = d.ConvertTo<TableOpeningFamily>();
+                    foreach (var to in toFamily.TableOpenings)
+                        to.CulteryPrice = dic.ContainsKey("culteryPrice") ? int.Parse(dic["culteryPrice"].ToString()) : 0;
+                    return toFamily;
+                });
+                foreach (var tableOpeningFamily in docs)
+                {
                     if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinted)
                     {
-                        SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PRINTED_EVENT.CLOSING);
+                        SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, TableOpeningFamily.PRINTED_EVENT.CLOSING);
                         SaveCloseTableOpeningFamily(tableOpeningFamily);
                     }
                 }
@@ -141,6 +140,10 @@ namespace Dominio
                 if (_clean)
                     return;
 
+
+
+                var payment = GetPayment(tableOpening.TableOpenings.FirstOrDefault().Id);
+
                 Ticket ticket = CreateInstanceOfTicket();
                 ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
 
@@ -154,6 +157,9 @@ namespace Dominio
 
                     var tableNumber = "Número de mesa: " + tableOpening.TableNumberId;
                     var date = "Fecha: " + tableOpening.ClosedAt;
+                    var paymentMethod = "";
+                    if (payment != null)
+                        paymentMethod = "Método de pago: " + payment.PaymentMethod + " - " + payment.PaymentType;
                     int culteryPrice = tableOpening.TableOpenings[0].CulteryPrice;
                     string cutlery;
                     if (culteryPrice == tableOpening.TotalToPayWithPropina)
@@ -164,12 +170,41 @@ namespace Dominio
                     {
                         cutlery = "Total: $ " + tableOpening.TotalToPayWithPropina;
                     }
-                   ticket.Data += "<h1>" + title + "</h1><h3><p>" + tableNumber + "</p><p>" + date + "</p><p>" + cutlery + "</p></h3></body></html>";
+                    ticket.Data += "<h1>" + title + "</h1><h3><p>" + tableNumber + "</p><p>" + date + "</p><p>" + paymentMethod + "</p><p>" + cutlery + "</p></h3></body></html>";
                 }
                 ticket.StoreId = tableOpening.StoreId;
                 ticket.PrintBefore = CalculatePrintBeforeDate(tableOpening.ClosedAt);
                 _db.Collection("print").AddAsync(ticket);
             }
+        }
+
+        private static Payment GetPayment(string tableOpeningId)
+        {
+            DateTime to = DateTime.Now;
+            DateTime from = to.AddMinutes(-5);
+            long fromUnix = new DateTimeOffset(from).ToUnixTimeMilliseconds();
+            long toUnix = new DateTimeOffset(to.AddHours(23).AddMinutes(59).AddSeconds(59)).ToUnixTimeMilliseconds();
+            var task = _db.Collection("payments").WhereGreaterThanOrEqualTo("paymentDate", fromUnix)
+                                                     .WhereLessThanOrEqualTo("paymentDate", toUnix)
+                                                     .GetSnapshotAsync();
+
+            task.Wait();
+            var documentSnapshots = task.Result;
+            var payments = documentSnapshots.Documents.Select(d =>
+            {
+                var p = d.ConvertTo<Payment>();
+                var dic = d.ToDictionary();
+                p.PaymentType = string.Empty;
+                p.PaymentMethod = string.Empty;
+                if (dic.ContainsKey("tableOpening"))
+                {
+                    p.TableOpeningId = (dic["tableOpening"] as Dictionary<string, object>)["id"].ToString();
+                    p.PaymentMethod = dic["payMethod"] != null ? dic["payMethod"].ToString() : "";
+                    p.PaymentType = dic["paymentType"] != null ? dic["paymentType"].ToString() : "";
+                }
+                return p;
+            }).ToList();
+            return payments.FirstOrDefault(p => p.TableOpeningId == tableOpeningId);
         }
 
         #endregion
@@ -267,7 +302,7 @@ namespace Dominio
                 Ticket ticket = CreateInstanceOfTicket();
 
                 List<string> lines = CreateComments(order);
-                
+
 
                 bool isOrderOk = order != null && order.OrderType != null;
                 if (IsTakeAway(order, isOrderOk))
@@ -290,7 +325,7 @@ namespace Dominio
         private static string CreateHTMLFromLines(List<string> lines)
         {
             string res = string.Empty;
-            foreach(var line in lines)
+            foreach (var line in lines)
             {
                 res += "<p>" + line + "</p>";
             }
@@ -328,7 +363,7 @@ namespace Dominio
         {
             List<string> lines = new List<string>();
             double total = 0;
-            foreach(var i in order.Items)
+            foreach (var i in order.Items)
             {
                 if (order.Items.Length == 0)
                     break;
@@ -465,7 +500,7 @@ namespace Dominio
                     var nroReserva = "Nro: " + booking.BookingNumber;
                     var fecha = "Fecha: " + booking.BookingDate;
                     var cliente = "Cliente: " + user.Name;
-                    ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva +"</p><p>"+ fecha +"</p><p>"+ cliente + "</p></h3></body></html>";
+                    ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cliente + "</p></h3></body></html>";
                 }
                 ticket.PrintBefore = CalculateDateForTAandBookings(booking.BookingDate);
                 ticket.StoreId = booking.Store.StoreId;
@@ -564,7 +599,7 @@ namespace Dominio
                 {
                     var store = doc.ToDictionary();
                     var storeName = store.ContainsKey("name") ? store["name"].ToString() : string.Empty;
-                    var allowPrinting = store.ContainsKey("allowPrinting") ?store["allowPrinting"] : false;
+                    var allowPrinting = store.ContainsKey("allowPrinting") ? store["allowPrinting"] : false;
                     if (allowPrinting == null) allowPrinting = false;
                     stores.Add(new Store { StoreId = doc.Id, Name = storeName, AllowPrinting = (bool)allowPrinting });
                 }
