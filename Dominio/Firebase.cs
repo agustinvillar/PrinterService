@@ -121,7 +121,6 @@ namespace Dominio
                 LogErrorAsync(ex.Message);
             }
         };
-
         private static Task<Google.Cloud.Firestore.WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PRINTED_EVENT printEvent)
         {
             if (printEvent == TableOpeningFamily.PRINTED_EVENT.CLOSING)
@@ -177,7 +176,6 @@ namespace Dominio
                 _db.Collection("print").AddAsync(ticket);
             }
         }
-
         private static Payment GetPayment(string tableOpeningId)
         {
             DateTime to = DateTime.Now;
@@ -206,7 +204,6 @@ namespace Dominio
             }).ToList();
             return payments.FirstOrDefault(p => p.TableOpeningId == tableOpeningId);
         }
-
         #endregion
 
         #region OPEN TABLE OPENING
@@ -259,7 +256,6 @@ namespace Dominio
         #endregion
 
         #region ORDERS
-
         private static void OrderFamilyListen()
         {
             _db.Collection("orderFamily")
@@ -287,7 +283,7 @@ namespace Dominio
         };
         private static Task<Google.Cloud.Firestore.WriteResult> SetOrderFamilyPrintedAsync(string doc)
         {
-            return _db.Collection("orderFamily").Document(doc).UpdateAsync("printed", true);
+            return _db.Collection("orderFamily").Document(doc).UpdateAsync("printed_two", true);
         }
         private static void SaveOrder(Orders order)
         {
@@ -321,7 +317,6 @@ namespace Dominio
                 _db.Collection("print").AddAsync(ticket);
             }
         }
-
         private static string CreateHTMLFromLines(List<string> lines)
         {
             string res = string.Empty;
@@ -331,7 +326,6 @@ namespace Dominio
             }
             return res;
         }
-
         private static void CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
         {
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
@@ -388,7 +382,6 @@ namespace Dominio
             lines.Add("Total: $" + total);
             return lines;
         }
-
         private static bool IsTakeAway(Orders order, bool orderOk)
         {
             if (orderOk && order.OrderType.ToUpper().Trim() == TAKE_AWAY)
@@ -411,7 +404,6 @@ namespace Dominio
                 return string.Empty;
             });
         }
-
         #endregion
 
         #region BOOKINGS
@@ -482,7 +474,6 @@ namespace Dominio
                       .UpdateAsync(type == Booking.PRINT_TYPE.ACCEPTED ? "printedAccepted"
                                                                        : "printedCancelled", true);
         }
-
         private static void SaveCancelledBooking(Booking booking, User user)
         {
             var stores = GetStores();
@@ -507,7 +498,6 @@ namespace Dominio
                 _db.Collection("print").AddAsync(ticket);
             }
         }
-
         private static void SaveAcceptedBooking(Booking booking, User user)
         {
             var stores = GetStores();
@@ -555,7 +545,14 @@ namespace Dominio
             DateTime dateToReturn = date.AddMinutes(10);
             return dateToReturn.ToString("yyyy/MM/dd HH:mm");
         }
-
+        private static string PrintBeforeDateTAsAndBookings(string s)
+        {
+            string[] splitDate;
+            int hour, min;
+            GetSplittedData(s, out splitDate, out hour, out min);
+            DateTime date = new DateTime(Int32.Parse(splitDate[0]), Int32.Parse(splitDate[1]), Int32.Parse(splitDate[2]), hour, min, 0).AddHours(-1);
+            return date.ToString("yyyy/MM/dd HH:mm");
+        }
         private static void GetSplittedData(string s, out string[] splitDate, out int hour, out int min)
         {
             string[] split = s.Split(' ');
@@ -566,16 +563,6 @@ namespace Dominio
             hour = Int32.Parse(splitTime[0]);
             min = Int32.Parse(splitTime[1]);
         }
-
-        private static string PrintBeforeDateTAsAndBookings(string s)
-        {
-            string[] splitDate;
-            int hour, min;
-            GetSplittedData(s, out splitDate, out hour, out min);
-            DateTime date = new DateTime(Int32.Parse(splitDate[0]), Int32.Parse(splitDate[1]), Int32.Parse(splitDate[2]), hour, min, 0).AddHours(-1);
-            return date.ToString("yyyy/MM/dd HH:mm");
-        }
-
         private static Ticket CreateInstanceOfTicket()
         {
             return new Ticket()
@@ -586,7 +573,6 @@ namespace Dominio
                 Printed = false,
             };
         }
-
         public static Task<List<Store>> GetStores()
         {
             return Task.Run(async () =>
