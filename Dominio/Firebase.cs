@@ -272,6 +272,7 @@ namespace Dominio
                 Orders orden = document.ConvertTo<Orders>();
                 if (!orden.Printed)
                 {
+                    SetOrderFamilyPrintedAsync(document.Id);
                     SaveOrder(orden);
                 }
             }
@@ -280,6 +281,10 @@ namespace Dominio
                 LogErrorAsync(ex.Message);
             }
         };
+        private static Task<Google.Cloud.Firestore.WriteResult> SetOrderFamilyPrintedAsync(string doc)
+        {
+            return _db.Collection("orderFamily").Document(doc).UpdateAsync("printed_two", true);
+        }
         private static void SaveOrder(Orders order)
         {
             var stores = GetStores();
