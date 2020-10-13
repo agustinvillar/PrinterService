@@ -200,7 +200,7 @@ namespace Dominio
                     ticket.StoreId = tableOpening.StoreId;
                     ticket.TableOpeningFamilyId = tableOpening.Id;
                     ticket.PrintBefore = PrintBeforeDateOrders(tableOpening.ClosedAt);
-                    ticket.Date = DateTime.Now.ToString();
+                    ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                     return _db.Collection("print").AddAsync(ticket);
                 }
                 return Task.CompletedTask;
@@ -291,7 +291,7 @@ namespace Dominio
 
                 ticket.PrintBefore = PrintBeforeDateOrders(tableOpeningFamily.OpenedAt);
                 ticket.StoreId = tableOpeningFamily.StoreId;
-                ticket.Date = DateTime.Now.ToString();
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 ticket.TableOpeningFamilyId = tableOpeningFamily.Id;
                 _db.Collection("print").AddAsync(ticket);
             }
@@ -370,7 +370,7 @@ namespace Dominio
                 string line = CreateHTMLFromLines(lines);
                 CreateOrderTicket(order, isOrderOk, ticket, line);
                 ticket.StoreId = order.StoreId;
-                ticket.Date = DateTime.Now.ToString();
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
             }
         }
@@ -531,12 +531,14 @@ namespace Dominio
                     var title = "Reserva cancelada";
                     var nroReserva = "Nro: " + booking.BookingNumber;
                     var fecha = "Fecha: " + booking.BookingDate;
-                    var cliente = "Cliente: " + user.Name;
+                    string cliente = string.Empty;
+                    if (user != null)
+                        cliente = "Cliente: " + user.Name;
                     ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cliente + "</p></h3></body></html>";
                 }
                 ticket.PrintBefore = PrintBeforeDateTAsAndBookings(booking.BookingDate);
                 ticket.StoreId = booking.Store.StoreId;
-                ticket.Date = DateTime.Now.ToString();
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
             }
         }
@@ -562,7 +564,7 @@ namespace Dominio
                 }
                 ticket.PrintBefore = PrintBeforeDateTAsAndBookings(booking.BookingDate);
                 ticket.StoreId = booking.Store.StoreId;
-                ticket.Date = DateTime.Now.ToString();
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
             }
 
@@ -572,29 +574,11 @@ namespace Dominio
         #region FinalMethods
         private static string PrintBeforeDateOrders(string s)
         {
-            string[] splitDate;
-            int hour, min;
-            GetSplittedData(s, out splitDate, out hour, out min);
-            DateTime date;
-            if (splitDate[0].Length.Equals(2))
-            {
-
-                date = new DateTime(Int32.Parse(splitDate[2]), Int32.Parse(splitDate[1]), Int32.Parse(splitDate[0]), hour, min, 0);
-            }
-            else
-            {
-                date = new DateTime(Int32.Parse(splitDate[0]), Int32.Parse(splitDate[1]), Int32.Parse(splitDate[2]), hour, min, 0);
-            }
-            DateTime dateToReturn = date.AddMinutes(30);
-            return dateToReturn.ToString("yyyy/MM/dd HH:mm");
+            return DateTime.Now.AddMinutes(5).ToString("yyyy/MM/dd HH:mm");
         }
         private static string PrintBeforeDateTAsAndBookings(string s)
         {
-            string[] splitDate;
-            int hour, min;
-            GetSplittedData(s, out splitDate, out hour, out min);
-            DateTime date = new DateTime(Int32.Parse(splitDate[0]), Int32.Parse(splitDate[1]), Int32.Parse(splitDate[2]), hour, min, 0).AddHours(-1);
-            return date.ToString("yyyy/MM/dd HH:mm");
+            return DateTime.Now.AddMinutes(5).ToString("yyyy/MM/dd HH:mm");
         }
         private static void GetSplittedData(string s, out string[] splitDate, out int hour, out int min)
         {
