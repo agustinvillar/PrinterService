@@ -22,8 +22,6 @@ namespace Dominio
         public int GuestQuantity { get; set; }
         [FirestoreProperty("userId")]
         public string UserId { get; set; }
-        [FirestoreProperty("bookingObservations")]
-        public string BookingObservations { get; set; }
         [FirestoreProperty("printedAccepted")]
         public bool PrintedAccepted { get; set; }
         [FirestoreProperty("printedCancelled")]

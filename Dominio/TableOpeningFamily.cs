@@ -1,9 +1,4 @@
-﻿using System;
-using Google.Cloud.Firestore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Google.Cloud.Firestore;
 
 namespace Dominio
 {
@@ -24,32 +19,14 @@ namespace Dominio
 
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }
-
-        [FirestoreProperty("totalToPay")]
         public double TotalToPay { get; set; }
-
-        [FirestoreProperty("openPrinted")]
-        public bool OpenPrinted { get; set; }
-
-        [FirestoreProperty("closedPrinted")]
-        public bool ClosedPrinted { get; set; }
-
-        [FirestoreProperty("bookingObservations")]
-        public string BookingObservations { get; set; }
-        [FirestoreProperty("totalToPayWithPropina")]
         public double TotalToPayWithPropina { get; set; }
         [FirestoreProperty("tableOpenings")]
         public TableOpening[] TableOpenings { get; set; }
 
         [FirestoreProperty("pending")]
-        public bool Pending { get; set; }
+        public bool? Pending { get; set; }
         [FirestoreProperty("storeId")]
         public string StoreId { get; set; }
-
-        public enum PRINTED_EVENT
-        {
-            OPENING,
-            CLOSING
-        }
     }
 }
