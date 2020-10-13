@@ -12,6 +12,7 @@ using System.Configuration;
 using static Dominio.Ticket;
 using Google.Apis.Util;
 using Google.Protobuf.WellKnownTypes;
+using System.Runtime.CompilerServices;
 
 namespace Dominio
 {
@@ -130,8 +131,9 @@ namespace Dominio
                 });
                 foreach (var tableOpeningFamily in docs)
                 {
-                    if (tableOpeningFamily.Closed)
+                    if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinter)
                     {
+                        SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, TableOpeningFamily.PRINTED_EVENT.CLOSING);
                         SaveCloseTableOpeningFamily(tableOpeningFamily);
                     }
                 }
@@ -151,8 +153,7 @@ namespace Dominio
 
                 var stores = GetStores();
                 var store = stores.Result.Find(s => s.StoreId.Equals(tableOpening.StoreId));
-                bool allowPrinting = store.AllowPrinting ?? false;
-                if (allowPrinting)
+                if (AllowPrint(store))
                 {
                     var payment = GetPayment(tableOpening.TableOpenings.FirstOrDefault().Id);
 
@@ -261,8 +262,9 @@ namespace Dominio
             {
                 var document = snapshot.Documents.Single();
                 TableOpeningFamily tableOpeningFamily = document.ConvertTo<TableOpeningFamily>();
-                if (!tableOpeningFamily.Closed)
+                if (!tableOpeningFamily.Closed && !tableOpeningFamily.OpenPrinted)
                 {
+                    SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PRINTED_EVENT.OPENING);
                     SaveOpenTableOpeningFamily(tableOpeningFamily);
                 }
             }
@@ -275,8 +277,7 @@ namespace Dominio
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(tableOpeningFamily.StoreId));
-            bool allowPrinting = store.AllowPrinting ?? false;
-            if (allowPrinting)
+            if (AllowPrint(store))
             {
                 if (_clean)
                     return;
@@ -348,16 +349,11 @@ namespace Dominio
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(order.StoreId));
-            if (store.AllowPrinting != false && store.AllowPrinting != null)
+            if (AllowPrint(store))
             {
-                if (_clean)
-                    return;
-
                 string comment = string.Empty;
                 Ticket ticket = CreateInstanceOfTicket();
-
                 List<string> lines = CreateComments(order);
-
 
                 bool isOrderOk = order != null && order.OrderType != null;
                 if (IsTakeAway(order, isOrderOk))
@@ -519,11 +515,9 @@ namespace Dominio
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(booking.Store.StoreId));
-            if (store.AllowPrinting != false && store.AllowPrinting != null)
-            {
-                if (_clean)
-                    return;
 
+            if (AllowPrint(store))
+            {
                 var ticket = CreateInstanceOfTicket();
                 ticket.TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString();
                 if (booking.BookingState.Equals("cancelada"))
@@ -546,11 +540,8 @@ namespace Dominio
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(booking.Store.StoreId));
-            if (store.AllowPrinting != false && store.AllowPrinting != null)
+            if (AllowPrint(store))
             {
-                if (_clean)
-                    return;
-
                 var ticket = CreateInstanceOfTicket();
                 ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
                 if (booking.BookingState.Equals("aceptada"))
@@ -572,6 +563,10 @@ namespace Dominio
         #endregion
 
         #region FinalMethods
+        private static bool AllowPrint(Store store)
+        {
+            return store != null && store.AllowPrinting != null && store.AllowPrinting.Value;
+        }
         private static string PrintBeforeDateOrders(string s)
         {
             return DateTime.Now.AddMinutes(5).ToString("yyyy/MM/dd HH:mm");
@@ -659,6 +654,15 @@ namespace Dominio
                         fs.Close();
                 }
             });
+        }
+        private static Task<Google.Cloud.Firestore.WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PRINTED_EVENT printEvent)
+        {
+            if (printEvent == TableOpeningFamily.PRINTED_EVENT.CLOSING)
+                return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("closedPrinted", true);
+            else if (printEvent == TableOpeningFamily.PRINTED_EVENT.OPENING)
+                return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("openPrinted", true);
+            else
+                throw new Exception("No se actualizo el estado impreso de la mesa.");
         }
         #endregion
     }

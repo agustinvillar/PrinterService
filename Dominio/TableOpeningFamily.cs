@@ -28,5 +28,18 @@ namespace Dominio
         public bool? Pending { get; set; }
         [FirestoreProperty("storeId")]
         public string StoreId { get; set; }
+
+        [FirestoreProperty("openPrinted")]
+        public bool OpenPrinted { get; set; }
+
+        [FirestoreProperty("closedPrinted")]
+        public bool ClosedPrinter { get; set; }
+
+        public enum PRINTED_EVENT
+        {
+            OPENING,
+            CLOSING
+        }
+
     }
 }
