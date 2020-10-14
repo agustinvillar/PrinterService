@@ -531,7 +531,7 @@ namespace Dominio
                         cliente = "Cliente: " + user.Name;
                     ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cliente + "</p></h3></body></html>";
                 }
-                ticket.PrintBefore = BeforeAt(booking.BookingDate, -60);
+                ticket.PrintBefore = BeforeAt(booking.BookingDate, -10);
                 ticket.StoreId = booking.Store.StoreId;
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
@@ -554,7 +554,7 @@ namespace Dominio
                     var cliente = "Cliente: " + user.Name;
                     ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cantPersonas + "</p><p>" + cliente + "</p></h3></body></html>";
                 }
-                ticket.PrintBefore = BeforeAt(booking.BookingDate, -60);
+                ticket.PrintBefore = BeforeAt(booking.BookingDate, -10);
                 ticket.StoreId = booking.Store.StoreId;
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
