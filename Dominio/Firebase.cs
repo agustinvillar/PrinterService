@@ -21,7 +21,6 @@ namespace Dominio
     {
         #region Attributes
         private static FirestoreDb _db;
-        private static bool _clean;
 
         private const string TAKE_AWAY = "TAKEAWAY";
         private const string RESERVA = "RESERVA";
@@ -76,11 +75,10 @@ namespace Dominio
             OrderFamilyListen();
             TableOpeningsListen();
         }
-        public static Task RunAsync(bool clean)
+        public static Task RunAsync()
         {
             return Task.Run(() =>
             {
-                _clean = clean;
                 Init();
                 StartListen();
             });
@@ -263,8 +261,6 @@ namespace Dominio
             var store = stores.Result.Find(s => s.StoreId.Equals(tableOpeningFamily.StoreId));
             if (AllowPrint(store))
             {
-                if (_clean)
-                    return;
                 Ticket ticket = CreateInstanceOfTicket();
                 ticket.TicketType = TicketTypeEnum.OPEN_TABLE.ToString();
 
