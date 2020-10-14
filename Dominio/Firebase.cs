@@ -105,21 +105,21 @@ namespace Dominio
                 {
                     var dic = d.ToDictionary();
                     var toFamily = d.ConvertTo<TableOpeningFamily>();
-                    var tableOpenings = (List<object>)dic["tableOpenings"];
-                    for (int i = 0; i < tableOpenings.Count; i++)
-                    {
-                        Dictionary<string, object> tableOpeningsParsed = (Dictionary<string, object>)tableOpenings.ElementAt(i);
-                        var ordersParsed = (List<object>)tableOpeningsParsed["orders"] ?? new List<object>();
-                        if (ordersParsed.Count > 0)
-                        {
-                            for (int j = 0; j < ordersParsed.Count; j++)
-                            {
-                                Dictionary<string, object> order = (Dictionary<string, object>)ordersParsed.ElementAt(j);
-                                var address = order["address"];
-                                toFamily.TableOpenings[i].Orders[j].Address = address.ToString();
-                            }
-                        }
-                    }
+                    //var tableOpenings = (List<object>)dic["tableOpenings"];
+                    //for (int i = 0; i < tableOpenings.Count; i++)
+                    //{
+                    //    Dictionary<string, object> tableOpeningsParsed = (Dictionary<string, object>)tableOpenings.ElementAt(i);
+                    //    var ordersParsed = (List<object>)tableOpeningsParsed["orders"] ?? new List<object>();
+                    //    if (ordersParsed.Count > 0)
+                    //    {
+                    //        for (int j = 0; j < ordersParsed.Count; j++)
+                    //        {
+                    //            Dictionary<string, object> order = (Dictionary<string, object>)ordersParsed.ElementAt(j);
+                    //            var address = order["address"];
+                    //            toFamily.TableOpenings[i].Orders[j].Address = address.ToString();
+                    //        }
+                    //    }
+                    //}
                     foreach (var to in toFamily.TableOpenings)
                     {
                         to.CulteryPrice = dic.ContainsKey("culteryPrice") ? int.Parse(dic["culteryPrice"].ToString()) : 0;
@@ -208,7 +208,6 @@ namespace Dominio
                 return Task.CompletedTask;
             });
         }
-
         private static string SetTitleForCloseTable(TableOpeningFamily tableOpening)
         {
             string title;
@@ -218,7 +217,6 @@ namespace Dominio
                 title = "Mesa cerrada";
             return title;
         }
-
         private static Payment GetPayment(string tableOpeningId)
         {
             DateTime to = DateTime.Now;
@@ -317,6 +315,7 @@ namespace Dominio
                 Orders orden = document.ConvertTo<Orders>();
                 var dic = snapshot.Documents.Single().ToDictionary();
                 var items = (List<object>)dic["items"];
+                orden.Address = dic.ContainsKey("address") && dic["address"] != null ? dic["address"].ToString() : " ";
 
                 for (int i = 0; i < items.Count; i++)
                 {
