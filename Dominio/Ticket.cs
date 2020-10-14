@@ -25,6 +25,10 @@ namespace Dominio
         public string PrintBefore { get; set; }
         [FirestoreProperty("expired")]
         public bool Expired { get; set; }
+        [FirestoreProperty("date")]
+        public string Date { get; set; }
+        [FirestoreProperty("tableOpeningFamilyId")]
+        public string TableOpeningFamilyId { get; set; }
 
         public enum TicketTypeEnum
         {

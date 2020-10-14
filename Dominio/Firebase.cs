@@ -12,6 +12,8 @@ using System.Configuration;
 using static Dominio.Ticket;
 using Google.Apis.Util;
 using Google.Protobuf.WellKnownTypes;
+using System.Runtime.CompilerServices;
+using System.Globalization;
 
 namespace Dominio
 {
@@ -19,7 +21,6 @@ namespace Dominio
     {
         #region Attributes
         private static FirestoreDb _db;
-        private static bool _clean;
 
         private const string TAKE_AWAY = "TAKEAWAY";
         private const string RESERVA = "RESERVA";
@@ -65,7 +66,7 @@ namespace Dominio
         private static void Init()
         {
             if (_db == null)
-                _db = AccessDatabaseProduction();
+                _db = AccessDatabaseTESTING();
         }
         private static void StartListen()
         {
@@ -74,11 +75,10 @@ namespace Dominio
             OrderFamilyListen();
             TableOpeningsListen();
         }
-        public static Task RunAsync(bool clean)
+        public static Task RunAsync()
         {
             return Task.Run(() =>
             {
-                _clean = clean;
                 Init();
                 StartListen();
             });
@@ -104,12 +104,18 @@ namespace Dominio
                     var dic = d.ToDictionary();
                     var toFamily = d.ConvertTo<TableOpeningFamily>();
                     foreach (var to in toFamily.TableOpenings)
+                    {
                         to.CulteryPrice = dic.ContainsKey("culteryPrice") ? int.Parse(dic["culteryPrice"].ToString()) : 0;
+                    }
+                    toFamily.TotalToPay = dic.ContainsKey("totalToPay") && dic["totalToPay"] != null ? double.Parse(dic["totalToPay"].ToString()) : 0;
+                    toFamily.TotalToPayWithPropina = dic.ContainsKey("totalToPayWithPropina") && dic["totalToPayWithPropina"] != null
+                        ? double.Parse(dic["totalToPayWithPropina"].ToString()) : 0;
+
                     return toFamily;
                 });
                 foreach (var tableOpeningFamily in docs)
                 {
-                    if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinted)
+                    if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinter)
                     {
                         SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, TableOpeningFamily.PRINTED_EVENT.CLOSING);
                         SaveCloseTableOpeningFamily(tableOpeningFamily);
@@ -121,60 +127,78 @@ namespace Dominio
                 LogErrorAsync(ex.Message);
             }
         };
-        private static Task<Google.Cloud.Firestore.WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PRINTED_EVENT printEvent)
+        private static Task SaveCloseTableOpeningFamily(TableOpeningFamily tableOpening)
         {
-            if (printEvent == TableOpeningFamily.PRINTED_EVENT.CLOSING)
-                return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("closedPrinted", true);
-            else if (printEvent == TableOpeningFamily.PRINTED_EVENT.OPENING)
-                return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("openPrinted", true);
-            else
-                throw new Exception("No se actualizo el estado impreso de la mesa.");
-        }
-        private static void SaveCloseTableOpeningFamily(TableOpeningFamily tableOpening)
-        {
-            var stores = GetStores();
-            var store = stores.Result.Find(s => s.StoreId.Equals(tableOpening.StoreId));
-            if (store.AllowPrinting != false && store.AllowPrinting != null)
+            return Task.Run(async () =>
             {
-                if (_clean)
-                    return;
+                var tableOpeningFamilyAlreadyExists = await TableOpeningFamilyAlreadyExists(tableOpening.Id);
+                if (tableOpeningFamilyAlreadyExists)
+                    return Task.CompletedTask;
 
-
-
-                var payment = GetPayment(tableOpening.TableOpenings.FirstOrDefault().Id);
-
-                Ticket ticket = CreateInstanceOfTicket();
-                ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
-
-                if (tableOpening.Closed)
+                var stores = GetStores();
+                var store = stores.Result.Find(s => s.StoreId.Equals(tableOpening.StoreId));
+                if (AllowPrint(store))
                 {
-                    string title;
-                    if (tableOpening.Pending)
-                        title = "Mesa abandonada";
-                    else
-                        title = "Mesa cerrada";
+                    var payment = GetPayment(tableOpening.TableOpenings.FirstOrDefault().Id);
 
-                    var tableNumber = "Número de mesa: " + tableOpening.TableNumberId;
-                    var date = "Fecha: " + tableOpening.ClosedAt;
-                    var paymentMethod = "";
-                    if (payment != null)
-                        paymentMethod = "Método de pago: " + payment.PaymentMethod + " - " + payment.PaymentType;
-                    int culteryPrice = tableOpening.TableOpenings[0].CulteryPrice;
-                    string cutlery;
-                    if (culteryPrice == tableOpening.TotalToPayWithPropina)
+                    Ticket ticket = CreateInstanceOfTicket();
+                    ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
+
+                    if (tableOpening.Closed)
                     {
-                        cutlery = "Total: $ " + 0;
+                        var title = SetTitleForCloseTable(tableOpening);
+                        var tableNumber = "Número de mesa: " + tableOpening.TableNumberId;
+                        var orden = "<b>--Pedidos: </b>";
+                        foreach (var to in tableOpening.TableOpenings)
+                        {
+                            orden += "<p>" + to.UserName + "</p>";
+                            foreach (var order in to.Orders)
+                            {
+                                foreach (var item in order.Items)
+                                {
+                                    orden += "<p>" + GetTime(order.MadeAt) + " " + item.Name + " x " + item.Quantity + " unidades $" + item.Price + "</p>";
+                                    if (item.Options != null)
+                                    {
+                                        foreach (var option in item.Options)
+                                            if (!option.Equals(null) && !option.Equals(""))
+                                                orden += "<p>" + option.Name + " " + option.Price + "</p>";
+                                    }
+                                }
+                            }
+                            orden += "<p>Cubiertos: " + to.CulteryPrice + "</p>";
+                            if (to.Discounts != null && to.Discounts.Length != 0)
+                                foreach (var discount in to.Discounts)
+                                    orden += "<p>" + discount.Name + " - " + discount.Amount + "</p>";
+                            if (!to.Surcharge.Equals(null))
+                                orden += "<p>Adicional por servicio: $" + to.Surcharge + "</p>";
+                            orden += "<p>Subtotal consumido: $" + to.TotalToPay + "</p>";
+                        }
+                        orden += "<p>TOTAL consumido: $" + tableOpening.TotalToPay + "</p>";
+                        var date = "Fecha: " + tableOpening.ClosedAt;
+                        var paymentMethod = "";
+                        if (payment != null)
+                            paymentMethod = "Método de pago: " + payment.PaymentMethod + " - " + payment.PaymentType;
+
+                        ticket.Data += "<h1>" + title + "</h1><h3><p>" + tableNumber + "</p><p>" + date + "</p><p>" + orden + "</p><p>"
+                        + paymentMethod + "</p></h3></body></html>";
                     }
-                    else
-                    {
-                        cutlery = "Total: $ " + tableOpening.TotalToPayWithPropina;
-                    }
-                    ticket.Data += "<h1>" + title + "</h1><h3><p>" + tableNumber + "</p><p>" + date + "</p><p>" + paymentMethod + "</p><p>" + cutlery + "</p></h3></body></html>";
+                    ticket.StoreId = tableOpening.StoreId;
+                    ticket.TableOpeningFamilyId = tableOpening.Id;
+                    ticket.PrintBefore = BeforeAt(tableOpening.ClosedAt, 10);
+                    ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+                    return _db.Collection("print").AddAsync(ticket);
                 }
-                ticket.StoreId = tableOpening.StoreId;
-                ticket.PrintBefore = PrintBeforeDateOrders(tableOpening.ClosedAt);
-                _db.Collection("print").AddAsync(ticket);
-            }
+                return Task.CompletedTask;
+            });
+        }
+        private static string SetTitleForCloseTable(TableOpeningFamily tableOpening)
+        {
+            string title;
+            if (tableOpening.Pending == true)
+                title = "Mesa abandonada";
+            else
+                title = "Mesa cerrada";
+            return title;
         }
         private static Payment GetPayment(string tableOpeningId)
         {
@@ -235,10 +259,8 @@ namespace Dominio
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(tableOpeningFamily.StoreId));
-            if (store.AllowPrinting != false && store.AllowPrinting != null)
+            if (AllowPrint(store))
             {
-                if (_clean)
-                    return;
                 Ticket ticket = CreateInstanceOfTicket();
                 ticket.TicketType = TicketTypeEnum.OPEN_TABLE.ToString();
 
@@ -248,8 +270,10 @@ namespace Dominio
 
                 ticket.Data += "<h1>" + title + "</h1><h3><p>" + tableNumber + "</p><p>" + date + "</p></h3></body></html>";
 
-                ticket.PrintBefore = PrintBeforeDateOrders(tableOpeningFamily.OpenedAt);
+                ticket.PrintBefore = BeforeAt(tableOpeningFamily.OpenedAt, 10);
                 ticket.StoreId = tableOpeningFamily.StoreId;
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+                ticket.TableOpeningFamilyId = tableOpeningFamily.Id;
                 _db.Collection("print").AddAsync(ticket);
             }
         }
@@ -270,10 +294,31 @@ namespace Dominio
             {
                 var document = snapshot.Documents.Single();
                 Orders orden = document.ConvertTo<Orders>();
-                if (!orden.Printed)
+                var dic = snapshot.Documents.Single().ToDictionary();
+                var items = (List<object>)dic["items"];
+                orden.Address = dic.ContainsKey("address") && dic["address"] != null ? dic["address"].ToString() : " ";
+
+                for (int i = 0; i < items.Count; i++)
                 {
-                    SetOrderFamilyPrintedAsync(document.Id);
-                    SaveOrder(orden);
+                    Dictionary<string, object> itemParsed = (Dictionary<string, object>)items.ElementAt(i);
+                    var itemOptions = (List<object>)itemParsed["options"] ?? new List<object>();
+                    if (itemOptions.Count > 0)
+                    {
+                        for (int j = 0; j < itemOptions.Count; j++)
+                        {
+                            Dictionary<string, object> optionParsed = (Dictionary<string, object>)itemOptions.ElementAt(j);
+                            var price = optionParsed["price"];
+                            var name = optionParsed["name"];
+                            orden.Items[i].Options[j].Name = name.ToString();
+                            orden.Items[i].Options[j].Price = price.ToString();
+                        }
+                    }
+
+
+                    if (!orden.Printed)
+                    {
+                        SaveOrder(orden);
+                    }
                 }
             }
             catch (Exception ex)
@@ -281,39 +326,28 @@ namespace Dominio
                 LogErrorAsync(ex.Message);
             }
         };
-        private static Task<Google.Cloud.Firestore.WriteResult> SetOrderFamilyPrintedAsync(string doc)
-        {
-            return _db.Collection("orderFamily").Document(doc).UpdateAsync("printed_two", true);
-        }
         private static void SaveOrder(Orders order)
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(order.StoreId));
-            if (store.AllowPrinting != false && store.AllowPrinting != null)
+            if (AllowPrint(store))
             {
-                if (_clean)
-                    return;
-
                 string comment = string.Empty;
                 Ticket ticket = CreateInstanceOfTicket();
-
                 List<string> lines = CreateComments(order);
-
 
                 bool isOrderOk = order != null && order.OrderType != null;
                 if (IsTakeAway(order, isOrderOk))
-                {
-                    var task = GetTakeAwayComments(order.TableOpeningFamilyId);
-                    task.Wait();
-                    lines.Add("Observaciones: " + task.Result);
-                    ticket.PrintBefore = PrintBeforeDateTAsAndBookings(order.OrderDate);
-                }
+                    ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
                 else
-                    ticket.PrintBefore = PrintBeforeDateOrders(order.OrderDate);
-
+                {
+                    ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
+                    ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
+                }
                 string line = CreateHTMLFromLines(lines);
                 CreateOrderTicket(order, isOrderOk, ticket, line);
                 ticket.StoreId = order.StoreId;
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
             }
         }
@@ -388,22 +422,6 @@ namespace Dominio
                 return true;
             return false;
         }
-        private static Task<string> GetTakeAwayComments(string takeAwayOpeningId)
-        {
-            return Task.Run(async () =>
-            {
-                if (string.IsNullOrEmpty(takeAwayOpeningId))
-                    return string.Empty;
-
-                var snapshot = await _db.Collection("takeAwayOpenings").Document(takeAwayOpeningId).GetSnapshotAsync();
-                var takeAway = snapshot.ToDictionary();
-
-                if (takeAway.ContainsKey("observations"))
-                    return takeAway["observations"].ToString();
-
-                return string.Empty;
-            });
-        }
         #endregion
 
         #region BOOKINGS
@@ -456,7 +474,7 @@ namespace Dominio
                 if (snapshotUser.Exists)
                     user = snapshotUser.ConvertTo<User>();
 
-                if (booking != null && !booking.PrintedAccepted/* && booking.BookingNumber.ToString().Length == 8*/)
+                if (booking != null && !booking.PrintedAccepted)
                 {
                     await SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED);
                     SaveAcceptedBooking(booking, user);
@@ -478,11 +496,9 @@ namespace Dominio
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(booking.Store.StoreId));
-            if (store.AllowPrinting != false && store.AllowPrinting != null)
-            {
-                if (_clean)
-                    return;
 
+            if (AllowPrint(store))
+            {
                 var ticket = CreateInstanceOfTicket();
                 ticket.TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString();
                 if (booking.BookingState.Equals("cancelada"))
@@ -490,11 +506,14 @@ namespace Dominio
                     var title = "Reserva cancelada";
                     var nroReserva = "Nro: " + booking.BookingNumber;
                     var fecha = "Fecha: " + booking.BookingDate;
-                    var cliente = "Cliente: " + user.Name;
+                    string cliente = string.Empty;
+                    if (user != null)
+                        cliente = "Cliente: " + user.Name;
                     ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cliente + "</p></h3></body></html>";
                 }
-                ticket.PrintBefore = PrintBeforeDateTAsAndBookings(booking.BookingDate);
+                ticket.PrintBefore = BeforeAt(booking.BookingDate, -10);
                 ticket.StoreId = booking.Store.StoreId;
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
             }
         }
@@ -502,11 +521,8 @@ namespace Dominio
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(booking.Store.StoreId));
-            if (store.AllowPrinting != false && store.AllowPrinting != null)
+            if (AllowPrint(store))
             {
-                if (_clean)
-                    return;
-
                 var ticket = CreateInstanceOfTicket();
                 ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
                 if (booking.BookingState.Equals("aceptada"))
@@ -518,8 +534,9 @@ namespace Dominio
                     var cliente = "Cliente: " + user.Name;
                     ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cantPersonas + "</p><p>" + cliente + "</p></h3></body></html>";
                 }
-                ticket.PrintBefore = PrintBeforeDateTAsAndBookings(booking.BookingDate);
+                ticket.PrintBefore = BeforeAt(booking.BookingDate, -10);
                 ticket.StoreId = booking.Store.StoreId;
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
             }
 
@@ -527,41 +544,20 @@ namespace Dominio
         #endregion
 
         #region FinalMethods
-        private static string PrintBeforeDateOrders(string s)
+        private static bool AllowPrint(Store store)
         {
-            string[] splitDate;
-            int hour, min;
-            GetSplittedData(s, out splitDate, out hour, out min);
-            DateTime date;
-            if (splitDate[0].Length.Equals(2))
-            {
+            return store != null && store.AllowPrinting != null && store.AllowPrinting.Value;
+        }
+        private static string BeforeAt(string date, int minutes)
+        {
+            DateTime result;
 
-                date = new DateTime(Int32.Parse(splitDate[2]), Int32.Parse(splitDate[1]), Int32.Parse(splitDate[0]), hour, min, 0);
-            }
-            else
-            {
-                date = new DateTime(Int32.Parse(splitDate[0]), Int32.Parse(splitDate[1]), Int32.Parse(splitDate[2]), hour, min, 0);
-            }
-            DateTime dateToReturn = date.AddMinutes(10);
-            return dateToReturn.ToString("yyyy/MM/dd HH:mm");
-        }
-        private static string PrintBeforeDateTAsAndBookings(string s)
-        {
-            string[] splitDate;
-            int hour, min;
-            GetSplittedData(s, out splitDate, out hour, out min);
-            DateTime date = new DateTime(Int32.Parse(splitDate[0]), Int32.Parse(splitDate[1]), Int32.Parse(splitDate[2]), hour, min, 0).AddHours(-1);
-            return date.ToString("yyyy/MM/dd HH:mm");
-        }
-        private static void GetSplittedData(string s, out string[] splitDate, out int hour, out int min)
-        {
-            string[] split = s.Split(' ');
-            string stringDate = split[0];
-            splitDate = stringDate.Split('-');
-            string stringTime = split[1];
-            string[] splitTime = stringTime.Split(':');
-            hour = Int32.Parse(splitTime[0]);
-            min = Int32.Parse(splitTime[1]);
+            bool ok = DateTime.TryParseExact(date, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+
+            if (!ok) //Cuando es mesa cerrada, llega con otro formato.
+                DateTime.TryParseExact(date, "dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+
+            return result.AddMinutes(minutes).ToString("yyyy/MM/dd HH:mm");
         }
         private static Ticket CreateInstanceOfTicket()
         {
@@ -572,6 +568,11 @@ namespace Dominio
                 Data = "<!DOCTYPE html><html><body><div class='logoImg'> <img src='\\assets\\img\\Menoo_Logo-Final_color-3.png'> </div>",
                 Printed = false,
             };
+        }
+        private static string GetTime(string dateTime)
+        {
+            var splitDateTime = dateTime.Split(' ');
+            return splitDateTime[1];
         }
         public static Task<List<Store>> GetStores()
         {
@@ -591,6 +592,13 @@ namespace Dominio
                 }
                 return stores;
             });
+        }
+        private static async Task<bool> TableOpeningFamilyAlreadyExists(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return true;
+            var query = await _db.Collection("print").WhereEqualTo("tableOpeningFamilyId", id).GetSnapshotAsync();
+            return await Task.FromResult(query.Documents.Count == 1);
         }
         private static Task LogErrorAsync(string error)
         {
@@ -620,6 +628,15 @@ namespace Dominio
                         fs.Close();
                 }
             });
+        }
+        private static Task<Google.Cloud.Firestore.WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PRINTED_EVENT printEvent)
+        {
+            if (printEvent == TableOpeningFamily.PRINTED_EVENT.CLOSING)
+                return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("closedPrinted", true);
+            else if (printEvent == TableOpeningFamily.PRINTED_EVENT.OPENING)
+                return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("openPrinted", true);
+            else
+                throw new Exception("No se actualizo el estado impreso de la mesa.");
         }
         #endregion
     }

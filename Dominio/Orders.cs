@@ -11,7 +11,6 @@ namespace Dominio
     [FirestoreData]
     public class Orders
     {
-        [FirestoreProperty("address")]
         public string Address { get; set; }
         [FirestoreProperty("printed")]
         public bool Printed { get; set; }
@@ -21,28 +20,14 @@ namespace Dominio
         public string MadeAt { get; set; }
         [FirestoreProperty("orderDate")]
         public string OrderDate { get; set; }
-        [FirestoreProperty("orderNumber")]
-        public double OrderNumber { get; set; }
         [FirestoreProperty("orderType")]
         public string OrderType { get; set; }
-        [FirestoreProperty("status")]
-        public string Status { get; set; }
         [FirestoreProperty("tableOpeningFamilyId")]
         public string TableOpeningFamilyId { get; set; }
         [FirestoreProperty("takeAwayHour")]
         public string TakeAwayHour { get; set; }
-        [FirestoreProperty("total")]
-        public double Total { get; set; }
-        [FirestoreProperty("subTotal")]
-        public double SubTotal { get; set; }
-        [FirestoreProperty("updatedAt")]
-        public double UpdatedAt { get; set; }
-        [FirestoreProperty("userId")]
-        public string UserId { get; set; }
         [FirestoreProperty("userName")]
         public string UserName { get; set; }
-        [FirestoreProperty("guestComment")]
-        public string GuestComment { get; set; }
         [FirestoreProperty("storeId")]
         public string StoreId { get; set; }
     }

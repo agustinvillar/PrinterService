@@ -14,25 +14,17 @@ namespace MenooPrinterService
     public partial class MenooPrinter : Form
     {
         private readonly Form splash;
-        public MenooPrinter(Form splash, bool runWithSettings, bool clean)
+        public MenooPrinter(Form splash)
         {
             InitializeComponent();
-            Init(runWithSettings, clean);
+            Init();
             this.splash = splash;
         }
-        private void Init(bool runWithSettings, bool clean)
+        private void Init()
         {
             try
             {
-                if (runWithSettings)
-                {
-                    Confirmar confirmar = new Confirmar(clean);
-                    confirmar.Show();
-                }
-                else
-                {
-                    Firebase.RunAsync(clean);
-                }
+                Firebase.RunAsync();
             }
             catch (Exception ex)
             {

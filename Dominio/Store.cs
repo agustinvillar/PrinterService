@@ -16,5 +16,5 @@ namespace Dominio
         public string Name { get; set; }
         [FirestoreProperty("allowPrinting")]
         public bool? AllowPrinting { get; set; }
-    }
+    } 
 }

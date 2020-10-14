@@ -17,10 +17,8 @@ namespace MenooPrinterService
         private bool runWithSettings;
         private bool clean;
 
-        public Splash(bool runWithSettings, bool clean)
+        public Splash()
         {
-            this.clean = clean;
-            this.runWithSettings = runWithSettings;
             InitializeComponent();
             Init();
         }
@@ -51,7 +49,7 @@ namespace MenooPrinterService
         public void tmr_Tick(object sender, EventArgs e)
         {
             splashTimer.Stop();
-            MenooPrinter menooPrinter = new MenooPrinter(this, this.runWithSettings, this.clean);
+            MenooPrinter menooPrinter = new MenooPrinter(this);
             menooPrinter.Show();
             this.Hide();
         }

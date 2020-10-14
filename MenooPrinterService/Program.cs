@@ -22,12 +22,10 @@ namespace MenooPrinterService
                 MessageBox.Show("La aplicación ya se encuentra abierta.", "Menoo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
-            bool runWithSettings = args != null && args.Any(a => a.Contains("settings"));
-            bool clean = args != null && args.Any(a => a.Contains("clean"));
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Splash(runWithSettings, clean));
+            Application.Run(new Splash());
         }
     }
 }

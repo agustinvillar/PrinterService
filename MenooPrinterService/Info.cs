@@ -19,7 +19,7 @@ namespace MenooPrinterService
         }
         private void Init()
         {
-            this.TxtMenoo.Text = $"Menoo {DateTime.Now.Year} ©";
+            this.TxtMenoo.Text = $"Sistema de Impresion {DateTime.Now.Year} ©";
             this.TxtVersion.Text = $"Version {ProductVersion}";
             this.MaximizeBox = false;
             this.MinimizeBox = false;

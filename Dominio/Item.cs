@@ -18,12 +18,8 @@ namespace Dominio
         public double Price { get; set; }
         [FirestoreProperty("quantity")]
         public double Quantity { get; set; }
-        [FirestoreProperty("size")]
-        public Size Size { get; set; }
         [FirestoreProperty("subTotal")]
         public double SubTotal { get; set; }
-        [FirestoreProperty("thumbnail")]
-        public string Thumbnail { get; set; }
         [FirestoreProperty("guestComment")]
         public string GuestComment { get; set; }
         [FirestoreProperty("options")]
@@ -32,11 +28,8 @@ namespace Dominio
         [FirestoreData]
         public class ItemOption
         {
-            [FirestoreProperty("name")]
             public string Name { get; set; }
-            [FirestoreProperty("price")]
             public string Price { get; set; }
-
         }
 
     }
