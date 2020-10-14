@@ -200,7 +200,7 @@ namespace Dominio
                     }
                     ticket.StoreId = tableOpening.StoreId;
                     ticket.TableOpeningFamilyId = tableOpening.Id;
-                    ticket.PrintBefore = PrintBeforeDate(tableOpening.ClosedAt);
+                    ticket.PrintBefore = PrintBeforeDateOrders(tableOpening.ClosedAt);
                     ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                     return _db.Collection("print").AddAsync(ticket);
                 }
@@ -290,7 +290,7 @@ namespace Dominio
 
                 ticket.Data += "<h1>" + title + "</h1><h3><p>" + tableNumber + "</p><p>" + date + "</p></h3></body></html>";
 
-                ticket.PrintBefore = PrintBeforeDate(tableOpeningFamily.OpenedAt);
+                ticket.PrintBefore = PrintBeforeDateOrders(tableOpeningFamily.OpenedAt);
                 ticket.StoreId = tableOpeningFamily.StoreId;
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 ticket.TableOpeningFamilyId = tableOpeningFamily.Id;
@@ -357,10 +357,10 @@ namespace Dominio
 
                 bool isOrderOk = order != null && order.OrderType != null;
                 if (IsTakeAway(order, isOrderOk))
-                    ticket.PrintBefore = PrintBeforeDate(order.OrderDate);
+                    ticket.PrintBefore = PrintBeforeDateTAsAndBookings(order.OrderDate);
                 else
                 {
-                    ticket.PrintBefore = PrintBeforeDate(order.OrderDate);
+                    ticket.PrintBefore = PrintBeforeDateOrders(order.OrderDate);
                     ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
                 }
                 string line = CreateHTMLFromLines(lines);
@@ -530,7 +530,7 @@ namespace Dominio
                         cliente = "Cliente: " + user.Name;
                     ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cliente + "</p></h3></body></html>";
                 }
-                ticket.PrintBefore = PrintBeforeDate(booking.BookingDate);
+                ticket.PrintBefore = PrintBeforeDateTAsAndBookings(booking.BookingDate);
                 ticket.StoreId = booking.Store.StoreId;
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
@@ -553,7 +553,7 @@ namespace Dominio
                     var cliente = "Cliente: " + user.Name;
                     ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cantPersonas + "</p><p>" + cliente + "</p></h3></body></html>";
                 }
-                ticket.PrintBefore = PrintBeforeDate(booking.BookingDate);
+                ticket.PrintBefore = PrintBeforeDateTAsAndBookings(booking.BookingDate);
                 ticket.StoreId = booking.Store.StoreId;
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
@@ -567,9 +567,23 @@ namespace Dominio
         {
             return store != null && store.AllowPrinting != null && store.AllowPrinting.Value;
         }
-        private static string PrintBeforeDate(string s)
+        private static string PrintBeforeDateOrders(string s)
         {
             return DateTime.Now.AddMinutes(5).ToString("yyyy/MM/dd HH:mm");
+        }
+        private static string PrintBeforeDateTAsAndBookings(string s)
+        {
+            return DateTime.Now.AddMinutes(5).ToString("yyyy/MM/dd HH:mm");
+        }
+        private static void GetSplittedData(string s, out string[] splitDate, out int hour, out int min)
+        {
+            string[] split = s.Split(' ');
+            string stringDate = split[0];
+            splitDate = stringDate.Split('-');
+            string stringTime = split[1];
+            string[] splitTime = stringTime.Split(':');
+            hour = Int32.Parse(splitTime[0]);
+            min = Int32.Parse(splitTime[1]);
         }
         private static Ticket CreateInstanceOfTicket()
         {
