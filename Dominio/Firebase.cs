@@ -577,7 +577,7 @@ namespace Dominio
             if (!ok) //Cuando es mesa cerrada, llega con otro formato.
                 DateTime.TryParseExact(date, "dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
 
-            return result.AddMinutes(minutes).ToString("yyyy-MM-dd HH:mm");
+            return result.AddMinutes(minutes).ToString("yyyy/MM/dd HH:mm");
         }
         private static Ticket CreateInstanceOfTicket()
         {
