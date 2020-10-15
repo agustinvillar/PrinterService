@@ -478,7 +478,7 @@ namespace Dominio
                 if (snapshotUser.Exists)
                     user = snapshotUser.ConvertTo<User>();
 
-                if (booking != null && !booking.PrintedAccepted)
+                if (!booking.PrintedAccepted && booking.BookingNumber.ToString().Length == 8)
                 {
                     await SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED);
                     SaveAcceptedBooking(booking, user);
