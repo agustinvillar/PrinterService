@@ -265,7 +265,11 @@ namespace Dominio
                 ticket.TicketType = TicketTypeEnum.OPEN_TABLE.ToString();
 
                 var title = "Apertura de mesa";
-                var tableNumber = "Número de mesa: " + tableOpeningFamily.TableNumberId;
+                string tableNumber = string.Empty;
+                if (tableOpeningFamily.TableNumberToShow == null)
+                    tableNumber = "Número de mesa: " + tableOpeningFamily.TableNumberId;
+                else
+                    tableNumber = tableNumber = "Número de mesa: " + tableOpeningFamily.TableNumberToShow;
                 var date = "Fecha: " + tableOpeningFamily.OpenedAt;
 
                 ticket.Data += "<h1>" + title + "</h1><h3><p>" + tableNumber + "</p><p>" + date + "</p></h3></body></html>";
