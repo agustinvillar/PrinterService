@@ -16,8 +16,7 @@ namespace Dominio
 
         [FirestoreProperty("tableNumberId")]
         public int TableNumberId { get; set; }
-        [FirestoreProperty("tableNumberToShow")]
-        public int? TableNumberToShow { get; set; }
+        public int TableNumberToShow { get; set; }
 
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }

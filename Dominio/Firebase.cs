@@ -111,6 +111,14 @@ namespace Dominio
                     toFamily.TotalToPayWithPropina = dic.ContainsKey("totalToPayWithPropina") && dic["totalToPayWithPropina"] != null
                         ? double.Parse(dic["totalToPayWithPropina"].ToString()) : 0;
 
+                    var tableNumberToShow = 0;
+                    var ok = dic.ContainsKey("tableNumberToShow") &&
+                                                  dic["tableNumberToShow"] != null &&
+                                                  int.TryParse(dic["tableNumberToShow"].ToString(),
+                                                      out tableNumberToShow);
+
+                    toFamily.TableNumberToShow = ok ? tableNumberToShow : toFamily.TableNumberId;
+
                     return toFamily;
                 });
                 foreach (var tableOpeningFamily in docs)
@@ -139,7 +147,7 @@ namespace Dominio
                 var store = stores.Result.Find(s => s.StoreId.Equals(tableOpening.StoreId));
                 if (AllowPrint(store))
                 {
-                    var payment = GetPayment(tableOpening.TableOpenings.FirstOrDefault().Id);
+                    var payment = GetPayment(tableOpening.TableOpenings.FirstOrDefault()?.Id);
 
                     Ticket ticket = CreateInstanceOfTicket();
                     ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
@@ -243,7 +251,16 @@ namespace Dominio
             try
             {
                 var document = snapshot.Documents.Single();
-                TableOpeningFamily tableOpeningFamily = document.ConvertTo<TableOpeningFamily>();
+                var tableOpeningFamily = document.ConvertTo<TableOpeningFamily>();
+                var dic = document.ToDictionary();
+                var tableNumberToShow = 0;
+                var ok = dic.ContainsKey("tableNumberToShow") &&
+                         dic["tableNumberToShow"] != null &&
+                         int.TryParse(dic["tableNumberToShow"].ToString(),
+                             out tableNumberToShow);
+
+                tableOpeningFamily.TableNumberToShow = ok ? tableNumberToShow : tableOpeningFamily.TableNumberId;
+
                 if (!tableOpeningFamily.Closed && !tableOpeningFamily.OpenPrinted)
                 {
                     SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PRINTED_EVENT.OPENING);
@@ -292,25 +309,25 @@ namespace Dominio
                .Listen(OrderFamilyListenCallback);
         }
 
-        private static Action<QuerySnapshot> OrderFamilyListenCallback = (snapshot) =>
+        private static readonly Action<QuerySnapshot> OrderFamilyListenCallback = (snapshot) =>
         {
             try
             {
                 var document = snapshot.Documents.Single();
-                Orders orden = document.ConvertTo<Orders>();
+                var orden = document.ConvertTo<Orders>();
                 var dic = snapshot.Documents.Single().ToDictionary();
                 var items = (List<object>)dic["items"];
                 orden.Address = dic.ContainsKey("address") && dic["address"] != null ? dic["address"].ToString() : " ";
 
-                for (int i = 0; i < items.Count; i++)
+                for (var i = 0; i < items.Count; i++)
                 {
-                    Dictionary<string, object> itemParsed = (Dictionary<string, object>)items.ElementAt(i);
+                    var itemParsed = (Dictionary<string, object>)items.ElementAt(i);
                     var itemOptions = (List<object>)itemParsed["options"] ?? new List<object>();
                     if (itemOptions.Count > 0)
                     {
-                        for (int j = 0; j < itemOptions.Count; j++)
+                        for (var j = 0; j < itemOptions.Count; j++)
                         {
-                            Dictionary<string, object> optionParsed = (Dictionary<string, object>)itemOptions.ElementAt(j);
+                            var optionParsed = (Dictionary<string, object>)itemOptions.ElementAt(j);
                             var price = optionParsed["price"];
                             var name = optionParsed["name"];
                             orden.Items[i].Options[j].Name = name.ToString();
@@ -318,9 +335,9 @@ namespace Dominio
                         }
                     }
 
-
                     if (!orden.Printed)
                     {
+                        SetOrderPrintedAsync(document.Id);
                         SaveOrder(orden);
                     }
                 }
@@ -348,15 +365,16 @@ namespace Dominio
                     ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
                     ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
                 }
-                string line = CreateHTMLFromLines(lines);
+                string line = CreateHtmlFromLines(lines);
                 CreateOrderTicket(order, isOrderOk, ticket, line);
                 ticket.StoreId = order.StoreId;
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
             }
         }
-        private static string CreateHTMLFromLines(List<string> lines)
+        private static string CreateHtmlFromLines(List<string> lines)
         {
+            if (lines == null) throw new ArgumentNullException(nameof(lines));
             string res = string.Empty;
             foreach (var line in lines)
             {
@@ -442,7 +460,7 @@ namespace Dominio
                .WhereEqualTo("bookingState", "cancelada")
                .Listen(BookingsCancelCallback);
         }
-        private static Action<QuerySnapshot> BookingsCancelCallback = async (snapshot) =>
+        private static readonly Action<QuerySnapshot> BookingsCancelCallback = async (snapshot) =>
         {
             try
             {
@@ -465,7 +483,7 @@ namespace Dominio
                 _ = LogErrorAsync(ex.Message);
             }
         };
-        private static Action<QuerySnapshot> BookingsAcceptedCallback = async (snapshot) =>
+        private static readonly Action<QuerySnapshot> BookingsAcceptedCallback = async (snapshot) =>
         {
             try
             {
@@ -495,6 +513,11 @@ namespace Dominio
                       .Document(doc)
                       .UpdateAsync(type == Booking.PRINT_TYPE.ACCEPTED ? "printedAccepted"
                                                                        : "printedCancelled", true);
+        }
+
+        private static Task<Google.Cloud.Firestore.WriteResult> SetOrderPrintedAsync(string doc)
+        {
+            return _db.Collection("orderFamily").Document(doc).UpdateAsync("printed", true);
         }
         private static void SaveCancelledBooking(Booking booking, User user)
         {
