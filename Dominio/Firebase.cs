@@ -142,62 +142,58 @@ namespace Dominio
                 var stores = GetStores();
                 var store = stores.Result.Find(s => s.StoreId.Equals(tableOpeningFamily.StoreId));
                 var ticket = CreateInstanceOfTicket();
-                if (AllowPrint(store))
+                if (!AllowPrint(store)) return Task.CompletedTask;
+                ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
+
+                if (tableOpeningFamily.Closed)
                 {
-
-                    ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
-
-                    if (tableOpeningFamily.Closed)
+                    var title = SetTitleForCloseTable(tableOpeningFamily);
+                    var tableNumber = $"Número de mesa: {tableOpeningFamily.TableNumberId}";
+                    var orden = "<b>Pedidos</b>";
+                    orden += "<p><b>------------------------------------------------------</b></p>";
+                    foreach (var to in tableOpeningFamily.TableOpenings)
                     {
-                        var title = SetTitleForCloseTable(tableOpeningFamily);
-                        var tableNumber = $"Número de mesa: {tableOpeningFamily.TableNumberId}";
-                        var orden = "<b>Pedidos</b>";
-                        orden += "<p><b>------------------------------------------------------</b></p>";
-                        foreach (var to in tableOpeningFamily.TableOpenings)
+                        var payment = await GetPayment(to.Id);
+                        orden += $"<p>{to.UserName}</p>";
+                        foreach (var order in to.Orders)
                         {
-                            var payment = await GetPayment(to.Id);
-                            orden += $"<p>{to.UserName}</p>";
-                            foreach (var order in to.Orders)
+                            foreach (var item in order.Items)
                             {
-                                foreach (var item in order.Items)
-                                {
-                                    orden += $"<p>{GetTime(order.MadeAt)} {item.Name} x {item.Quantity} unidades ${item.Price}</p>";
-                                    if (item.Options != null)
-                                        foreach (var option in item.Options)
-                                            if (option != null) orden += $"<p>{option.Name} {option.Price}</p>";
-                                }
+                                orden += $"<p>{GetTime(order.MadeAt)} {item.Name} x {item.Quantity} unidades ${item.Price}</p>";
+                                if (item.Options != null)
+                                    foreach (var option in item.Options)
+                                        if (option != null) orden += $"<p>{option.Name} {option.Price}</p>";
                             }
-                            if (to.CulteryPrice > 0) orden += $"<p>Cubiertos: ${to.CulteryPrice}</p>";
-                            if (to.Tip > 0) orden += $"<p>Propina: ${to.Tip}</p>";
-                            if (to.Surcharge != null) orden += $"<p>Adicional por servicio: ${to.Surcharge}</p>";
-                            if (to.Discounts != null)
-                                orden = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva)
-                                    .Aggregate(orden, (current, discount) => current + ($"<p>Descuento {discount.Name}: -${discount.Amount}</p>"));
-
-                            if (payment != null) orden += $"Metodo de Pago: {payment.PaymentType} {payment.PaymentMethod}";
-                            if (to.PagoPorTodos || to.PagoPorElMismo)
-                                orden += $"<p>Subtotal: ${to.TotalToPayWithSurcharge}</p>";
-                            if (to.PagoPorElMismo) orden += "<p>Pagó su propia cuenta</p>";
-                            if (to.PagoPorTodos) orden += "<p>Pagó la cuenta de todos.</p>";
-                            if (to.AlguienLePago) orden += "<p>Le pagaron su cuenta.</p>";
-                            orden += "<p><b>------------------------------------------------------</b></p>";
                         }
+                        if (to.CulteryPrice > 0) orden += $"<p>Cubiertos: ${to.CulteryPrice}</p>";
+                        if (to.Tip > 0) orden += $"<p>Propina: ${to.Tip}</p>";
+                        if (to.Surcharge != null) orden += $"<p>Adicional por servicio: ${to.Surcharge}</p>";
+                        if (to.Discounts != null)
+                            orden = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva)
+                                .Aggregate(orden, (current, discount) => current + ($"<p>Descuento {discount.Name}: -${discount.Amount}</p>"));
 
-                        var totalToPay = tableOpeningFamily.TotalToPayWithSurcharge;
-                        if (store.PaymentProvider == Store.ProviderEnum.MercadoPago)
-                            totalToPay += tableOpeningFamily.Tip;
-
-                        orden += $"<h1>TOTAL: ${totalToPay}</h1>";
-                        var date = $"Fecha: {tableOpeningFamily.ClosedAt}";
-                        ticket.Data += $"<h1>{title}</h1><h3><p>{tableNumber}</p><p>{date}</p><p>{orden}</p></h3></body></html>";
+                        if (payment != null) orden += $"Metodo de Pago: {payment.PaymentType} {payment.PaymentMethod}";
+                        if (to.PagoPorTodos || to.PagoPorElMismo)
+                            orden += $"<p>Subtotal: ${to.TotalToPayWithSurcharge}</p>";
+                        if (to.PagoPorElMismo) orden += "<p>Pagó su propia cuenta</p>";
+                        if (to.PagoPorTodos) orden += "<p>Pagó la cuenta de todos.</p>";
+                        if (to.AlguienLePago) orden += "<p>Le pagaron su cuenta.</p>";
+                        orden += "<p><b>------------------------------------------------------</b></p>";
                     }
-                    ticket.StoreId = tableOpeningFamily.StoreId;
-                    ticket.TableOpeningFamilyId = tableOpeningFamily.Id;
-                    ticket.PrintBefore = BeforeAt(tableOpeningFamily.ClosedAt, 10);
-                    ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-                    return _db.Collection("print").AddAsync(ticket);
+
+                    var totalToPay = tableOpeningFamily.TotalToPayWithSurcharge;
+                    if (store.PaymentProvider == Store.ProviderEnum.MercadoPago)
+                        totalToPay += tableOpeningFamily.Tip;
+
+                    orden += $"<h1>TOTAL: ${totalToPay}</h1>";
+                    var date = $"Fecha: {tableOpeningFamily.ClosedAt}";
+                    ticket.Data += $"<h1>{title}</h1><h3><p>{tableNumber}</p><p>{date}</p><p>{orden}</p></h3></body></html>";
                 }
-                return Task.CompletedTask;
+                ticket.StoreId = tableOpeningFamily.StoreId;
+                ticket.TableOpeningFamilyId = tableOpeningFamily.Id;
+                ticket.PrintBefore = BeforeAt(tableOpeningFamily.ClosedAt, 10);
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+                return _db.Collection("print").AddAsync(ticket);
             });
         }
         private static string SetTitleForCloseTable(TableOpeningFamily tableOpening)
@@ -255,27 +251,20 @@ namespace Dominio
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(tableOpeningFamily.StoreId));
-            if (AllowPrint(store))
-            {
-                Ticket ticket = CreateInstanceOfTicket();
-                ticket.TicketType = TicketTypeEnum.OPEN_TABLE.ToString();
+            if (!AllowPrint(store)) return;
+            var ticket = CreateInstanceOfTicket();
+            ticket.TicketType = TicketTypeEnum.OPEN_TABLE.ToString();
 
-                var title = "Apertura de mesa";
-                string tableNumber = string.Empty;
-                if (tableOpeningFamily.TableNumberToShow == null)
-                    tableNumber = "Número de mesa: " + tableOpeningFamily.TableNumberId;
-                else
-                    tableNumber = tableNumber = "Número de mesa: " + tableOpeningFamily.TableNumberToShow;
-                var date = "Fecha: " + tableOpeningFamily.OpenedAt;
+            const string title = "Apertura de mesa";
+            var tableNumber = $"Número de mesa: {tableOpeningFamily.TableNumberToShow}";
+            var date = $"Fecha: {tableOpeningFamily.OpenedAt}";
 
-                ticket.Data += "<h1>" + title + "</h1><h3><p>" + tableNumber + "</p><p>" + date + "</p></h3></body></html>";
-
-                ticket.PrintBefore = BeforeAt(tableOpeningFamily.OpenedAt, 10);
-                ticket.StoreId = tableOpeningFamily.StoreId;
-                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-                ticket.TableOpeningFamilyId = tableOpeningFamily.Id;
-                _db.Collection("print").AddAsync(ticket);
-            }
+            ticket.Data += $"<h1>{title}</h1><h3><p>{tableNumber}</p><p>{date}</p></h3></body></html>";
+            ticket.PrintBefore = BeforeAt(tableOpeningFamily.OpenedAt, 10);
+            ticket.StoreId = tableOpeningFamily.StoreId;
+            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+            ticket.TableOpeningFamilyId = tableOpeningFamily.Id;
+            _db.Collection("print").AddAsync(ticket);
         }
         #endregion
 
@@ -328,36 +317,34 @@ namespace Dominio
         {
             var stores = GetStores();
             var store = stores.Result.Find(s => s.StoreId.Equals(order.StoreId));
-            if (AllowPrint(store))
-            {
-                var comment = string.Empty;
-                var ticket = CreateInstanceOfTicket();
-                var lines = CreateComments(order);
+            if (!AllowPrint(store)) return;
+            var comment = string.Empty;
+            var ticket = CreateInstanceOfTicket();
+            var lines = CreateComments(order);
 
-                var isOrderOk = order?.OrderType != null;
-                if (IsTakeAway(order, isOrderOk))
-                {
-                    if (order != null) ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
-                }
-                else
-                {
-                    if (order != null)
-                    {
-                        ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
-                        ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
-                    }
-                }
-                var line = CreateHtmlFromLines(lines);
-                CreateOrderTicket(order, isOrderOk, ticket, line);
-                if (order != null) ticket.StoreId = order.StoreId;
-                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-                _db.Collection("print").AddAsync(ticket);
+            var isOrderOk = order?.OrderType != null;
+            if (IsTakeAway(order, isOrderOk))
+            {
+                if (order != null) ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
             }
+            else
+            {
+                if (order != null)
+                {
+                    ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
+                    ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
+                }
+            }
+            var line = CreateHtmlFromLines(lines);
+            CreateOrderTicket(order, isOrderOk, ticket, line);
+            if (order != null) ticket.StoreId = order.StoreId;
+            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+            _db.Collection("print").AddAsync(ticket);
         }
         private static string CreateHtmlFromLines(List<string> lines)
         {
             if (lines == null) throw new ArgumentNullException(nameof(lines));
-            return lines.Aggregate(string.Empty, (current, line) => current + ("<p>" + line + "</p>"));
+            return lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
         }
         private static void CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
         {
@@ -367,23 +354,23 @@ namespace Dominio
             if (isOrderOk && order.OrderType.ToUpper().Trim() == Mesas)
             {
                 title = "Nueva orden de mesa";
-                client = "Cliente: " + order.UserName;
-                var table = "Servir en mesa: " + order.Address;
-                ticket.Data += "<h1>" + title + "</h1><h3>" + client + line + table + "</h3></body></html>";
+                client = $"Cliente: {order.UserName}";
+                var table = $"Servir en mesa: {order.Address}";
+                ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == Reserva)
             {
-                title = "Nueva orden de reserva";
-                client = "Cliente: " + order.UserName;
-                var table = "Servir en mesa: " + order.Address;
-                ticket.Data += "<h1>" + title + "</h1><h3>" + client + line + table + "</h3></body></html>";
+                title = $"Nueva orden de reserva";
+                client = $"Cliente: {order.UserName}";
+                var table = $"Servir en mesa: {order.Address}";
+                ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == TakeAway)
             {
                 title = "Nuevo Take Away";
-                client = "Cliente: " + order.UserName;
-                var time = "Hora de retiro: " + order.TakeAwayHour;
-                ticket.Data += "<h1>" + title + "</h1><h3>" + client + line + time + "</h3></body></html>";
+                client = $"Cliente: {order.UserName}";
+                var time = $"Hora de retiro: {order.TakeAwayHour}";
+                ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{time}</h3></body></html>";
             }
         }
         private static List<string> CreateComments(Orders order)
@@ -401,9 +388,7 @@ namespace Dominio
         }
         private static bool IsTakeAway(Orders order, bool orderOk)
         {
-            if (orderOk && order.OrderType.ToUpper().Trim() == TakeAway)
-                return true;
-            return false;
+            return orderOk && order.OrderType.ToUpper().Trim() == TakeAway;
         }
         #endregion
 
@@ -494,7 +479,7 @@ namespace Dominio
                     var title = "Reserva cancelada";
                     var nroReserva = "Nro: " + booking.BookingNumber;
                     var fecha = "Fecha: " + booking.BookingDate;
-                    string cliente = string.Empty;
+                    var cliente = string.Empty;
                     if (user != null)
                         cliente = "Cliente: " + user.Name;
                     ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cliente + "</p></h3></body></html>";
@@ -538,9 +523,7 @@ namespace Dominio
         }
         private static string BeforeAt(string date, int minutes)
         {
-            DateTime result;
-
-            bool ok = DateTime.TryParseExact(date, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
+            var ok = DateTime.TryParseExact(date, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var result);
 
             if (!ok) //Cuando es mesa cerrada, llega con otro formato.
                 DateTime.TryParseExact(date, "dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
@@ -568,14 +551,13 @@ namespace Dominio
             {
                 Init();
 
-                List<Store> stores = new List<Store>();
+                var stores = new List<Store>();
                 var snapshot = await _db.Collection("stores").GetSnapshotAsync();
                 foreach (var doc in snapshot.Documents)
                 {
                     var store = doc.ToDictionary();
                     var storeName = store.ContainsKey("name") ? store["name"].ToString() : string.Empty;
-                    var allowPrinting = store.ContainsKey("allowPrinting") ? store["allowPrinting"] : false;
-                    if (allowPrinting == null) allowPrinting = false;
+                    var allowPrinting = (store.ContainsKey("allowPrinting") ? store["allowPrinting"] : false) ?? false;
                     stores.Add(new Store
                     {
                         StoreId = doc.Id,
@@ -615,13 +597,12 @@ namespace Dominio
                 }
                 catch
                 {
+                    // ignored
                 }
                 finally
                 {
-                    if (sw != null)
-                        sw.Close();
-                    if (fs != null)
-                        fs.Close();
+                    sw?.Close();
+                    fs?.Close();
                 }
             });
         }
