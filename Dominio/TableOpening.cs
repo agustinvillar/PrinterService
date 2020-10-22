@@ -31,6 +31,12 @@ namespace Dominio
         [FirestoreProperty("totalToPayWithSurcharge")]
         public double? TotalToPayWithSurcharge { get; set; }
 
+        [FirestoreProperty("paidByOther")]
+        public bool PaidByOther { get; set; }
+
+        [FirestoreProperty("payingForAll")]
+        public bool PayingForAll { get; set; }
+
         [FirestoreData]
         public class Discount
         {
@@ -50,5 +56,9 @@ namespace Dominio
                 Iva = 3
             }
         }
+
+        public bool PagoPorTodos => PayingForAll;
+        public bool AlguienLePago => PaidByOther;
+        public bool PagoPorElMismo => !PaidByOther && !PayingForAll;
     }
 }

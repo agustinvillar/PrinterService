@@ -8,11 +8,7 @@ using Google.Apis.Auth.OAuth2;
 using Grpc.Auth;
 using Grpc.Core;
 using Google.Cloud.Firestore.V1;
-using System.Configuration;
 using static Dominio.Ticket;
-using Google.Apis.Util;
-using Google.Protobuf.WellKnownTypes;
-using System.Runtime.CompilerServices;
 using System.Globalization;
 
 namespace Dominio
@@ -22,9 +18,9 @@ namespace Dominio
         #region Attributes
         private static FirestoreDb _db;
 
-        private const string TAKE_AWAY = "TAKEAWAY";
-        private const string RESERVA = "RESERVA";
-        private const string MESAS = "MESAS";
+        private const string TakeAway = "TAKEAWAY";
+        private const string Reserva = "RESERVA";
+        private const string Mesas = "MESAS";
 
         #endregion
 
@@ -46,7 +42,7 @@ namespace Dominio
             var client = FirestoreClient.Create(channel);
             return FirestoreDb.Create("comemosya", client);
         }
-        private static FirestoreDb AccessDatabaseTESTING()
+        private static FirestoreDb AccessDatabaseTesting()
         {
             var credential = GoogleCredential.FromJson("{'type':'service_account'," +
                                                        "'project_id':'menootest-9fa5a'," +
@@ -66,7 +62,7 @@ namespace Dominio
         private static void Init()
         {
             if (_db == null)
-                _db = AccessDatabaseTESTING();
+                _db = AccessDatabaseTesting();
         }
         private static void StartListen()
         {
@@ -174,12 +170,16 @@ namespace Dominio
                             if (to.CulteryPrice > 0) orden += $"<p>Cubiertos: ${to.CulteryPrice}</p>";
                             if (to.Tip > 0) orden += $"<p>Propina: ${to.Tip}</p>";
                             if (to.Surcharge != null) orden += $"<p>Adicional por servicio: ${to.Surcharge}</p>";
-                            orden = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva)
-                                .Aggregate(orden, (current, discount) => current + ($"<p>Descuento {discount.Name}: -${discount.Amount}</p>"));
+                            if (to.Discounts != null)
+                                orden = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva)
+                                    .Aggregate(orden, (current, discount) => current + ($"<p>Descuento {discount.Name}: -${discount.Amount}</p>"));
 
                             if (payment != null) orden += $"Metodo de Pago: {payment.PaymentType} {payment.PaymentMethod}";
-
-                            orden += $"<p>Subtotal: ${to.TotalToPayWithSurcharge}</p>";
+                            if (to.PagoPorTodos || to.PagoPorElMismo)
+                                orden += $"<p>Subtotal: ${to.TotalToPayWithSurcharge}</p>";
+                            if (to.PagoPorElMismo) orden += "<p>Pagó su propia cuenta</p>";
+                            if (to.PagoPorTodos) orden += "<p>Pagó la cuenta de todos.</p>";
+                            if (to.AlguienLePago) orden += "<p>Le pagaron su cuenta.</p>";
                             orden += "<p><b>------------------------------------------------------</b></p>";
                         }
 
@@ -283,7 +283,7 @@ namespace Dominio
         private static void OrderFamilyListen()
         {
             _db.Collection("orderFamily")
-               .OrderByDescending("createdAt")
+               .OrderByDescending("incremental")
                .Limit(1)
                .Listen(OrderFamilyListenCallback);
         }
@@ -313,13 +313,11 @@ namespace Dominio
                             orden.Items[i].Options[j].Price = price.ToString();
                         }
                     }
-
-                    if (!orden.Printed)
-                    {
-                        SetOrderPrintedAsync(document.Id);
-                        SaveOrder(orden);
-                    }
                 }
+
+                if (orden.Printed) return;
+                SetOrderPrintedAsync(document.Id);
+                SaveOrder(orden);
             }
             catch (Exception ex)
             {
@@ -332,21 +330,26 @@ namespace Dominio
             var store = stores.Result.Find(s => s.StoreId.Equals(order.StoreId));
             if (AllowPrint(store))
             {
-                string comment = string.Empty;
-                Ticket ticket = CreateInstanceOfTicket();
-                List<string> lines = CreateComments(order);
+                var comment = string.Empty;
+                var ticket = CreateInstanceOfTicket();
+                var lines = CreateComments(order);
 
-                bool isOrderOk = order != null && order.OrderType != null;
+                var isOrderOk = order?.OrderType != null;
                 if (IsTakeAway(order, isOrderOk))
-                    ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
+                {
+                    if (order != null) ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
+                }
                 else
                 {
-                    ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
-                    ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
+                    if (order != null)
+                    {
+                        ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
+                        ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
+                    }
                 }
-                string line = CreateHtmlFromLines(lines);
+                var line = CreateHtmlFromLines(lines);
                 CreateOrderTicket(order, isOrderOk, ticket, line);
-                ticket.StoreId = order.StoreId;
+                if (order != null) ticket.StoreId = order.StoreId;
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 _db.Collection("print").AddAsync(ticket);
             }
@@ -354,33 +357,28 @@ namespace Dominio
         private static string CreateHtmlFromLines(List<string> lines)
         {
             if (lines == null) throw new ArgumentNullException(nameof(lines));
-            string res = string.Empty;
-            foreach (var line in lines)
-            {
-                res += "<p>" + line + "</p>";
-            }
-            return res;
+            return lines.Aggregate(string.Empty, (current, line) => current + ("<p>" + line + "</p>"));
         }
         private static void CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
         {
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
             string title, client;
 
-            if (isOrderOk && order.OrderType.ToUpper().Trim() == MESAS)
+            if (isOrderOk && order.OrderType.ToUpper().Trim() == Mesas)
             {
                 title = "Nueva orden de mesa";
                 client = "Cliente: " + order.UserName;
                 var table = "Servir en mesa: " + order.Address;
                 ticket.Data += "<h1>" + title + "</h1><h3>" + client + line + table + "</h3></body></html>";
             }
-            else if (isOrderOk && order.OrderType.ToUpper().Trim() == RESERVA)
+            else if (isOrderOk && order.OrderType.ToUpper().Trim() == Reserva)
             {
                 title = "Nueva orden de reserva";
                 client = "Cliente: " + order.UserName;
                 var table = "Servir en mesa: " + order.Address;
                 ticket.Data += "<h1>" + title + "</h1><h3>" + client + line + table + "</h3></body></html>";
             }
-            else if (isOrderOk && order.OrderType.ToUpper().Trim() == TAKE_AWAY)
+            else if (isOrderOk && order.OrderType.ToUpper().Trim() == TakeAway)
             {
                 title = "Nuevo Take Away";
                 client = "Cliente: " + order.UserName;
@@ -390,36 +388,21 @@ namespace Dominio
         }
         private static List<string> CreateComments(Orders order)
         {
-            List<string> lines = new List<string>();
-            double total = 0;
-            foreach (var i in order.Items)
+            var lines = new List<string>();
+            foreach (var item in order.Items)
             {
-                if (order.Items.Length == 0)
-                    break;
-                else
+                if (order.Items != null && order.Items.Length > 0)
                 {
-                    lines.Add("<b>--" + i.Name + "</b>" + " x" + i.Quantity);
-                    if (i.Options != null)
-                    {
-                        foreach (var option in i.Options)
-                        {
-                            if (!option.Equals(null) && !option.Equals(""))
-                            {
-                                lines.Add(option.Name);
-                            }
-                        }
-                    }
-                    lines.Add("Precio: $" + i.SubTotal);
-                    total += i.SubTotal * i.Quantity;
-                    lines.Add("Comentario: " + i.GuestComment);
+                    lines.Add($"<b>--{item.Name}</b> x {item.Quantity}");
+                    if (item.Options != null) lines.AddRange(item.Options.Select(option => option.Name));
+                    if (!string.IsNullOrEmpty(item.GuestComment)) lines.Add($"Comentario: {item.GuestComment}");
                 }
             }
-            lines.Add("Total: $" + total);
             return lines;
         }
         private static bool IsTakeAway(Orders order, bool orderOk)
         {
-            if (orderOk && order.OrderType.ToUpper().Trim() == TAKE_AWAY)
+            if (orderOk && order.OrderType.ToUpper().Trim() == TakeAway)
                 return true;
             return false;
         }
