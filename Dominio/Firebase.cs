@@ -143,7 +143,7 @@ namespace Dominio
                 var store = stores.Result.Find(s => s.StoreId.Equals(tableOpeningFamily.StoreId));
                 var ticket = CreateInstanceOfTicket();
                 if (!AllowPrint(store)) return Task.CompletedTask;
-                ticket.TicketType = TicketTypeEnum.CloseTable.ToString();
+                ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
 
                 if (tableOpeningFamily.Closed)
                 {
@@ -253,7 +253,7 @@ namespace Dominio
             var store = stores.Result.Find(s => s.StoreId.Equals(tableOpeningFamily.StoreId));
             if (!AllowPrint(store)) return;
             var ticket = CreateInstanceOfTicket();
-            ticket.TicketType = TicketTypeEnum.OpenTable.ToString();
+            ticket.TicketType = TicketTypeEnum.OPEN_TABLE.ToString();
 
             const string title = "Apertura de mesa";
             var tableNumber = $"Número de mesa: {tableOpeningFamily.TableNumberToShow}";
@@ -348,7 +348,7 @@ namespace Dominio
         }
         private static void CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
         {
-            ticket.TicketType = TicketTypeEnum.Order.ToString();
+            ticket.TicketType = TicketTypeEnum.ORDER.ToString();
             string title, client;
 
             if (isOrderOk && order.OrderType.ToUpper().Trim() == Mesas)
@@ -474,7 +474,7 @@ namespace Dominio
             if (AllowPrint(store))
             {
                 var ticket = CreateInstanceOfTicket();
-                ticket.TicketType = TicketTypeEnum.CancelledBooking.ToString();
+                ticket.TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString();
                 if (booking.BookingState.Equals("cancelada"))
                 {
                     var title = "Reserva cancelada";
@@ -498,7 +498,7 @@ namespace Dominio
             if (AllowPrint(store))
             {
                 var ticket = CreateInstanceOfTicket();
-                ticket.TicketType = TicketTypeEnum.NewBooking.ToString();
+                ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
                 if (booking.BookingState.Equals("aceptada"))
                 {
                     var title = "Nueva reserva";
