@@ -1,9 +1,4 @@
 ﻿using Google.Cloud.Firestore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dominio
 {
@@ -12,9 +7,21 @@ namespace Dominio
     {
         [FirestoreProperty("id")]
         public string StoreId { get; set; }
+
         [FirestoreProperty("name")]
         public string Name { get; set; }
+
         [FirestoreProperty("allowPrinting")]
         public bool? AllowPrinting { get; set; }
-    } 
+
+        [FirestoreProperty("paymentProvider")]
+        public ProviderEnum PaymentProvider { get; set; }
+
+        public enum ProviderEnum
+        {
+            None = 0,
+            MercadoPago = 1,
+            Geopay = 2
+        }
+    }
 }

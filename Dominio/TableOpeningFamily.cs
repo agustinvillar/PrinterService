@@ -36,6 +36,12 @@ namespace Dominio
         [FirestoreProperty("closedPrinted")]
         public bool ClosedPrinter { get; set; }
 
+        [FirestoreProperty("totalToPayWithSurcharge")]
+        public double? TotalToPayWithSurcharge { get; set; }
+
+        [FirestoreProperty("propina")]
+        public double? Tip { get; set; }
+
         public enum PRINTED_EVENT
         {
             OPENING,
