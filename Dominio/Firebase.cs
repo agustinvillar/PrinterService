@@ -317,12 +317,10 @@ namespace Dominio
                             orden.Items[i].Options[j].Price = price.ToString();
                         }
                     }
-
-
-                    if (!orden.Printed)
-                    {
-                        SaveOrder(orden);
-                    }
+                }
+                if (!orden.Printed)
+                {
+                    SaveOrder(orden);
                 }
             }
             catch (Exception ex)
