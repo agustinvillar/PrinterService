@@ -389,14 +389,13 @@ namespace Dominio
         private static List<string> CreateComments(Orders order)
         {
             var lines = new List<string>();
+            if (order.Items == null) return lines;
+
             foreach (var item in order.Items)
             {
-                if (order.Items != null && order.Items.Length > 0)
-                {
-                    lines.Add($"<b>--{item.Name}</b> x {item.Quantity}");
-                    if (item.Options != null) lines.AddRange(item.Options.Select(option => option.Name));
-                    if (!string.IsNullOrEmpty(item.GuestComment)) lines.Add($"Comentario: {item.GuestComment}");
-                }
+                lines.Add($"<b>--{item.Name}</b> x {item.Quantity}");
+                if (item.Options != null) lines.AddRange(item.Options.Select(option => option.Name));
+                if (!string.IsNullOrEmpty(item.GuestComment)) lines.Add($"Comentario: {item.GuestComment}");
             }
             return lines;
         }
