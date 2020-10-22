@@ -153,7 +153,7 @@ namespace Dominio
                     orden += "<p><b>------------------------------------------------------</b></p>";
                     foreach (var to in tableOpeningFamily.TableOpenings)
                     {
-                        var payment = await GetPayment(to.Id);
+                        var payment = await GetPayment(to.Id, Mesas);
                         orden += $"<p>{to.UserName}</p>";
                         foreach (var order in to.Orders)
                         {
@@ -169,7 +169,7 @@ namespace Dominio
                         if (to.Tip > 0) orden += $"<p>Propina: ${to.Tip}</p>";
                         if (to.Surcharge != null) orden += $"<p>Adicional por servicio: ${to.Surcharge}</p>";
                         if (to.Discounts != null)
-                            orden = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva)
+                            orden = to.Discounts.Where(discount => discount.Type != Discount.DiscountType.Iva)
                                 .Aggregate(orden, (current, discount) => current + ($"<p>Descuento {discount.Name}: -${discount.Amount}</p>"));
 
                         if (payment != null) orden += $"Metodo de Pago: {payment.PaymentType} {payment.PaymentMethod}";
@@ -205,9 +205,10 @@ namespace Dominio
                 title = "Mesa cerrada";
             return title;
         }
-        private static async Task<Payment> GetPayment(string tableOpeningId)
+        private static async Task<Payment> GetPayment(string id, string type)
         {
-            var documentSnapshots = await _db.Collection("payments").WhereEqualTo("tableOpening.id", tableOpeningId).GetSnapshotAsync();
+            var filter = type == Mesas ? "tableOpening.id" : "taOpening.id";
+            var documentSnapshots = await _db.Collection("payments").WhereEqualTo(filter, id).GetSnapshotAsync();
             var payments = documentSnapshots.Documents.Select(d => d.ConvertTo<Payment>()).ToList();
             return await Task.FromResult(payments.FirstOrDefault());
         }
@@ -277,7 +278,7 @@ namespace Dominio
                .Listen(OrderFamilyListenCallback);
         }
 
-        private static readonly Action<QuerySnapshot> OrderFamilyListenCallback = (snapshot) =>
+        private static readonly Action<QuerySnapshot> OrderFamilyListenCallback = snapshot =>
         {
             try
             {
@@ -286,6 +287,7 @@ namespace Dominio
                 var dic = snapshot.Documents.Single().ToDictionary();
                 var items = (List<object>)dic["items"];
                 orden.Address = dic.ContainsKey("address") && dic["address"] != null ? dic["address"].ToString() : " ";
+                orden.Id = document.Id;
 
                 for (var i = 0; i < items.Count; i++)
                 {
@@ -306,47 +308,50 @@ namespace Dominio
 
                 if (orden.Printed) return;
                 SetOrderPrintedAsync(document.Id);
-                SaveOrder(orden);
+                _ = SaveOrderAsync(orden);
             }
             catch (Exception ex)
             {
                 LogErrorAsync(ex.Message);
             }
         };
-        private static void SaveOrder(Orders order)
+        private static Task SaveOrderAsync(Orders order)
         {
-            var stores = GetStores();
-            var store = stores.Result.Find(s => s.StoreId.Equals(order.StoreId));
-            if (!AllowPrint(store)) return;
-            var comment = string.Empty;
-            var ticket = CreateInstanceOfTicket();
-            var lines = CreateComments(order);
+            return Task.Run(async () =>
+            {
+                var stores = GetStores();
+                var store = stores.Result.Find(s => s.StoreId.Equals(order.StoreId));
+                if (!AllowPrint(store)) return Task.CompletedTask;
+                var comment = string.Empty;
+                var ticket = CreateInstanceOfTicket();
+                var lines = CreateComments(order);
 
-            var isOrderOk = order?.OrderType != null;
-            if (IsTakeAway(order, isOrderOk))
-            {
-                if (order != null) ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
-            }
-            else
-            {
-                if (order != null)
+                var isOrderOk = order?.OrderType != null;
+                if (IsTakeAway(order, isOrderOk))
                 {
-                    ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
-                    ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
+                    if (order != null) ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
                 }
-            }
-            var line = CreateHtmlFromLines(lines);
-            CreateOrderTicket(order, isOrderOk, ticket, line);
-            if (order != null) ticket.StoreId = order.StoreId;
-            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-            _db.Collection("print").AddAsync(ticket);
+                else
+                {
+                    if (order != null)
+                    {
+                        ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
+                        ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
+                    }
+                }
+                var line = CreateHtmlFromLines(lines);
+                await CreateOrderTicket(order, isOrderOk, ticket, line);
+                if (order != null) ticket.StoreId = order.StoreId;
+                ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+                return _db.Collection("print").AddAsync(ticket);
+            });
         }
         private static string CreateHtmlFromLines(List<string> lines)
         {
             if (lines == null) throw new ArgumentNullException(nameof(lines));
             return lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
         }
-        private static void CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
+        private static async Task CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
         {
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
             string title, client;
@@ -360,17 +365,19 @@ namespace Dominio
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == Reserva)
             {
-                title = $"Nueva orden de reserva";
+                title = "Nueva orden de reserva";
                 client = $"Cliente: {order.UserName}";
                 var table = $"Servir en mesa: {order.Address}";
                 ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == TakeAway)
             {
+                var payment = await GetPayment(order.Id, TakeAway);
                 title = "Nuevo Take Away";
                 client = $"Cliente: {order.UserName}";
                 var time = $"Hora de retiro: {order.TakeAwayHour}";
-                ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{time}</h3></body></html>";
+                var paymentInfo = $"<h1>Total: {payment.TotalToPayTicket}</h1>";
+                ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{time}</h3>{paymentInfo}</body></html>";
             }
         }
         private static List<string> CreateComments(Orders order)

@@ -24,5 +24,6 @@ namespace Dominio
         public string UserName { get; set; }
         [FirestoreProperty("storeId")]
         public string StoreId { get; set; }
+        public string Id { get; set; }
     }
 }
