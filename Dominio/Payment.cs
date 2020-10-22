@@ -18,7 +18,6 @@ namespace Dominio
         [FirestoreProperty("totalToPay")]
         public double TotalToPay { get; set; }
 
-        public double TotalToPayTicket =>
-            TotalToPay - Discounts.Where(d => d.Type == Discount.DiscountType.Iva).Sum(d => d.Amount);
+        public double TotalToPayTicket => TotalToPay - Discounts?.Where(d => d.Type == Discount.DiscountType.Iva).Sum(d => d.Amount) ?? TotalToPay;
     }
 }
