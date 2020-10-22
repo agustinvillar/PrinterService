@@ -2,9 +2,11 @@
 
 namespace Dominio
 {
-    [FirestoreData]
-    public class User
+    public class CategoryStore
     {
+        [FirestoreProperty("id")]
+        public string Id { get; set; }
+
         [FirestoreProperty("name")]
         public string Name { get; set; }
     }

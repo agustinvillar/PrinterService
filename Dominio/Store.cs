@@ -17,6 +17,9 @@ namespace Dominio
         [FirestoreProperty("paymentProvider")]
         public ProviderEnum PaymentProvider { get; set; }
 
+        [FirestoreProperty("categoryStore")]
+        public CategoryStore[] CategoryStore { get; set; }
+
         public enum ProviderEnum
         {
             None = 0,

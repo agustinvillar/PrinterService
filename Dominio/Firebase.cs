@@ -143,7 +143,7 @@ namespace Dominio
                 var store = stores.Result.Find(s => s.StoreId.Equals(tableOpeningFamily.StoreId));
                 var ticket = CreateInstanceOfTicket();
                 if (!AllowPrint(store)) return Task.CompletedTask;
-                ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
+                ticket.TicketType = TicketTypeEnum.CloseTable.ToString();
 
                 if (tableOpeningFamily.Closed)
                 {
@@ -253,7 +253,7 @@ namespace Dominio
             var store = stores.Result.Find(s => s.StoreId.Equals(tableOpeningFamily.StoreId));
             if (!AllowPrint(store)) return;
             var ticket = CreateInstanceOfTicket();
-            ticket.TicketType = TicketTypeEnum.OPEN_TABLE.ToString();
+            ticket.TicketType = TicketTypeEnum.OpenTable.ToString();
 
             const string title = "Apertura de mesa";
             var tableNumber = $"Número de mesa: {tableOpeningFamily.TableNumberToShow}";
@@ -348,7 +348,7 @@ namespace Dominio
         }
         private static void CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
         {
-            ticket.TicketType = TicketTypeEnum.ORDER.ToString();
+            ticket.TicketType = TicketTypeEnum.Order.ToString();
             string title, client;
 
             if (isOrderOk && order.OrderType.ToUpper().Trim() == Mesas)
@@ -465,6 +465,7 @@ namespace Dominio
         {
             return _db.Collection("orderFamily").Document(doc).UpdateAsync("printed", true);
         }
+
         private static void SaveCancelledBooking(Booking booking, User user)
         {
             var stores = GetStores();
@@ -473,7 +474,7 @@ namespace Dominio
             if (AllowPrint(store))
             {
                 var ticket = CreateInstanceOfTicket();
-                ticket.TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString();
+                ticket.TicketType = TicketTypeEnum.CancelledBooking.ToString();
                 if (booking.BookingState.Equals("cancelada"))
                 {
                     var title = "Reserva cancelada";
@@ -497,7 +498,7 @@ namespace Dominio
             if (AllowPrint(store))
             {
                 var ticket = CreateInstanceOfTicket();
-                ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
+                ticket.TicketType = TicketTypeEnum.NewBooking.ToString();
                 if (booking.BookingState.Equals("aceptada"))
                 {
                     var title = "Nueva reserva";
@@ -550,25 +551,8 @@ namespace Dominio
             return Task.Run(async () =>
             {
                 Init();
-
-                var stores = new List<Store>();
                 var snapshot = await _db.Collection("stores").GetSnapshotAsync();
-                foreach (var doc in snapshot.Documents)
-                {
-                    var store = doc.ToDictionary();
-                    var storeName = store.ContainsKey("name") ? store["name"].ToString() : string.Empty;
-                    var allowPrinting = (store.ContainsKey("allowPrinting") ? store["allowPrinting"] : false) ?? false;
-                    stores.Add(new Store
-                    {
-                        StoreId = doc.Id,
-                        Name = storeName,
-                        AllowPrinting = (bool)allowPrinting,
-                        PaymentProvider = store.ContainsKey("paymentProvider")
-                                          && store["paymentProvider"] != null ? (Store.ProviderEnum)int.Parse(store["paymentProvider"].ToString())
-                            : Store.ProviderEnum.None
-                    });
-                }
-                return stores;
+                return snapshot.Documents.Select(d => d.ConvertTo<Store>()).ToList();
             });
         }
         private static async Task<bool> TableOpeningFamilyAlreadyExists(string id)
