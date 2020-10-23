@@ -15,7 +15,11 @@ namespace Dominio
         public bool? AllowPrinting { get; set; }
 
         [FirestoreProperty("paymentProvider")]
-        public ProviderEnum PaymentProvider { get; set; }
+        public string PaymentProviderString { get; set; }
+
+        public ProviderEnum PaymentProvider => string.IsNullOrEmpty(PaymentProviderString)
+            ? ProviderEnum.None
+            : (ProviderEnum)int.Parse(PaymentProviderString);
 
         [FirestoreProperty("categoryStore")]
         public CategoryStore[] CategoryStore { get; set; }

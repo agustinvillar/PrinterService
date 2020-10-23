@@ -25,5 +25,7 @@ namespace Dominio
         [FirestoreProperty("storeId")]
         public string StoreId { get; set; }
         public string Id { get; set; }
+
+        public bool IsTakeAway => OrderType.ToUpper() == "TAKEAWAY";
     }
 }

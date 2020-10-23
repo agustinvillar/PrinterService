@@ -2,6 +2,7 @@
 
 namespace Dominio
 {
+    [FirestoreData]
     public class CategoryStore
     {
         [FirestoreProperty("id")]
