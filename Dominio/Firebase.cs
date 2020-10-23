@@ -10,6 +10,7 @@ using Grpc.Core;
 using Google.Cloud.Firestore.V1;
 using static Dominio.Ticket;
 using System.Globalization;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Dominio
 {
@@ -99,29 +100,14 @@ namespace Dominio
                 {
                     var dic = d.ToDictionary();
                     var toFamily = d.ConvertTo<TableOpeningFamily>();
-                    foreach (var to in toFamily.TableOpenings)
-                    {
-                        to.CulteryPrice = dic.ContainsKey("culteryPrice") ? int.Parse(dic["culteryPrice"].ToString()) : 0;
-                    }
                     toFamily.TotalToPay = dic.ContainsKey("totalToPay") && dic["totalToPay"] != null ? double.Parse(dic["totalToPay"].ToString()) : 0;
-                    toFamily.TotalToPayWithPropina = dic.ContainsKey("totalToPayWithPropina") && dic["totalToPayWithPropina"] != null
-                        ? double.Parse(dic["totalToPayWithPropina"].ToString()) : 0;
-
-                    var tableNumberToShow = 0;
-                    var ok = dic.ContainsKey("tableNumberToShow") &&
-                                                  dic["tableNumberToShow"] != null &&
-                                                  int.TryParse(dic["tableNumberToShow"].ToString(),
-                                                      out tableNumberToShow);
-
-                    toFamily.TableNumberToShow = ok ? tableNumberToShow : toFamily.TableNumberId;
-
                     return toFamily;
                 });
                 foreach (var tableOpeningFamily in docs)
                 {
                     if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinter)
                     {
-                        SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, TableOpeningFamily.PRINTED_EVENT.CLOSING);
+                        SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, TableOpeningFamily.PrintedEvent.CLOSING);
                         SaveCloseTableOpeningFamily(tableOpeningFamily);
                     }
                 }
@@ -147,12 +133,12 @@ namespace Dominio
                 if (tableOpeningFamily.Closed)
                 {
                     var title = SetTitleForCloseTable(tableOpeningFamily);
-                    var tableNumber = $"Número de mesa: {tableOpeningFamily.TableNumberId}";
+                    var tableNumber = $"Número de mesa: {tableOpeningFamily.TableNumberToShow}";
                     var orden = "<b>Pedidos</b>";
                     orden += "<p><b>------------------------------------------------------</b></p>";
                     foreach (var to in tableOpeningFamily.TableOpenings)
                     {
-                        var payment = await GetPayment(to.Id, Mesas);
+                        //var payment = await GetPayment(to.Id, Mesas);
                         orden += $"<p>{to.UserName}</p>";
                         foreach (var order in to.Orders)
                         {
@@ -164,27 +150,24 @@ namespace Dominio
                                         if (option != null) orden += $"<p>{option.Name} {option.Price}</p>";
                             }
                         }
-                        if (to.CulteryPrice > 0) orden += $"<p>Cubiertos: ${to.CulteryPrice}</p>";
-                        if (to.Tip > 0) orden += $"<p>Propina: ${to.Tip}</p>";
-                        if (to.Surcharge != null) orden += $"<p>Adicional por servicio: ${to.Surcharge}</p>";
+                        if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0) orden += $"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>";
+                        if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0) orden += $"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>";
+                        if (to.Tip != null && to.Tip > 0) orden += $"<p>Propina: ${to.Tip}</p>";
+                        if (to.Surcharge != null && to.Surcharge > 0) orden += $"<p>Adicional por servicio: ${to.Surcharge}</p>";
                         if (to.Discounts != null)
                             orden = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva)
                                 .Aggregate(orden, (current, discount) => current + ($"<p>Descuento {discount.Name}: -${discount.Amount}</p>"));
 
-                        if (payment != null) orden += $"Metodo de Pago: {payment.PaymentType} {payment.PaymentMethod}";
+                        if (!string.IsNullOrEmpty(to.PayMethod)) orden += $"Metodo de Pago: {to.PayMethod}";
                         if (to.PagoPorTodos || to.PagoPorElMismo)
-                            orden += $"<p>Subtotal: ${to.TotalToPayWithSurcharge}</p>";
+                            orden += $"<p>Subtotal: ${to.TotalToTicket(store)}</p>";
                         if (to.PagoPorElMismo) orden += "<p>Pagó su propia cuenta</p>";
                         if (to.PagoPorTodos) orden += "<p>Pagó la cuenta de todos.</p>";
                         if (to.AlguienLePago) orden += "<p>Le pagaron su cuenta.</p>";
                         orden += "<p><b>------------------------------------------------------</b></p>";
                     }
 
-                    var totalToPay = tableOpeningFamily.TotalToPayWithSurcharge;
-                    if (store.PaymentProvider == Store.ProviderEnum.MercadoPago)
-                        totalToPay += tableOpeningFamily.Tip;
-
-                    orden += $"<h1>TOTAL: ${totalToPay}</h1>";
+                    orden += $"<h1>TOTAL: ${tableOpeningFamily.TotalToTicket(store)}</h1>";
                     var date = $"Fecha: {tableOpeningFamily.ClosedAt}";
                     ticket.Data += $"<h1>{title}</h1><h3><p>{tableNumber}</p><p>{date}</p><p>{orden}</p></h3></body></html>";
                 }
@@ -227,18 +210,10 @@ namespace Dominio
             {
                 var document = snapshot.Documents.Single();
                 var tableOpeningFamily = document.ConvertTo<TableOpeningFamily>();
-                var dic = document.ToDictionary();
-                var tableNumberToShow = 0;
-                var ok = dic.ContainsKey("tableNumberToShow") &&
-                         dic["tableNumberToShow"] != null &&
-                         int.TryParse(dic["tableNumberToShow"].ToString(),
-                             out tableNumberToShow);
-
-                tableOpeningFamily.TableNumberToShow = ok ? tableNumberToShow : tableOpeningFamily.TableNumberId;
 
                 if (!tableOpeningFamily.Closed && !tableOpeningFamily.OpenPrinted)
                 {
-                    SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PRINTED_EVENT.OPENING);
+                    SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PrintedEvent.OPENING);
                     _ = SaveOpenTableOpeningFamily(tableOpeningFamily);
                 }
             }
@@ -334,7 +309,7 @@ namespace Dominio
                     ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
                 }
                 var line = CreateHtmlFromLines(lines);
-                await CreateOrderTicket(order, isOrderOk, ticket, line);
+                await CreateOrderTicket(order, isOrderOk, ticket, line, store);
                 ticket.StoreId = order.StoreId;
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 return _db.Collection("print").AddAsync(ticket);
@@ -345,7 +320,7 @@ namespace Dominio
             if (lines == null) throw new ArgumentNullException(nameof(lines));
             return lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
         }
-        private static async Task CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
+        private static async Task CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line, Store store)
         {
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
             string title, client;
@@ -373,9 +348,11 @@ namespace Dominio
                 var paymentInfo = string.Empty;
                 if (payment != null)
                 {
-                    var recargo = (payment.Surcharge ?? 0);
-                    paymentInfo += payment.DiscountsToTicketTa.Aggregate(paymentInfo, (current, discount) => current + $"<h3>{discount}</h3>");
-                    paymentInfo += recargo > 0 ? $"<h3>Adicional por Servicio: ${recargo}</h3>" : string.Empty;
+                    paymentInfo += $"<h3>Método de Pago: {payment.PaymentMethod}</h3>";
+                    paymentInfo += $"<h1>--------------------------------------------------</h1>";
+                    paymentInfo += $"<h1>Recuerde ACEPTAR el pedido.</h1>";
+                    if (store.PaymentProvider == Store.ProviderEnum.MercadoPago) paymentInfo += $"<h1>Pedido YA PAGO.</h1>";
+                    paymentInfo += $"<h1>--------------------------------------------------</h1>";
                     paymentInfo += $"<h1>Total: ${payment.TotalToPayTicket}</h1>";
                 }
 
@@ -605,11 +582,11 @@ namespace Dominio
                 }
             });
         }
-        private static Task<Google.Cloud.Firestore.WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PRINTED_EVENT printEvent)
+        private static Task<Google.Cloud.Firestore.WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PrintedEvent printEvent)
         {
-            if (printEvent == TableOpeningFamily.PRINTED_EVENT.CLOSING)
+            if (printEvent == TableOpeningFamily.PrintedEvent.CLOSING)
                 return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("closedPrinted", true);
-            else if (printEvent == TableOpeningFamily.PRINTED_EVENT.OPENING)
+            else if (printEvent == TableOpeningFamily.PrintedEvent.OPENING)
                 return _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("openPrinted", true);
             else
                 throw new Exception("No se actualizo el estado impreso de la mesa.");

@@ -16,12 +16,12 @@ namespace Dominio
 
         [FirestoreProperty("tableNumberId")]
         public int TableNumberId { get; set; }
-        public int TableNumberToShow { get; set; }
+        [FirestoreProperty("numberToShow")]
+        public string NumberToShow { get; set; }
 
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }
         public double TotalToPay { get; set; }
-        public double TotalToPayWithPropina { get; set; }
         [FirestoreProperty("tableOpenings")]
         public TableOpening[] TableOpenings { get; set; }
 
@@ -39,10 +39,29 @@ namespace Dominio
         [FirestoreProperty("totalToPayWithSurcharge")]
         public double? TotalToPayWithSurcharge { get; set; }
 
+        [FirestoreProperty("totalPaidByClient")]
+        public double? TotalPaidByClient { get; set; }
+
         [FirestoreProperty("propina")]
         public double? Tip { get; set; }
 
-        public enum PRINTED_EVENT
+        public string TableNumberToShow => string.IsNullOrEmpty(NumberToShow) ? TableNumberId.ToString() : NumberToShow;
+        public double TotalToTicket(Store store)
+        {
+            switch (store.PaymentProvider)
+            {
+                case Store.ProviderEnum.Geopay:
+                    return TotalToPayWithSurcharge ?? 0;
+                case Store.ProviderEnum.MercadoPago:
+                    return TotalPaidByClient ?? 0;
+                case Store.ProviderEnum.None:
+                    return TotalToPayWithSurcharge ?? 0;
+                default:
+                    return 0.0;
+            }
+        }
+
+        public enum PrintedEvent
         {
             OPENING,
             CLOSING

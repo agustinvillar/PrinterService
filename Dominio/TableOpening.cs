@@ -5,8 +5,6 @@ namespace Dominio
     [FirestoreData]
     public class TableOpening
     {
-        public int CulteryPrice { get; set; }
-
         [FirestoreProperty("id")]
         public string Id { get; set; }
 
@@ -37,9 +35,42 @@ namespace Dominio
         [FirestoreProperty("payingForAll")]
         public bool PayingForAll { get; set; }
 
+        [FirestoreProperty("artisticCutleryNumber")]
+        public double? ArtisticCutleryQuantity { get; set; }
+
+        [FirestoreProperty("artisticCutleryTotal")]
+        public double? ArtisticCutleryTotal { get; set; }
+
+        [FirestoreProperty("culteryPriceAmount")]
+        public double? CulteryPriceQuantity { get; set; }
+
+        [FirestoreProperty("cutleryPriceTotal")]
+        public double? CutleryPriceTotal { get; set; }
+
+        [FirestoreProperty("totalPaidByClient")]
+        public double? TotalPaidByClient { get; set; }
+
+        [FirestoreProperty("payMethod")]
+        public string PayMethod { get; set; }
+
         public bool PagoPorTodos => PayingForAll;
         public bool AlguienLePago => PaidByOther;
         public bool PagoPorElMismo => !PaidByOther && !PayingForAll;
+
+        public double TotalToTicket(Store store)
+        {
+            switch (store.PaymentProvider)
+            {
+                case Store.ProviderEnum.Geopay:
+                    return TotalToPayWithSurcharge ?? 0;
+                case Store.ProviderEnum.MercadoPago:
+                    return TotalPaidByClient ?? 0;
+                case Store.ProviderEnum.None:
+                    return TotalToPayWithSurcharge ?? 0;
+                default:
+                    return 0.0;
+            }
+        }
 
         [FirestoreData]
         public class Discount
