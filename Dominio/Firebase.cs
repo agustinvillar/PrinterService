@@ -10,7 +10,6 @@ using Grpc.Core;
 using Google.Cloud.Firestore.V1;
 using static Dominio.Ticket;
 using System.Globalization;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Dominio
 {
