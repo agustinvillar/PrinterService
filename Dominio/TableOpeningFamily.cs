@@ -45,7 +45,7 @@ namespace Dominio
         [FirestoreProperty("propina")]
         public double? Tip { get; set; }
 
-        public string TableNumberToShow => NumberToShow.HasValue ? NumberToShow.ToString() : "S/N";
+        public string TableNumberToShow => NumberToShow.HasValue ? NumberToShow.ToString() : TableNumberId.ToString();
         public double TotalToTicket(Store store)
         {
             switch (store.PaymentProvider)
