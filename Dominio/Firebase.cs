@@ -10,6 +10,7 @@ using Grpc.Core;
 using Google.Cloud.Firestore.V1;
 using static Dominio.Ticket;
 using System.Globalization;
+using System.Net.NetworkInformation;
 
 namespace Dominio
 {
@@ -250,49 +251,30 @@ namespace Dominio
                .Listen(OrderFamilyListenCallback);
         }
 
-        private static readonly Action<QuerySnapshot> OrderFamilyListenCallback = snapshot =>
+        private static readonly Action<QuerySnapshot> OrderFamilyListenCallback = async snapshot =>
         {
             try
             {
                 var document = snapshot.Documents.Single();
                 var orden = document.ConvertTo<Orders>();
+                orden.Store = await GetStores(orden.StoreId);
                 var dic = snapshot.Documents.Single().ToDictionary();
-                var items = (List<object>)dic["items"];
-                orden.Address = dic.ContainsKey("address") && dic["address"] != null ? dic["address"].ToString() : " ";
                 orden.Id = document.Id;
-
-                for (var i = 0; i < items.Count; i++)
-                {
-                    var itemParsed = (Dictionary<string, object>)items.ElementAt(i);
-                    var itemOptions = (List<object>)itemParsed["options"] ?? new List<object>();
-                    if (itemOptions.Count > 0)
-                    {
-                        for (var j = 0; j < itemOptions.Count; j++)
-                        {
-                            var optionParsed = (Dictionary<string, object>)itemOptions.ElementAt(j);
-                            var price = optionParsed["price"];
-                            var name = optionParsed["name"];
-                            orden.Items[i].Options[j].Name = name.ToString();
-                            orden.Items[i].Options[j].Price = price.ToString();
-                        }
-                    }
-                }
-
                 if (orden.Printed) return;
-                SetOrderPrintedAsync(document.Id);
+                _ = SetOrderPrintedAsync(document.Id);
                 _ = SaveOrderAsync(orden);
             }
             catch (Exception ex)
             {
-                LogErrorAsync(ex.Message);
+                _ = LogErrorAsync(ex.Message);
             }
         };
         private static Task SaveOrderAsync(Orders order)
         {
             return Task.Run(async () =>
             {
-                var store = await GetStores(order.StoreId);
-                if (!AllowPrint(store)) return Task.CompletedTask;
+
+                if (!AllowPrint(order.Store)) return Task.CompletedTask;
                 var comment = string.Empty;
                 var ticket = CreateInstanceOfTicket();
                 var lines = CreateComments(order);
@@ -308,7 +290,7 @@ namespace Dominio
                     ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
                 }
                 var line = CreateHtmlFromLines(lines);
-                await CreateOrderTicket(order, isOrderOk, ticket, line, store);
+                await CreateOrderTicket(order, isOrderOk, ticket, line);
                 ticket.StoreId = order.StoreId;
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 return _db.Collection("print").AddAsync(ticket);
@@ -319,7 +301,7 @@ namespace Dominio
             if (lines == null) throw new ArgumentNullException(nameof(lines));
             return lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
         }
-        private static async Task CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line, Store store)
+        private static async Task CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
         {
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
             string title, client;
@@ -350,7 +332,7 @@ namespace Dominio
                     paymentInfo += $"<h3>Método de Pago: {payment.PaymentMethod}</h3>";
                     paymentInfo += $"<h1>--------------------------------------------------</h1>";
                     paymentInfo += $"<h1>Recuerde ACEPTAR el pedido.</h1>";
-                    if (store.PaymentProvider == Store.ProviderEnum.MercadoPago) paymentInfo += $"<h1>Pedido YA PAGO.</h1>";
+                    if (order.Store.PaymentProvider == Store.ProviderEnum.MercadoPago) paymentInfo += $"<h1>Pedido YA PAGO.</h1>";
                     paymentInfo += $"<h1>--------------------------------------------------</h1>";
                     paymentInfo += $"<h1>Total: ${payment.TotalToPayTicket}</h1>";
                 }
@@ -365,8 +347,12 @@ namespace Dominio
 
             foreach (var item in order.Items)
             {
-                lines.Add($"<b>--{item.Name}</b> x {item.Quantity}");
-                if (item.Options != null) lines.AddRange(item.Options.Select(option => option.Name));
+                if (item?.CategoryStore != null)
+                    lines.Add($"<b>--[{item.CategoryStore?.Name}] {item.Name}</b> x {item.Quantity}");
+                else
+                    if (item != null) lines.Add($"<b>--{item.Name}</b> x {item.Quantity}");
+
+                if (item?.Options != null) lines.AddRange(item.Options.Select(option => option.Name));
                 if (!string.IsNullOrEmpty(item.GuestComment)) lines.Add($"Comentario: {item.GuestComment}");
             }
             return lines;
