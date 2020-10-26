@@ -16,8 +16,8 @@ namespace Dominio
 
         [FirestoreProperty("tableNumberId")]
         public int TableNumberId { get; set; }
-        [FirestoreProperty("numberToShow")]
-        public string NumberToShow { get; set; }
+        [FirestoreProperty("tableNumberToShow")]
+        public int? NumberToShow { get; set; }
 
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }
@@ -45,7 +45,7 @@ namespace Dominio
         [FirestoreProperty("propina")]
         public double? Tip { get; set; }
 
-        public string TableNumberToShow => string.IsNullOrEmpty(NumberToShow) ? TableNumberId.ToString() : NumberToShow;
+        public string TableNumberToShow => NumberToShow.HasValue ? NumberToShow.ToString() : "S/N";
         public double TotalToTicket(Store store)
         {
             switch (store.PaymentProvider)

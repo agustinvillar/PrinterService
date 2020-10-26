@@ -84,7 +84,7 @@ namespace Dominio
         #region CLOSE TABLE OPENING
         private static void TableOpeningsListen()
         {
-            var date = (DateTime.UtcNow.AddDays(-3) - new DateTime(1970, 1, 1)).TotalSeconds;
+            var date = (DateTime.UtcNow.AddDays(-1) - new DateTime(1970, 1, 1)).TotalSeconds;
 
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("closed", true)
