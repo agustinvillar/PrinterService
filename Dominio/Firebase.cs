@@ -352,7 +352,7 @@ namespace Dominio
                     if (item != null) lines.Add($"<b>--{item.Name}</b> x {item.Quantity}");
 
                 if (item?.Options != null) lines.AddRange(item.Options.Select(option => option.Name));
-                if (!string.IsNullOrEmpty(item.GuestComment)) lines.Add($"Comentario: {item.GuestComment}");
+                if (!string.IsNullOrEmpty(item?.GuestComment)) lines.Add($"Comentario: {item.GuestComment}");
             }
             return lines;
         }
