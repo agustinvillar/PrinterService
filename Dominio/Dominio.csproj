@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Booking.cs" />
+    <Compile Include="CategoryStore.cs" />
     <Compile Include="Firebase.cs" />
     <Compile Include="Payment.cs" />
     <Compile Include="Item.cs" />

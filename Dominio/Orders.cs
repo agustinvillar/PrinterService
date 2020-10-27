@@ -1,16 +1,11 @@
 ﻿using Google.Cloud.Firestore;
-using Google.Protobuf.WellKnownTypes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dominio
 {
     [FirestoreData]
     public class Orders
     {
+        [FirestoreProperty("address")]
         public string Address { get; set; }
         [FirestoreProperty("printed")]
         public bool Printed { get; set; }
@@ -30,5 +25,19 @@ namespace Dominio
         public string UserName { get; set; }
         [FirestoreProperty("storeId")]
         public string StoreId { get; set; }
+        public string Id { get; set; }
+
+        private Store _store;
+        public Store Store
+        {
+            get => _store;
+            set
+            {
+                _store = value;
+                foreach (var item in Items) item.Store = value;
+            }
+        }
+
+        public bool IsTakeAway => OrderType.ToUpper() == "TAKEAWAY";
     }
 }
