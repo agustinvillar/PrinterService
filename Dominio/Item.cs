@@ -30,10 +30,10 @@ namespace Dominio
         [FirestoreProperty("categoryId")]
         public string CategoryId { get; set; }
 
-        [FirestoreProperty("priceWithDiscount")]
-        public double? PriceWithDiscount { get; set; }
+        [FirestoreProperty("total")]
+        public double Total { get; set; }
 
-        public double PriceToTicket => PriceWithDiscount ?? Price;
+        public double PriceToTicket => Total;
 
         public CategoryStore CategoryStore => Store.CategoryStore.SingleOrDefault(s => s.Id == CategoryId);
         public Store Store { get; set; }

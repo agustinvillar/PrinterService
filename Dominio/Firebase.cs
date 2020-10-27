@@ -142,7 +142,8 @@ namespace Dominio
                         {
                             foreach (var item in order.Items)
                             {
-                                orden += $"<p>{GetTime(order.MadeAt)} {item.Name} x {item.Quantity} unidades ${item.PriceToTicket}</p>";
+                                var quantityLabel = item.Quantity > 1 ? "unidades" : "unidad";
+                                orden += $"<p>{GetTime(order.MadeAt)} {item.Name} x {item.Quantity} {quantityLabel} ${item.PriceToTicket}</p>";
                                 if (item.Options != null)
                                     foreach (var option in item.Options)
                                         if (option != null) orden += $"<p>{option.Name} {option.Price}</p>";
