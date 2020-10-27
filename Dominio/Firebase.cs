@@ -334,7 +334,6 @@ namespace Dominio
                     paymentInfo += $"<h1>--------------------------------------------------</h1>";
                     paymentInfo += $"<h1>Total: ${payment.TotalToPayTicket}</h1>";
                 }
-
                 ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{time}</h3>{paymentInfo}</body></html>";
             }
         }
