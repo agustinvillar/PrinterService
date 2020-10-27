@@ -316,8 +316,7 @@ namespace Dominio
             {
                 title = "Nueva orden de reserva";
                 client = $"Cliente: {order.UserName}";
-                var table = $"Servir en mesa: {order.Address}";
-                ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
+                ticket.Data += $"<h1>{title}</h1><h3>{client}{line}</h3></body></html>";
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == TakeAway)
             {
