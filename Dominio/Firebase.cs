@@ -70,6 +70,7 @@ namespace Dominio
             TableOpeningFamilyListen();
             OrderFamilyListen();
             TableOpeningsListen();
+            OrderCancelledListen();
         }
         public static Task RunAsync()
         {
@@ -250,6 +251,16 @@ namespace Dominio
                .Listen(OrderFamilyListenCallback);
         }
 
+        private static void OrderCancelledListen()
+        {
+            _db.Collection("order")
+                .WhereEqualTo("userId", "r19eJA2D8MWfZwCcR1NHrId97nE3")
+                .WhereEqualTo("status", "cancelado")
+                .OrderByDescending("incremental")
+                .Limit(1)
+                .Listen(OrderFamilyListenCallback);
+        }
+
         private static readonly Action<QuerySnapshot> OrderFamilyListenCallback = async snapshot =>
         {
             try
@@ -259,7 +270,8 @@ namespace Dominio
                 orden.Store = await GetStores(orden.StoreId);
                 var dic = snapshot.Documents.Single().ToDictionary();
                 orden.Id = document.Id;
-                if (orden.Printed) return;
+                if (orden.Printed)
+                    return;
                 _ = SetOrderPrintedAsync(document.Id);
                 _ = SaveOrderAsync(orden);
             }
@@ -268,6 +280,7 @@ namespace Dominio
                 _ = LogErrorAsync(ex.Message);
             }
         };
+
         private static Task SaveOrderAsync(Orders order)
         {
             return Task.Run(async () =>
@@ -295,11 +308,13 @@ namespace Dominio
                 return _db.Collection("print").AddAsync(ticket);
             });
         }
+
         private static string CreateHtmlFromLines(List<string> lines)
         {
             if (lines == null) throw new ArgumentNullException(nameof(lines));
             return lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
         }
+
         private static async Task CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
         {
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
@@ -337,6 +352,7 @@ namespace Dominio
                 ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{time}</h3>{paymentInfo}</body></html>";
             }
         }
+
         private static List<string> CreateComments(Orders order)
         {
             var lines = new List<string>();
@@ -354,10 +370,12 @@ namespace Dominio
             }
             return lines;
         }
+
         private static bool IsTakeAway(Orders order, bool orderOk)
         {
             return orderOk && order.IsTakeAway;
         }
+
         #endregion
 
         #region BOOKINGS

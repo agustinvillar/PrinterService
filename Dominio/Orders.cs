@@ -40,4 +40,6 @@ namespace Dominio
 
         public bool IsTakeAway => OrderType.ToUpper() == "TAKEAWAY";
     }
+
+
 }
