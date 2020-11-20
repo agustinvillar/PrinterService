@@ -44,7 +44,7 @@ namespace Dominio
         }
         private static FirestoreDb AccessDatabaseTesting()
         {
-            var credential = GoogleCredential.FromJson("{'type':'service_account'," +
+            string jsonCredentials = "{'type':'service_account'," +
                                                        "'project_id':'menootest-9fa5a'," +
                                                        "'private_key_id':'26339e76106194376a318dcb8d8e588b5cef6a78'," +
                                                        "'private_key':'-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDoE0F5Tw5Y/223\nJ5Kpvlg7jbkAwPzy97OMV+AHFOvm8/+ZemQBxIWof+cbS654R0R9HGilFXUF4v/b\nKdchnQN7ZLKAtL16CMEQgBTWTDytbaZWEexWOt7w8itzeQ1+jvKSKgoMvOu5/k+O\nPLo6UyIQQQFcWoBW8NVeM8cx1FsACTjJBUIh6CXDUFS8ze+hbMQEmnhLscD3ZMJR\n+nhJSj2O6GVPAn34DTZRxv9LupqfGzZF2JJLz8tCtSs+aNSyUYIrVV+jYVUQ93xJ\nsufkdn4MAFJ6fVgw8/3BPYjwpSsuYUbshbuc20xJSYjZxoCUngM7Yn03GVsqO/Rp\nYya87AEJAgMBAAECggEAAmjkxqYv/3OTh5HVH4cW8nNbxuq6FanFxwDIljo84taI\nwma3cB9Cxgeh9jIYey4+Q1BOs9wfrXJ4dqWeEr7HIPpgMh7uUryRiKLT1I/RF3nq\nfr1L529QDk9tbRMGNVi1oxflp9E0X2eJGvB9fIqNcX7DTVqxN3XjuUkvWdCbK0po\nKS6Vly1qgpBW5vlyKq4IbAeTDh2uoja352G6G0Yjjczo8lBQeflXQ+A/VQhex/I9\nszCYiW6ZdwVlwxN2zXbpkzy0C0U2rkrXy5dzv3pMlX1IaIuqKlI6ehUQXwNHsPvA\n8/4PuUSbSGcuQLLcpg8FVO6a92EteZyoPY7Y1UltQQKBgQD05bLd5eqoBCaGDqBu\nsFzZGZvZZaAIFfl2Helz7QopF9HZynytXS7jvyFAGsYVNZ0/hltRxOCmp1YLZtBI\nseV9SAFdF+ShGbfTokyYRa3qTM4jcEvfmJiSW5Q0IMEDG+UqB5JmKoRd+YQLzieB\nviEXUXkxXpFranck9b1ZSMXZcQKBgQDymL5BttCnUuBGMSZ9slnNLNR0gVka6xFX\n0+ZSy+M5iwo5zKdgA7UKEuzE6rgGI7Mj6tQRTeO1NUljALQ+KAePdZAYX8BvrzLV\n0mF7GNc5ulsKDJxrPtzn/RBtDDangLr2DcMZggP2BRxUpmG7t5OIzeiVBW6ZHZRW\nPICZrTuVGQKBgQCYmFfvtEeXEZ7/gTWuQu5XyIE34P7qiua6FsFUnqrqGBGGZ4lw\nbNO+zWVmkEhFBvdIkets9AQXU8VlrVazNUYN3kQbQbwQNfo5QLQBXcmUaO85Xcup\nM2g+KhoasR4TVdphaf5q8qsv8z24LWioi1QLN5UQkiCCkgBTY1vsuk+twQKBgExs\nvhMpqpXrz+eM+FlE5HF0nAGP9ig6wZ3vjXGr9YtdN/15cYkX4eKoj5qBbzPP71Fz\nWxeQeBnQDax4vk+OgMM7AAgNsiv8/4DI5BjJfJQdFy0VR/mpNiKHYLNZ06X1MfDt\n6PaSNPk+Juyr9cITVREV/R1lNrBZ1y9LpB/FqS2RAoGBAJIItGLuubQajkcS3uLX\nC169DyaBlzxH1SHrdtAaZM66BtViD5uvNrJW6AsX33yNVAtpCoPP6XPtavIrQ4Rm\nZh2QjblrYDuNGEFNuKv1kVDUS5oHkw1Al87IwT5badRnEm12hm3X92kRMu0AZORk\n4XtL2zupPadZXhzo1bBILIfh\n-----END PRIVATE KEY-----\n'," +
@@ -53,7 +53,8 @@ namespace Dominio
                                                        "'auth_uri':'https://accounts.google.com/o/oauth2/auth'," +
                                                        "'token_uri':'https://oauth2.googleapis.com/token'," +
                                                        "'auth_provider_x509_cert_url': 'https://www.googleapis.com/oauth2/v1/certs'," +
-                                                       "'client_x509_cert_url':'https://www.googleapis.com/robot/v1/metadata/x509/menootest-9fa5a%40appspot.gserviceaccount.com'}");
+                                                       "'client_x509_cert_url':'https://www.googleapis.com/robot/v1/metadata/x509/menootest-9fa5a%40appspot.gserviceaccount.com'}";
+            var credential = GoogleCredential.FromJson(jsonCredentials);
             var channelCredentials = credential.ToChannelCredentials();
             var channel = new Channel(FirestoreClient.DefaultEndpoint.ToString(), channelCredentials);
             var client = FirestoreClient.Create(channel);
@@ -92,6 +93,7 @@ namespace Dominio
                .WhereGreaterThanOrEqualTo("openedAtNumber", date)
                .Listen(TableOpeningsCallback);
         }
+
         private static Action<QuerySnapshot> TableOpeningsCallback = (snapshot) =>
         {
             try
@@ -117,6 +119,7 @@ namespace Dominio
                 LogErrorAsync(ex.Message);
             }
         };
+
         private static Task SaveCloseTableOpeningFamily(TableOpeningFamily tableOpeningFamily)
         {
             return Task.Run(async () =>
@@ -178,6 +181,7 @@ namespace Dominio
                 return _db.Collection("print").AddAsync(ticket);
             });
         }
+
         private static string SetTitleForCloseTable(TableOpeningFamily tableOpening)
         {
             string title;
@@ -187,6 +191,7 @@ namespace Dominio
                 title = "Mesa cerrada";
             return title;
         }
+
         private static async Task<Payment> GetPayment(string id, string type)
         {
             var filter = type == Mesas ? "tableOpening.id" : "taOpening.id";
@@ -222,6 +227,7 @@ namespace Dominio
                 LogErrorAsync(ex.Message);
             }
         };
+
         private static async Task SaveOpenTableOpeningFamily(TableOpeningFamily tableOpeningFamily)
         {
             var store = await GetStores(tableOpeningFamily.StoreId);
@@ -253,12 +259,29 @@ namespace Dominio
 
         private static void OrderCancelledListen()
         {
-            _db.Collection("order")
-                .WhereEqualTo("userId", "r19eJA2D8MWfZwCcR1NHrId97nE3")
-                .WhereEqualTo("status", "cancelado")
-                .OrderByDescending("incremental")
+            _db.Collection("orders")
+                .OrderByDescending("orderNumber")
                 .Limit(1)
-                .Listen(OrderFamilyListenCallback);
+                .Listen(OrdersCancelledCallBack);
+        }
+
+        private static void OrdersCancelledCallBack(QuerySnapshot snapshot)
+        {
+            try
+            {
+                var document = snapshot.Documents.Single();
+                var order = document.ConvertTo<OrderV2>();
+                if (order.Printed) 
+                {
+                    return;
+                }
+                SetOrderPrintedAsync("orders", document.Id);
+                SaveOrderAsync(order);
+            }
+            catch (Exception ex)
+            {
+                _ = LogErrorAsync(ex.Message);
+            }
         }
 
         private static readonly Action<QuerySnapshot> OrderFamilyListenCallback = async snapshot =>
@@ -272,7 +295,7 @@ namespace Dominio
                 orden.Id = document.Id;
                 if (orden.Printed)
                     return;
-                _ = SetOrderPrintedAsync(document.Id);
+                _ = SetOrderPrintedAsync("orderFamily", document.Id);
                 _ = SaveOrderAsync(orden);
             }
             catch (Exception ex)
@@ -285,7 +308,6 @@ namespace Dominio
         {
             return Task.Run(async () =>
             {
-
                 if (!AllowPrint(order.Store)) return Task.CompletedTask;
                 var comment = string.Empty;
                 var ticket = CreateInstanceOfTicket();
@@ -307,6 +329,11 @@ namespace Dominio
                 ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
                 return _db.Collection("print").AddAsync(ticket);
             });
+        }
+
+        private async static void SaveOrderAsync(OrderV2 order)
+        {
+
         }
 
         private static string CreateHtmlFromLines(List<string> lines)
@@ -351,6 +378,11 @@ namespace Dominio
                 }
                 ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{time}</h3>{paymentInfo}</body></html>";
             }
+        }
+
+        private static async void CreateOrderTicket(OrderV2 order, Ticket ticket, string line) 
+        {
+            
         }
 
         private static List<string> CreateComments(Orders order)
@@ -447,9 +479,9 @@ namespace Dominio
                                                                        : "printedCancelled", true);
         }
 
-        private static Task<Google.Cloud.Firestore.WriteResult> SetOrderPrintedAsync(string doc)
+        private static Task<Google.Cloud.Firestore.WriteResult> SetOrderPrintedAsync(string collection, string doc)
         {
-            return _db.Collection("orderFamily").Document(doc).UpdateAsync("printed", true);
+            return _db.Collection(collection).Document(doc).UpdateAsync("printed", true);
         }
 
         private static async Task SaveCancelledBooking(Booking booking, User user)
