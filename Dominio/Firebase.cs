@@ -10,6 +10,7 @@ using Grpc.Core;
 using Google.Cloud.Firestore.V1;
 using static Dominio.Ticket;
 using System.Globalization;
+using Dominio.Entities;
 
 namespace Dominio
 {
@@ -271,12 +272,12 @@ namespace Dominio
             {
                 var document = snapshot.Documents.Single();
                 var order = document.ConvertTo<OrderV2>();
-                if (order.Status.ToLower() != "cancelado") 
+                if (order.Status.ToLower() != "cancelado")
                 {
                     return;
                 }
-                
-                if (order.Printed) 
+
+                if (order.Printed)
                 {
                     return;
                 }
@@ -338,12 +339,31 @@ namespace Dominio
 
         private async static void SaveOrderAsync(OrderV2 order)
         {
-            return;
+            var ticket = CreateInstanceOfTicket();
+            var lines = CreateComments(order);
+
+            if (order.OrderType.ToLower() == "takeaway")
+            {
+                ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
+            }
+            else
+            {
+                ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
+                ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
+            }
+            var line = CreateHtmlFromLines(lines);
+            CreateOrderTicket(order, ticket, line);
+            ticket.StoreId = order.Store.Id;
+            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+            await _db.Collection("print").AddAsync(ticket);
         }
 
         private static string CreateHtmlFromLines(List<string> lines)
         {
-            if (lines == null) throw new ArgumentNullException(nameof(lines));
+            if (lines == null)
+            {
+                throw new ArgumentNullException(nameof(lines));
+            }
             return lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
         }
 
@@ -385,9 +405,13 @@ namespace Dominio
             }
         }
 
-        private static async void CreateOrderTicket(OrderV2 order, Ticket ticket, string line) 
+        private static async void CreateOrderTicket(OrderV2 order, Ticket ticket, string line)
         {
-            
+            ticket.TicketType = TicketTypeEnum.ORDER.ToString();
+            string title = "Orden cancelada";
+            string client = $"Cliente: {order.UserName}";
+            var table = $"Servir en mesa: {order.Address}";
+            ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
         }
 
         private static List<string> CreateComments(Orders order)
@@ -404,6 +428,33 @@ namespace Dominio
 
                 if (item?.Options != null) lines.AddRange(item.Options.Select(option => option.Name));
                 if (!string.IsNullOrEmpty(item?.GuestComment)) lines.Add($"Comentario: {item.GuestComment}");
+            }
+            return lines;
+        }
+
+        private static List<string> CreateComments(OrderV2 order)
+        {
+            var lines = new List<string>();
+            if (order.Items == null) 
+            {
+                return lines;
+            }
+
+            foreach (var item in order.Items)
+            {
+                if (item != null) 
+                {
+                    lines.Add($"<b>--{item.Name}</b> x {item.Quantity}");
+                }
+
+                if (item?.Options != null) 
+                {
+                    lines.AddRange(item.Options.Select(option => option.Name));
+                }
+                if (!string.IsNullOrEmpty(item?.GuestComment)) 
+                {
+                    lines.Add($"Comentario: {item.GuestComment}");
+                }
             }
             return lines;
         }
@@ -543,6 +594,7 @@ namespace Dominio
         {
             return store?.AllowPrinting != null && store.AllowPrinting.Value;
         }
+
         private static string BeforeAt(string date, int minutes)
         {
             var ok = DateTime.TryParseExact(date, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out var result);
@@ -552,6 +604,7 @@ namespace Dominio
 
             return result.AddMinutes(minutes).ToString("yyyy/MM/dd HH:mm");
         }
+
         private static Ticket CreateInstanceOfTicket()
         {
             return new Ticket()
@@ -562,11 +615,13 @@ namespace Dominio
                 Printed = false,
             };
         }
+
         private static string GetTime(string dateTime)
         {
             var splitDateTime = dateTime.Split(' ');
             return splitDateTime[1];
         }
+
         public static Task<List<Store>> GetStores()
         {
             return Task.Run(async () =>
@@ -576,6 +631,7 @@ namespace Dominio
                 return snapshot.Documents.Select(d => d.ConvertTo<Store>()).ToList();
             });
         }
+
         public static Task<Store> GetStores(string storeId)
         {
             return Task.Run(async () =>
@@ -584,6 +640,7 @@ namespace Dominio
                 return stores.SingleOrDefault(s => s != null && !string.IsNullOrEmpty(s.StoreId) && s.StoreId == storeId);
             });
         }
+        
         private static async Task<bool> TableOpeningFamilyAlreadyExists(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -591,6 +648,7 @@ namespace Dominio
             var query = await _db.Collection("print").WhereEqualTo("tableOpeningFamilyId", id).GetSnapshotAsync();
             return await Task.FromResult(query.Documents.Count == 1);
         }
+
         private static Task LogErrorAsync(string error)
         {
             return Task.Run(() =>
@@ -619,6 +677,7 @@ namespace Dominio
                 }
             });
         }
+
         private static Task<Google.Cloud.Firestore.WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PrintedEvent printEvent)
         {
             if (printEvent == TableOpeningFamily.PrintedEvent.CLOSING)
