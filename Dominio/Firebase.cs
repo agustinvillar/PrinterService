@@ -271,6 +271,11 @@ namespace Dominio
             {
                 var document = snapshot.Documents.Single();
                 var order = document.ConvertTo<OrderV2>();
+                if (order.Status.ToLower() != "cancelado") 
+                {
+                    return;
+                }
+                
                 if (order.Printed) 
                 {
                     return;
@@ -333,7 +338,7 @@ namespace Dominio
 
         private async static void SaveOrderAsync(OrderV2 order)
         {
-
+            return;
         }
 
         private static string CreateHtmlFromLines(List<string> lines)
