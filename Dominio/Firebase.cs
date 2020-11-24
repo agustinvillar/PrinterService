@@ -350,10 +350,9 @@ namespace Dominio
             else
             {
                 ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
-                ticket.TableOpeningFamilyId = order.TableOpeningFamilyId;
             }
             var line = CreateHtmlFromLines(lines);
-            CreateOrderTicket(order, ticket, line);
+            CreateOrderTicket(order, ticket, line, order.OrderType);
             ticket.StoreId = order.Store.Id;
             ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
             await _db.Collection("print").AddAsync(ticket);
@@ -425,7 +424,7 @@ namespace Dominio
                 default:
                     title = "Orden cancelada";
                     break;
-            }            
+            }
             string client = $"Cliente: {order.UserName}";
             ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
         }
