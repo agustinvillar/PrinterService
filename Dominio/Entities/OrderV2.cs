@@ -55,7 +55,7 @@ namespace Dominio.Entities
         public string CancelSource { get; set; }
 
         [FirestoreProperty("bookingId")]
-        public int BookingId { get; set; }
+        public string BookingId { get; set; }
 
         [FirestoreProperty("status")]
         public string Status { get; set; }
