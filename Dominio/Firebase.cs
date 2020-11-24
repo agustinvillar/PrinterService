@@ -264,8 +264,6 @@ namespace Dominio
                 .WhereEqualTo("printed", false)
                 .WhereEqualTo("status", "cancelado")
                 .WhereEqualTo("userName", "Carlos Campos")
-                //.OrderByDescending("orderNumber")
-                //.Limit(1)
                 .Listen(OrdersCancelledCallBack);
         }
 
@@ -408,12 +406,27 @@ namespace Dominio
             }
         }
 
-        private static async void CreateOrderTicket(OrderV2 order, Ticket ticket, string line)
+        private static void CreateOrderTicket(OrderV2 order, Ticket ticket, string line, string orderType)
         {
+            string title = "";
+            string table = "";
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
-            string title = "Orden cancelada";
+            switch (orderType.ToLower())
+            {
+                case "reserva":
+                    title = "Orden de reserva cancelada";
+                    table = $"Servir en mesa: {order.Address}";
+                    break;
+
+                case "takeaway":
+                    title = "Orden TakeAway cancelada";
+                    break;
+
+                default:
+                    title = "Orden cancelada";
+                    break;
+            }            
             string client = $"Cliente: {order.UserName}";
-            var table = $"Servir en mesa: {order.Address}";
             ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
         }
 
