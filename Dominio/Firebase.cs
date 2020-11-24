@@ -280,8 +280,8 @@ namespace Dominio
                     return;
                 }
                 var order = document.GetOrderData();
-                SetOrderPrintedAsync("orders", document.Id);
-                SaveOrderAsync(order);
+                //SetOrderPrintedAsync("orders", document.Id);
+                //SaveOrderAsync(order);
             }
             catch (Exception ex)
             {
@@ -338,21 +338,21 @@ namespace Dominio
 
         private async static void SaveOrderAsync(OrderV2 order)
         {
-            var ticket = CreateInstanceOfTicket();
-            var lines = CreateComments(order);
-            if (order.OrderType.ToLower() == "takeaway")
-            {
-                ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
-            }
-            else
-            {
-                ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
-            }
-            var line = CreateHtmlFromLines(lines);
-            CreateOrderTicket(order, ticket, line, order.OrderType);
-            ticket.StoreId = order.Store.Id;
-            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-            await _db.Collection("print").AddAsync(ticket);
+            //var ticket = CreateInstanceOfTicket();
+            //var lines = CreateComments(order);
+            //if (order.OrderType.ToLower() == "takeaway")
+            //{
+            //    ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
+            //}
+            //else
+            //{
+            //    ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
+            //}
+            //var line = CreateHtmlFromLines(lines);
+            //CreateOrderTicket(order, ticket, line, order.OrderType);
+            //ticket.StoreId = order.Store.Id;
+            //ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+            //await _db.Collection("print").AddAsync(ticket);
         }
 
         private static string CreateHtmlFromLines(List<string> lines)
@@ -404,26 +404,26 @@ namespace Dominio
 
         private static void CreateOrderTicket(OrderV2 order, Ticket ticket, string line, string orderType)
         {
-            string title = "";
-            string table = "";
-            ticket.TicketType = TicketTypeEnum.ORDER.ToString();
-            switch (orderType.ToLower())
-            {
-                case "reserva":
-                    title = "Orden de reserva cancelada";
-                    break;
+            //string title = "";
+            //string table = "";
+            //ticket.TicketType = TicketTypeEnum.ORDER.ToString();
+            //switch (orderType.ToLower())
+            //{
+            //    case "reserva":
+            //        title = "Orden de reserva cancelada";
+            //        break;
 
-                case "takeaway":
-                    title = "Orden TakeAway cancelada";
-                    break;
+            //    case "takeaway":
+            //        title = "Orden TakeAway cancelada";
+            //        break;
 
-                default:
-                    title = "Orden cancelada";
-                    table = $"Servir en mesa: {order.Address}";
-                    break;
-            }
-            string client = $"Cliente: {order.UserName}";
-            ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
+            //    default:
+            //        title = "Orden cancelada";
+            //        table = $"Servir en mesa: {order.Address}";
+            //        break;
+            //}
+            //string client = $"Cliente: {order.UserName}";
+            //ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
         }
 
         private static List<string> CreateComments(Orders order)

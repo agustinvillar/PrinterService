@@ -34,7 +34,7 @@ namespace Dominio.Entities
         public string TakeAwayHour { get; set; }
 
         [FirestoreProperty("orderNumber")]
-        public int OrderNumber { get; set; }
+        public string OrderNumber { get; set; }
 
         [FirestoreProperty("orderType")]
         public string OrderType { get; set; }
@@ -46,7 +46,7 @@ namespace Dominio.Entities
         public string OrderDate { get; set; }
 
         [FirestoreProperty("updatedAt")]
-        public int UpdatedAt { get; set; }
+        public string UpdatedAt { get; set; }
 
         [FirestoreProperty("tableOpeningId")]
         public string TableOpeningId { get; set; }
@@ -61,7 +61,7 @@ namespace Dominio.Entities
         public string Status { get; set; }
 
         [FirestoreProperty("total")]
-        public double Total { get; set; }
+        public string Total { get; set; }
     }
 
     [FirestoreData]
@@ -71,7 +71,7 @@ namespace Dominio.Entities
         public string StoreId { get; set; }
 
         [FirestoreProperty("total")]
-        public double Total { get; set; }
+        public string Total { get; set; }
 
         [FirestoreProperty("guestComment")]
         public string GuestComment { get; set; }
@@ -80,19 +80,19 @@ namespace Dominio.Entities
         public Promotions Promotions { get; set; }
 
         [FirestoreProperty("priceWithDiscountTA")]
-        public double PriceWithDiscountTA { get; set; }
+        public string PriceWithDiscountTA { get; set; }
 
         [FirestoreProperty("priceWithDiscount")]
-        public double PriceWithDiscount { get; set; }
+        public string PriceWithDiscount { get; set; }
 
         [FirestoreProperty("quantity")]
-        public int Quantity { get; set; }
+        public string Quantity { get; set; }
 
         [FirestoreProperty("priceTA")]
-        public double PriceTA { get; set; }
+        public string PriceTA { get; set; }
 
         [FirestoreProperty("price")]
-        public double Price { get; set; }
+        public string Price { get; set; }
 
         [FirestoreProperty("categoryId")]
         public string CategoryId { get; set; }
@@ -101,10 +101,10 @@ namespace Dominio.Entities
         public ItemOptionV2[] Options { get; set; }
 
         [FirestoreProperty("subTotal")]
-        public double SubTotal { get; set; }
+        public string SubTotal { get; set; }
 
         [FirestoreProperty("itemIsTA")]
-        public bool ItemIsTA { get; set; }
+        public string ItemIsTA { get; set; }
 
         [FirestoreProperty("id")]
         public string Id { get; set; }
@@ -139,14 +139,14 @@ namespace Dominio.Entities
         public string Name { get; set; }
 
         [FirestoreProperty("price")]
-        public double Price { get; set; }
+        public string Price { get; set; }
     }
 
     [FirestoreData]
     public class Promotions
     {
         [FirestoreProperty("activated")]
-        public bool Activated { get; set; }
+        public string Activated { get; set; }
 
         [FirestoreProperty("discount")]
         public string Discount { get; set; }
@@ -155,33 +155,26 @@ namespace Dominio.Entities
         public string Name { get; set; }
     }
 
-    [FirestoreData]
-    public sealed class OrderPrinted : OrderV2{
-
-        [FirestoreProperty("printed")]
-        public bool Printed { get; set; }
-    }
-
     public static class OrderPrintedExtensions 
     {
         public static bool IsPrinted(this DocumentSnapshot snapshot) 
         {
             try
             {
-                snapshot.ConvertTo<OrderPrinted>();
-                return true;
+                var document = snapshot.ToDictionary();
+                return document.ContainsKey("printed");
             }
             catch 
             {
-                snapshot.ConvertTo<OrderV2>();
                 return false;
             }
         }
 
         public static OrderV2 GetOrderData(this DocumentSnapshot snapshot) 
         {
-            var document = snapshot.ConvertTo<OrderV2>();
-            return document;
+            var document = snapshot.ToDictionary();
+            var objectCasted = Utils.GetObject<OrderV2>(document);
+            return objectCasted;
         }
     }
 }
