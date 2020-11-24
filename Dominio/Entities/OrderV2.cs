@@ -1,6 +1,5 @@
 ﻿using Google.Cloud.Firestore;
 using System.Collections.Generic;
-using static Dominio.Item;
 
 namespace Dominio.Entities
 {
@@ -62,37 +61,100 @@ namespace Dominio.Entities
         public string Status { get; set; }
 
         [FirestoreProperty("total")]
-        public int Total { get; set; }
+        public double Total { get; set; }
 
         [FirestoreProperty("printed")]
         public bool Printed { get; set; }
     }
 
+    [FirestoreData]
     public class ItemV2
     {
+        [FirestoreProperty("storeId")]
         public string StoreId { get; set; }
-        public int Total { get; set; }
+
+        [FirestoreProperty("total")]
+        public double Total { get; set; }
+
+        [FirestoreProperty("guestComment")]
         public string GuestComment { get; set; }
+
+        [FirestoreProperty("promotions")]
         public Promotions Promotions { get; set; }
-        public int PriceWithDiscountTA { get; set; }
-        public string PriceWithDiscount { get; set; }
+
+        [FirestoreProperty("priceWithDiscountTA")]
+        public double PriceWithDiscountTA { get; set; }
+
+        [FirestoreProperty("priceWithDiscount")]
+        public double PriceWithDiscount { get; set; }
+
+        [FirestoreProperty("quantity")]
         public int Quantity { get; set; }
-        public int PriceTA { get; set; }
-        public int Price { get; set; }
+
+        [FirestoreProperty("priceTA")]
+        public double PriceTA { get; set; }
+
+        [FirestoreProperty("price")]
+        public double Price { get; set; }
+
+        [FirestoreProperty("categoryId")]
         public string CategoryId { get; set; }
-        public ItemOption[] Options { get; set; }
-        public int SubTotal { get; set; }
+
+        [FirestoreProperty("options")]
+        public ItemOptionV2[] Options { get; set; }
+
+        [FirestoreProperty("subTotal")]
+        public double SubTotal { get; set; }
+
+        [FirestoreProperty("itemIsTA")]
         public bool ItemIsTA { get; set; }
+
+        [FirestoreProperty("id")]
         public string Id { get; set; }
+
+        [FirestoreProperty("thumbnail")]
         public string Thumbnail { get; set; }
+
+        [FirestoreProperty("name")]
         public string Name { get; set; }
+
+        [FirestoreProperty("softId")]
         public string SoftId { get; set; }
     }
 
+    [FirestoreData]
     public class StoreV2
     {
+        [FirestoreProperty("id")]
         public string Id { get; set; }
+
+        [FirestoreProperty("name")]
         public string Name { get; set; }
+
+        [FirestoreProperty("logoImage")]
         public string LogoImage { get; set; }
+    }
+
+    [FirestoreData]
+    public class ItemOptionV2
+    {
+        [FirestoreProperty("name")]
+        public string Name { get; set; }
+        
+        [FirestoreProperty("price")]
+        public double Price { get; set; }
+    }
+
+    [FirestoreData]
+    public class Promotions
+    {
+        [FirestoreProperty("activated")]
+        public bool Activated { get; set; }
+
+        [FirestoreProperty("discount")]
+        public string Discount { get; set; }
+
+        [FirestoreProperty("name")]
+        public string Name { get; set; }
     }
 }

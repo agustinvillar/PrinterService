@@ -261,8 +261,11 @@ namespace Dominio
         private static void OrderCancelledListen()
         {
             _db.Collection("orders")
-                .OrderByDescending("orderNumber")
-                .Limit(1)
+                .WhereEqualTo("printed", false)
+                .WhereEqualTo("status", "cancelado")
+                .WhereEqualTo("userName", "Carlos Campos")
+                //.OrderByDescending("orderNumber")
+                //.Limit(1)
                 .Listen(OrdersCancelledCallBack);
         }
 
@@ -270,7 +273,7 @@ namespace Dominio
         {
             try
             {
-                var document = snapshot.Documents.Single();
+                var document = snapshot.Documents.OrderByDescending(o => o.CreateTime).Single();
                 var order = document.ConvertTo<OrderV2>();
                 if (order.Status.ToLower() != "cancelado")
                 {
@@ -341,7 +344,7 @@ namespace Dominio
         {
             var ticket = CreateInstanceOfTicket();
             var lines = CreateComments(order);
-
+            order.Printed = true;
             if (order.OrderType.ToLower() == "takeaway")
             {
                 ticket.PrintBefore = BeforeAt(order.OrderDate, -5);

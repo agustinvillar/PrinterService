@@ -40,11 +40,4 @@ namespace Dominio
 
         public virtual bool IsTakeAway => OrderType.ToUpper() == "TAKEAWAY";
     }
-
-    public class Promotions
-    {
-        public bool Activated { get; set; }
-        public string Discount { get; set; }
-        public string Name { get; set; }
-    }
 }
