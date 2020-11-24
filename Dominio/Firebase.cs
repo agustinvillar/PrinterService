@@ -261,7 +261,6 @@ namespace Dominio
         private static void OrderCancelledListen()
         {
             _db.Collection("orders")
-                .WhereEqualTo("printed", false)
                 .WhereEqualTo("status", "cancelado")
                 .WhereEqualTo("userName", "Carlos Campos")
                 .Listen(OrdersCancelledCallBack);
@@ -271,17 +270,16 @@ namespace Dominio
         {
             try
             {
-                var document = snapshot.Documents.OrderByDescending(o => o.CreateTime).Single();
-                var order = document.ConvertTo<OrderV2>();
-                if (order.Status.ToLower() != "cancelado")
+                if (snapshot.Documents == null || snapshot.Documents.Count == 0)
                 {
                     return;
                 }
-
-                if (order.Printed)
+                var document = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
+                if (document.IsPrinted())
                 {
                     return;
                 }
+                var order = document.GetOrderData();
                 SetOrderPrintedAsync("orders", document.Id);
                 SaveOrderAsync(order);
             }
@@ -342,7 +340,6 @@ namespace Dominio
         {
             var ticket = CreateInstanceOfTicket();
             var lines = CreateComments(order);
-            order.Printed = true;
             if (order.OrderType.ToLower() == "takeaway")
             {
                 ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
@@ -414,7 +411,6 @@ namespace Dominio
             {
                 case "reserva":
                     title = "Orden de reserva cancelada";
-                    table = $"Servir en mesa: {order.Address}";
                     break;
 
                 case "takeaway":
@@ -423,6 +419,7 @@ namespace Dominio
 
                 default:
                     title = "Orden cancelada";
+                    table = $"Servir en mesa: {order.Address}";
                     break;
             }
             string client = $"Cliente: {order.UserName}";
@@ -450,23 +447,23 @@ namespace Dominio
         private static List<string> CreateComments(OrderV2 order)
         {
             var lines = new List<string>();
-            if (order.Items == null) 
+            if (order.Items == null)
             {
                 return lines;
             }
 
             foreach (var item in order.Items)
             {
-                if (item != null) 
+                if (item != null)
                 {
                     lines.Add($"<b>--{item.Name}</b> x {item.Quantity}");
                 }
 
-                if (item?.Options != null) 
+                if (item?.Options != null)
                 {
                     lines.AddRange(item.Options.Select(option => option.Name));
                 }
-                if (!string.IsNullOrEmpty(item?.GuestComment)) 
+                if (!string.IsNullOrEmpty(item?.GuestComment))
                 {
                     lines.Add($"Comentario: {item.GuestComment}");
                 }
@@ -655,7 +652,7 @@ namespace Dominio
                 return stores.SingleOrDefault(s => s != null && !string.IsNullOrEmpty(s.StoreId) && s.StoreId == storeId);
             });
         }
-        
+
         private static async Task<bool> TableOpeningFamilyAlreadyExists(string id)
         {
             if (string.IsNullOrEmpty(id))

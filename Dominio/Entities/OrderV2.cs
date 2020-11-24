@@ -62,9 +62,6 @@ namespace Dominio.Entities
 
         [FirestoreProperty("total")]
         public double Total { get; set; }
-
-        [FirestoreProperty("printed")]
-        public bool Printed { get; set; }
     }
 
     [FirestoreData]
@@ -140,7 +137,7 @@ namespace Dominio.Entities
     {
         [FirestoreProperty("name")]
         public string Name { get; set; }
-        
+
         [FirestoreProperty("price")]
         public double Price { get; set; }
     }
@@ -156,5 +153,35 @@ namespace Dominio.Entities
 
         [FirestoreProperty("name")]
         public string Name { get; set; }
+    }
+
+    [FirestoreData]
+    public sealed class OrderPrinted : OrderV2{
+
+        [FirestoreProperty("printed")]
+        public bool Printed { get; set; }
+    }
+
+    public static class OrderPrintedExtensions 
+    {
+        public static bool IsPrinted(this DocumentSnapshot snapshot) 
+        {
+            try
+            {
+                snapshot.ConvertTo<OrderPrinted>();
+                return true;
+            }
+            catch 
+            {
+                snapshot.ConvertTo<OrderV2>();
+                return false;
+            }
+        }
+
+        public static OrderV2 GetOrderData(this DocumentSnapshot snapshot) 
+        {
+            var document = snapshot.ConvertTo<OrderV2>();
+            return document;
+        }
     }
 }
