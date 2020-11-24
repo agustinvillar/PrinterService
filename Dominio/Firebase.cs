@@ -280,8 +280,8 @@ namespace Dominio
                     return;
                 }
                 var order = document.GetOrderData();
-                //SetOrderPrintedAsync("orders", document.Id);
-                //SaveOrderAsync(order);
+                SetOrderPrintedAsync("orders", document.Id);
+                SaveOrderAsync(order);
             }
             catch (Exception ex)
             {

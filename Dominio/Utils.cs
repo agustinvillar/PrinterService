@@ -1,7 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Threading;
 
 namespace Dominio
 {
@@ -9,19 +7,9 @@ namespace Dominio
     {
         public static T GetObject<T>(this Dictionary<string, object> dict)
         {
-            Type type = typeof(T);
-            var obj = Activator.CreateInstance(type);
-
-            foreach (var key in dict)
-            {
-                string propertyKey = key.Key;
-                var property = type.GetProperty(propertyKey);
-                if (property != null) 
-                {
-                    property.SetValue(obj, string.Empty + key.Value);
-                }
-            }
-            return (T)obj;
+            var json = JsonConvert.SerializeObject(dict, Newtonsoft.Json.Formatting.Indented);
+            var result = JsonConvert.DeserializeObject<T>(json);
+            return result;
         }
     }
 }
