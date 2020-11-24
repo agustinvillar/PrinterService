@@ -262,7 +262,6 @@ namespace Dominio
         {
             _db.Collection("orders")
                 .WhereEqualTo("status", "cancelado")
-                .WhereEqualTo("userName", "Carlos Campos")
                 .Listen(OrdersCancelledCallBack);
         }
 
@@ -338,21 +337,21 @@ namespace Dominio
 
         private async static void SaveOrderAsync(OrderV2 order)
         {
-            //var ticket = CreateInstanceOfTicket();
-            //var lines = CreateComments(order);
-            //if (order.OrderType.ToLower() == "takeaway")
-            //{
-            //    ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
-            //}
-            //else
-            //{
-            //    ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
-            //}
-            //var line = CreateHtmlFromLines(lines);
-            //CreateOrderTicket(order, ticket, line, order.OrderType);
-            //ticket.StoreId = order.Store.Id;
-            //ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-            //await _db.Collection("print").AddAsync(ticket);
+            var ticket = CreateInstanceOfTicket();
+            var lines = CreateComments(order);
+            if (order.OrderType.ToLower() == "takeaway")
+            {
+                ticket.PrintBefore = BeforeAt(order.OrderDate, -5);
+            }
+            else
+            {
+                ticket.PrintBefore = BeforeAt(order.OrderDate, 30);
+            }
+            var line = CreateHtmlFromLines(lines);
+            CreateOrderTicket(order, ticket, line, order.OrderType);
+            ticket.StoreId = order.Store.Id;
+            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+            await _db.Collection("print").AddAsync(ticket);
         }
 
         private static string CreateHtmlFromLines(List<string> lines)
@@ -361,7 +360,8 @@ namespace Dominio
             {
                 throw new ArgumentNullException(nameof(lines));
             }
-            return lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
+            string items = lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
+            return items;
         }
 
         private static async Task CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
@@ -404,26 +404,26 @@ namespace Dominio
 
         private static void CreateOrderTicket(OrderV2 order, Ticket ticket, string line, string orderType)
         {
-            //string title = "";
-            //string table = "";
-            //ticket.TicketType = TicketTypeEnum.ORDER.ToString();
-            //switch (orderType.ToLower())
-            //{
-            //    case "reserva":
-            //        title = "Orden de reserva cancelada";
-            //        break;
+            string table = "";
+            ticket.TicketType = TicketTypeEnum.ORDER.ToString();
+            string title;
+            switch (orderType.ToLower())
+            {
+                case "reserva":
+                    title = "Orden de reserva cancelada";
+                    break;
 
-            //    case "takeaway":
-            //        title = "Orden TakeAway cancelada";
-            //        break;
+                case "takeaway":
+                    title = "Orden Take Away cancelada";
+                    break;
 
-            //    default:
-            //        title = "Orden cancelada";
-            //        table = $"Servir en mesa: {order.Address}";
-            //        break;
-            //}
-            //string client = $"Cliente: {order.UserName}";
-            //ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{table}</h3></body></html>";
+                default:
+                    title = "Orden cancelada";
+                    table = $"Servir en mesa: {order.Address}";
+                    break;
+            }
+            string client = $"Cliente: {order.UserName}";
+            ticket.Data += $"<h1>{title}</h1><br/><h3>{client}{line}{table}</h3></body></html>";
         }
 
         private static List<string> CreateComments(Orders order)
@@ -492,6 +492,7 @@ namespace Dominio
                .WhereEqualTo("bookingState", "cancelada")
                .Listen(BookingsCancelCallback);
         }
+
         private static readonly Action<QuerySnapshot> BookingsCancelCallback = async (snapshot) =>
         {
             try
@@ -515,6 +516,7 @@ namespace Dominio
                 _ = LogErrorAsync(ex.Message);
             }
         };
+
         private static readonly Action<QuerySnapshot> BookingsAcceptedCallback = async (snapshot) =>
         {
             try
