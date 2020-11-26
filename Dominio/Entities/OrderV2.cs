@@ -1,7 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using System.Collections.Generic;
 
-namespace Dominio.Entities
+namespace Menoo.PrinterService.Business.Entities
 {
     [FirestoreData]
     public class OrderV2

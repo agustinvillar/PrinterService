@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MenooPrinterService
+namespace Menoo.PrinterService.App
 {
     public partial class Info : Form
     {

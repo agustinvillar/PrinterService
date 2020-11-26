@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dominio
+namespace Menoo.PrinterService.Business
 {
     [FirestoreData]
     class Booking

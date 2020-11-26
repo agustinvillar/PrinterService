@@ -8,11 +8,11 @@ using Google.Apis.Auth.OAuth2;
 using Grpc.Auth;
 using Grpc.Core;
 using Google.Cloud.Firestore.V1;
-using static Dominio.Ticket;
+using static Menoo.PrinterService.Business.Ticket;
 using System.Globalization;
-using Dominio.Entities;
+using Menoo.PrinterService.Business.Entities;
 
-namespace Dominio
+namespace Menoo.PrinterService.Business
 {
     public static class Firebase
     {
@@ -74,6 +74,7 @@ namespace Dominio
             TableOpeningsListen();
             OrderCancelledListen();
         }
+
         public static Task RunAsync()
         {
             return Task.Run(() =>
@@ -210,6 +211,7 @@ namespace Dominio
                .Limit(1)
                .Listen(TableOpeningFamilyCallback);
         }
+
         private static Action<QuerySnapshot> TableOpeningFamilyCallback = (snapshot) =>
         {
             try

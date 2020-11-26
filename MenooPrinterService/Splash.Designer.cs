@@ -1,4 +1,4 @@
-﻿namespace MenooPrinterService
+﻿namespace Menoo.PrinterService.App
 {
     partial class Splash
     {

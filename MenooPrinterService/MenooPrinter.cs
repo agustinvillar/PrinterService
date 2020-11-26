@@ -1,15 +1,8 @@
-﻿using Dominio;
+﻿using Menoo.PrinterService.Business;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MenooPrinterService
+namespace Menoo.PrinterService.App
 {
     public partial class MenooPrinter : Form
     {

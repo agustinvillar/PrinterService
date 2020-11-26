@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Dominio
+namespace Menoo.PrinterService.Business
 {
     public static class Utils
     {
