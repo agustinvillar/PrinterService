@@ -3,6 +3,7 @@ using Google.Cloud.Firestore;
 using Google.Cloud.Firestore.V1;
 using Grpc.Auth;
 using Grpc.Core;
+using Menoo.PrinterService.Business.Bookings;
 using System;
 using System.Configuration;
 
@@ -13,10 +14,44 @@ namespace Menoo.PrinterService.Business
     {
         private readonly FirestoreDb _db;
 
+        private readonly BookingManager _bookingManager;
+
         public Listeners() 
         {
             _db = GetInstanceDb();
+            _bookingManager = new BookingManager(_db);
         }
+
+        public void Load() 
+        {
+            _bookingManager.Listen();
+            TableOpeningFamily();
+            OrderFamily();
+            TableOpenings();
+            OrdersCancelled();
+        }
+
+        #region listeners
+        private void OrderFamily()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OrdersCancelled()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void TableOpeningFamily()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void TableOpenings()
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
 
         #region private methods
 

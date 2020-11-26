@@ -99,6 +99,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Bookings\BookingManager.cs" />
     <Compile Include="Entities\Booking.cs" />
     <Compile Include="Entities\CategoryStore.cs" />
     <Compile Include="Entities\OrderCancelled.cs" />
@@ -120,7 +121,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Bookings\" />
     <Folder Include="Orders\" />
     <Folder Include="Settings\" />
     <Folder Include="Tables\" />
