@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.IO;
+﻿using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Firestore;
-using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Firestore.V1;
 using Grpc.Auth;
 using Grpc.Core;
-using Google.Cloud.Firestore.V1;
-using static Menoo.PrinterService.Business.Ticket;
-using System.Globalization;
 using Menoo.PrinterService.Business.Entities;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using static Menoo.PrinterService.Business.Entities.Ticket;
 
 namespace Menoo.PrinterService.Business
 {
@@ -337,7 +337,7 @@ namespace Menoo.PrinterService.Business
             });
         }
 
-        private async static void SaveOrderAsync(OrderV2 order)
+        private async static void SaveOrderAsync(OrderCancelled order)
         {
             var ticket = CreateInstanceOfTicket();
             var lines = CreateComments(order);
@@ -404,7 +404,7 @@ namespace Menoo.PrinterService.Business
             }
         }
 
-        private static void CreateOrderTicket(OrderV2 order, Ticket ticket, string line, string orderType)
+        private static void CreateOrderTicket(OrderCancelled order, Ticket ticket, string line, string orderType)
         {
             string table = "";
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
@@ -446,7 +446,7 @@ namespace Menoo.PrinterService.Business
             return lines;
         }
 
-        private static List<string> CreateComments(OrderV2 order)
+        private static List<string> CreateComments(OrderCancelled order)
         {
             var lines = new List<string>();
             if (order.Items == null)
