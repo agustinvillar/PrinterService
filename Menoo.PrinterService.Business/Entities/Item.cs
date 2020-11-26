@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Google.Cloud.Firestore;
 
-namespace Menoo.PrinterService.Business
+namespace Menoo.PrinterService.Business.Entities
 {
     [FirestoreData]
     public class Item
