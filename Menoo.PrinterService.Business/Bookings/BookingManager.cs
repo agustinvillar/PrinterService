@@ -37,7 +37,6 @@ namespace Menoo.PrinterService.Business.Bookings
         /// <summary>
         /// Evento para una reserva aceptada.
         /// </summary>
-        /// <param name="snapshot"></param>
         private void OnAcepted(QuerySnapshot snapshot) 
         {
             try
@@ -66,7 +65,6 @@ namespace Menoo.PrinterService.Business.Bookings
         /// <summary>
         /// Evento para una reserva cancelada.
         /// </summary>
-        /// <param name="snapshot"></param>
         private void OnCancelled(QuerySnapshot snapshot) 
         {
             try

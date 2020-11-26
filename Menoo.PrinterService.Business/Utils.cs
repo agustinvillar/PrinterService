@@ -117,5 +117,17 @@ namespace Menoo.PrinterService.Business
         {
             await db.Collection("print").AddAsync(ticket);
         }
+
+        /// <summary>
+        /// Método para colocar una orden o pedido como impreso.
+        /// </summary>
+        /// <param name="db">Instancia de firebase.</param>
+        /// <param name="collection">Nombre de la colección.</param>
+        /// <param name="doc">Documento a ser actualizado.</param>
+        public static async Task<Google.Cloud.Firestore.WriteResult> SetOrderPrintedAsync(FirestoreDb db, string collection, string doc)
+        {
+            var result = await db.Collection(collection).Document(doc).UpdateAsync("printed", true);
+            return result;
+        }
     }
 }

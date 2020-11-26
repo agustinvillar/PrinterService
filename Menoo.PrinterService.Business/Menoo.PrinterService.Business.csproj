@@ -108,6 +108,7 @@
     <Compile Include="Entities\Item.cs" />
     <Compile Include="Entities\Orders.cs" />
     <Compile Include="Listeners.cs" />
+    <Compile Include="Orders\OrdersManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Entities\Store.cs" />
     <Compile Include="Entities\TableOpening.cs" />
@@ -121,7 +122,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Orders\" />
     <Folder Include="Settings\" />
     <Folder Include="Tables\" />
   </ItemGroup>

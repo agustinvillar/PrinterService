@@ -7,9 +7,13 @@ namespace Menoo.PrinterService.App
     public partial class MenooPrinter : Form
     {
         private readonly Form splash;
+
+        private readonly Listeners _triggers;
+
         public MenooPrinter(Form splash)
         {
             InitializeComponent();
+            _triggers = new Listeners();
             Init();
             this.splash = splash;
         }
@@ -17,7 +21,8 @@ namespace Menoo.PrinterService.App
         {
             try
             {
-                Firebase.RunAsync();
+                //Firebase.RunAsync();
+                _triggers.Load();
             }
             catch (Exception ex)
             {

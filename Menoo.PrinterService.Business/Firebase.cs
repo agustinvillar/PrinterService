@@ -295,7 +295,7 @@ namespace Menoo.PrinterService.Business
             try
             {
                 var document = snapshot.Documents.Single();
-                var orden = document.ConvertTo<Orders>();
+                var orden = document.ConvertTo<Entities.Orders>();
                 orden.Store = await GetStores(orden.StoreId);
                 var dic = snapshot.Documents.Single().ToDictionary();
                 orden.Id = document.Id;
@@ -310,7 +310,7 @@ namespace Menoo.PrinterService.Business
             }
         };
 
-        private static Task SaveOrderAsync(Orders order)
+        private static Task SaveOrderAsync(Entities.Orders order)
         {
             return Task.Run(async () =>
             {
@@ -366,7 +366,7 @@ namespace Menoo.PrinterService.Business
             return items;
         }
 
-        private static async Task CreateOrderTicket(Orders order, bool isOrderOk, Ticket ticket, string line)
+        private static async Task CreateOrderTicket(Entities.Orders order, bool isOrderOk, Ticket ticket, string line)
         {
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
             string title, client;
@@ -428,7 +428,7 @@ namespace Menoo.PrinterService.Business
             ticket.Data += $"<h1>{title}</h1><br/><h3>{client}{line}{table}</h3></body></html>";
         }
 
-        private static List<string> CreateComments(Orders order)
+        private static List<string> CreateComments(Entities.Orders order)
         {
             var lines = new List<string>();
             if (order.Items == null) return lines;
@@ -473,7 +473,7 @@ namespace Menoo.PrinterService.Business
             return lines;
         }
 
-        private static bool IsTakeAway(Orders order, bool orderOk)
+        private static bool IsTakeAway(Entities.Orders order, bool orderOk)
         {
             return orderOk && order.IsTakeAway;
         }
