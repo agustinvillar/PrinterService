@@ -5,6 +5,7 @@ using Grpc.Auth;
 using Grpc.Core;
 using Menoo.PrinterService.Business.Bookings;
 using Menoo.PrinterService.Business.Orders;
+using Menoo.PrinterService.Business.Tables;
 using System;
 using System.Configuration;
 
@@ -25,17 +26,24 @@ namespace Menoo.PrinterService.Business
         /// </summary>
         private readonly OrdersManager _orderManager;
 
+        /// <summary>
+        /// Manejador de eventos referentes a apertura y cierre de mesa.
+        /// </summary>
+        private readonly TablesOpeningManager _tablesOpeningManager;
+
         public Listeners() 
         {
             _db = GetInstanceDb();
             _bookingManager = new BookingManager(_db);
             _orderManager = new OrdersManager(_db);
+            _tablesOpeningManager = new TablesOpeningManager(_db);
         }
 
         public void Load() 
         {
             _bookingManager.Listen();
             _orderManager.Listen();
+            _tablesOpeningManager.Listen();
         }
 
         #region private methods

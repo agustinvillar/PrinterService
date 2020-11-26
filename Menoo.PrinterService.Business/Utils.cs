@@ -55,6 +55,12 @@ namespace Menoo.PrinterService.Business
             return result;
         }
 
+        public static string GetTime(string dateTime)
+        {
+            var splitDateTime = dateTime.Split(' ');
+            return splitDateTime[1];
+        }
+
         /// <summary>
         /// Lista la información de los restaurantes.
         /// </summary>
