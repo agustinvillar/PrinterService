@@ -182,15 +182,15 @@ namespace Menoo.PrinterService.Business.Orders
             switch (orderType.ToLower())
             {
                 case "reserva":
-                    title = "Orden de reserva cancelada";
+                    title = $"Orden #{order.OrderNumber} (RESERVA) cancelada";
                     break;
 
                 case "takeaway":
-                    title = "Orden Take Away cancelada";
+                    title = $"Orden #{order.OrderNumber} (TAKE AWAY) cancelada";
                     break;
 
                 default:
-                    title = "Orden cancelada";
+                    title = $"Orden #{order.OrderNumber} cancelada";
                     table = $"Servir en mesa: {order.Address}";
                     break;
             }
