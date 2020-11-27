@@ -61,6 +61,11 @@ namespace Menoo.PrinterService.Business.Orders
                     return;
                 }
                 var order = document.GetOrderData();
+                var storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
+                if (!storeData.AllowPrint(PrintEvents.ORDER_CANCELLED)) 
+                {
+                    return;
+                }
                 Utils.SetOrderPrintedAsync(_db, "orders", document.Id).GetAwaiter().GetResult();
                 SaveOrderAsync(order).GetAwaiter().GetResult();
             }
@@ -83,6 +88,11 @@ namespace Menoo.PrinterService.Business.Orders
                 var dic = snapshot.Documents.Single().ToDictionary();
                 order.Id = document.Id;
                 if (order.Printed)
+                {
+                    return;
+                }
+                var storeData = Utils.GetStores(_db, order.Store.StoreId).GetAwaiter().GetResult();
+                if (!storeData.AllowPrint(PrintEvents.NEW_TABLE_ORDER)) 
                 {
                     return;
                 }

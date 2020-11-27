@@ -608,7 +608,8 @@ namespace Menoo.PrinterService.Business
         #region FinalMethods
         private static bool AllowPrint(Store store)
         {
-            return store?.AllowPrinting != null && store.AllowPrinting.Value;
+            //return store?.AllowPrinting != null && store.AllowPrinting.Value;
+            return true;
         }
 
         private static string BeforeAt(string date, int minutes)

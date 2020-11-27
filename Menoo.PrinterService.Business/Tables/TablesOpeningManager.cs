@@ -92,12 +92,11 @@ namespace Menoo.PrinterService.Business.Tables
             {
                 return;
             }
-
             var store = await Utils.GetStores(_db, tableOpeningFamily.StoreId);
-            //if (!AllowPrint(store)) 
-            //{
-            //    return;
-            //}
+            if (!store.AllowPrint(PrintEvents.TABLE_CLOSED)) 
+            {
+                return;
+            }
             var ticket = Utils.CreateInstanceOfTicket();
             ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
 
@@ -152,10 +151,10 @@ namespace Menoo.PrinterService.Business.Tables
         private async Task SaveOpenTableOpeningFamily(TableOpeningFamily tableOpeningFamily)
         {
             var store = await Utils.GetStores(_db, tableOpeningFamily.StoreId);
-            //if (!AllowPrint(store)) 
-            //{
-            //    return;
-            //}
+            if (!store.AllowPrint(PrintEvents.TABLE_OPENED))
+            {
+                return;
+            }
             var ticket = Utils.CreateInstanceOfTicket();
             ticket.TicketType = TicketTypeEnum.OPEN_TABLE.ToString();
 

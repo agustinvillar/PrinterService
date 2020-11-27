@@ -1,5 +1,6 @@
 ﻿using Google.Cloud.Firestore;
-using Menoo.PrinterService.Business.Settings;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Menoo.PrinterService.Business.Entities
 {
@@ -13,7 +14,7 @@ namespace Menoo.PrinterService.Business.Entities
         public string Name { get; set; }
 
         [FirestoreProperty("sectors")]
-        public PrintSettings PrintSettings { get; set; }
+        public List<PrintSettings> Sectors { get; set; }
 
         [FirestoreProperty("paymentProvider")]
         public string PaymentProviderString { get; set; }
@@ -30,6 +31,11 @@ namespace Menoo.PrinterService.Business.Entities
             None = 0,
             MercadoPago = 1,
             Geopay = 2
+        }
+
+        public bool AllowPrint(string printEvent) 
+        {
+            return this.Sectors != null && this.Sectors.Any(f => f.PrintEvents.Contains(printEvent) && f.AllowPrinting);
         }
     }
 }

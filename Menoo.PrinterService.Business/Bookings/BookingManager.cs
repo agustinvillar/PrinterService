@@ -47,9 +47,10 @@ namespace Menoo.PrinterService.Business.Bookings
                 var d = document.ToDictionary();
                 var snapshotUser = _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync().GetAwaiter().GetResult();
 
-                if (snapshotUser.Exists)
+                if (snapshotUser.Exists) 
+                {
                     user = snapshotUser.ConvertTo<User>();
-
+                }
                 if (!booking.PrintedAccepted && booking.BookingNumber.ToString().Length == 8)
                 {
                     SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED).GetAwaiter().GetResult();
@@ -74,8 +75,10 @@ namespace Menoo.PrinterService.Business.Bookings
                 {
                     var booking = document.ConvertTo<Booking>();
                     var snapshotUser = _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync().GetAwaiter().GetResult();
-                    if (snapshotUser.Exists)
+                    if (snapshotUser.Exists) 
+                    {
                         user = snapshotUser.ConvertTo<User>();
+                    }
                     if (!booking.PrintedCancelled)
                     {
                         SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.CANCELLED).GetAwaiter().GetResult();
@@ -94,11 +97,10 @@ namespace Menoo.PrinterService.Business.Bookings
         private async Task SaveAcceptedBooking(Booking booking, User user)
         {
             var store = await Utils.GetStores(_db, booking.Store.StoreId);
-            // TODO: Reemplazar por configuración nueva.
-            //if (AllowPrint(store))
-            //{
-                
-            //}
+            if (!store.AllowPrint(PrintEvents.NEW_BOOKING)) 
+            {
+                return;
+            }
             var ticket = Utils.CreateInstanceOfTicket();
             ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
             if (booking.BookingState.Equals("aceptada"))
@@ -119,11 +121,10 @@ namespace Menoo.PrinterService.Business.Bookings
         private async Task SaveCancelledBooking(Booking booking, User user)
         {
             var store = await Utils.GetStores(_db, booking.Store.StoreId);
-            // TODO: Reemplazar por configuración nueva.
-            //if (AllowPrint(store))
-            //{
-
-            //}
+            if (!store.AllowPrint(PrintEvents.CANCELED_BOOKING))
+            {
+                return;
+            }
             var ticket = Utils.CreateInstanceOfTicket();
             ticket.TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString();
             if (booking.BookingState.Equals("cancelada"))

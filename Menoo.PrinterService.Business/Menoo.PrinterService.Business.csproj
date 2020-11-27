@@ -115,7 +115,7 @@
     <Compile Include="Entities\TableOpeningFamily.cs" />
     <Compile Include="Entities\Ticket.cs" />
     <Compile Include="Entities\User.cs" />
-    <Compile Include="Entities\Settings\PrintSettings.cs" />
+    <Compile Include="Entities\PrintSettings.cs" />
     <Compile Include="Tables\TablesOpeningManager.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>

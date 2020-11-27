@@ -68,8 +68,16 @@ namespace Menoo.PrinterService.Business
         /// <returns>Listado de restaurantes.</returns>
         public static async Task<List<Store>> GetStores(FirestoreDb db)
         {
+            var stores = new List<Store>();
             var snapshot = await db.Collection("stores").GetSnapshotAsync();
-            return snapshot.Documents.Select(d => d.ConvertTo<Store>()).ToList();
+            foreach (var item in snapshot.Documents)
+            {
+                var storeData = item.ToDictionary();
+                var storeObject = storeData.GetObject<Store>();
+                storeObject.StoreId = item.Id;
+                stores.Add(storeObject);
+            }
+            return stores;
         }
 
         /// <summary>

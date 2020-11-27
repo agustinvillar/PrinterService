@@ -36,14 +36,14 @@ namespace Menoo.PrinterService.Business
             _db = GetInstanceDb();
             _bookingManager = new BookingManager(_db);
             _orderManager = new OrdersManager(_db);
-            _tablesOpeningManager = new TablesOpeningManager(_db);
+            //_tablesOpeningManager = new TablesOpeningManager(_db);
         }
 
         public void Load() 
         {
             _bookingManager.Listen();
             _orderManager.Listen();
-            _tablesOpeningManager.Listen();
+            //_tablesOpeningManager.Listen();
         }
 
         #region private methods

@@ -1,7 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using System.Collections.Generic;
 
-namespace Menoo.PrinterService.Business.Settings
+namespace Menoo.PrinterService.Business.Entities
 {
     public static class PrintEvents
     {
@@ -16,16 +16,12 @@ namespace Menoo.PrinterService.Business.Settings
         public static string TABLE_CLOSED = "TABLE_CLOSED";
 
         public static string TABLE_OPENED = "TABLE_OPENED";
+
+        public static string CANCELED_BOOKING = "CANCELED_BOOKING";
     }
 
     [FirestoreData]
     public class PrintSettings
-    {
-        public List<Settings> Settings { get; set; }
-    }
-
-    [FirestoreData]
-    public class Settings
     {
         [FirestoreProperty("allowPrinting")]
 
