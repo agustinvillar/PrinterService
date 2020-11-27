@@ -32,8 +32,10 @@ namespace Menoo.PrinterService.App
 
         private void InfoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var infoWindow = new Info();
-            infoWindow.Visible = true;
+            var infoWindow = new Info
+            {
+                Visible = true
+            };
         }
 
         private void SalirToolStripMenuItem_Click(object sender, EventArgs e)
@@ -61,6 +63,7 @@ namespace Menoo.PrinterService.App
         {
             this.ShowInfo();
         }
+
         private void ShowInfo()
         {
             var window = new Info();

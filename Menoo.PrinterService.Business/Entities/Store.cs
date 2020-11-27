@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using Menoo.PrinterService.Business.Settings;
 
 namespace Menoo.PrinterService.Business.Entities
 {
@@ -11,8 +12,8 @@ namespace Menoo.PrinterService.Business.Entities
         [FirestoreProperty("name")]
         public string Name { get; set; }
 
-        [FirestoreProperty("allowPrinting")]
-        public bool? AllowPrinting { get; set; }
+        [FirestoreProperty("sectors")]
+        public PrintSettings PrintSettings { get; set; }
 
         [FirestoreProperty("paymentProvider")]
         public string PaymentProviderString { get; set; }
