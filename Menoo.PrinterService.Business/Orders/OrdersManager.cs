@@ -164,11 +164,6 @@ namespace Menoo.PrinterService.Business.Orders
             return items;
         }
 
-        private static bool IsTakeAway(Entities.Orders order, bool orderOk)
-        {
-            return orderOk && order.IsTakeAway;
-        }
-
         private static void CreateOrderTicket(OrderCancelled order, Ticket ticket, string line, string orderType)
         {
             string table = "";
@@ -191,6 +186,11 @@ namespace Menoo.PrinterService.Business.Orders
             }
             string client = $"Cliente: {order.UserName}";
             ticket.Data += $"<h1>{title}</h1><br/><h3>{client}{line}{table}</h3></body></html>";
+        }
+
+        private static bool IsTakeAway(Entities.Orders order, bool orderOk)
+        {
+            return orderOk && order.IsTakeAway;
         }
 
         private async Task CreateOrderTicket(Entities.Orders order, bool isOrderOk, Ticket ticket, string line)
