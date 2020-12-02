@@ -643,9 +643,17 @@ namespace Menoo.PrinterService.Business
         {
             return Task.Run(async () =>
             {
+                List<Store> stores = new List<Store>();
                 Init();
                 var snapshot = await _db.Collection("stores").GetSnapshotAsync();
-                return snapshot.Documents.Select(d => d.ConvertTo<Store>()).ToList();
+                foreach (var item in snapshot.Documents)
+                {
+                    var result = item.ToDictionary();
+                    var resultObject = Utils.GetObject<Store>(result);
+                    resultObject.StoreId = item.Id;
+                    stores.Add(resultObject);
+                }
+                return stores;
             });
         }
 
