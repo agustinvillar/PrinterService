@@ -16,6 +16,9 @@ namespace Menoo.PrinterService.Business.Entities
         [FirestoreProperty("sectors")]
         public List<PrintSettings> Sectors { get; set; }
 
+        [FirestoreProperty("allowPrinting")]
+        public bool? AllowPrinting { get; set; }
+
         [FirestoreProperty("paymentProvider")]
         public string PaymentProviderString { get; set; }
 

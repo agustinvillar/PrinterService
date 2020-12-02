@@ -21,8 +21,8 @@ namespace Menoo.PrinterService.App
         {
             try
             {
-                //Firebase.RunAsync();
-                _triggers.Load();
+                Firebase.RunAsync();
+                //_triggers.Load();
             }
             catch (Exception ex)
             {
