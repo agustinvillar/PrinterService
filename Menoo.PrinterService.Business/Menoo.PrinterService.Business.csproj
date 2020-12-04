@@ -106,6 +106,7 @@
     <Compile Include="Bookings\BookingManager.cs" />
     <Compile Include="Core\Print.cs" />
     <Compile Include="Core\PrintQueue.cs" />
+    <Compile Include="Core\VerifyQueueAttribute.cs" />
     <Compile Include="Entities\Booking.cs" />
     <Compile Include="Entities\CategoryStore.cs" />
     <Compile Include="Entities\OrderCancelled.cs" />
