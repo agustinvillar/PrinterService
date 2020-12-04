@@ -9,7 +9,7 @@ using Menoo.PrinterService.Business.Tables;
 using System;
 using System.Configuration;
 
-namespace Menoo.PrinterService.Business
+namespace Menoo.PrinterService.Business.Core
 {
     /// <summary>Eventos al realizar cambios en alguna de los documentos en FireBase.</summary>
     public class Listeners
@@ -36,7 +36,7 @@ namespace Menoo.PrinterService.Business
             _db = GetInstanceDb();
             _bookingManager = new BookingManager(_db);
             _orderManager = new OrdersManager(_db);
-            //_tablesOpeningManager = new TablesOpeningManager(_db);
+            _tablesOpeningManager = new TablesOpeningManager(_db);
         }
 
         public void Load() 

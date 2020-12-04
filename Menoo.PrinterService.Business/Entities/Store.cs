@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using Menoo.PrinterService.Business.Core;
 using System.Collections.Generic;
 using System.Linq;
 

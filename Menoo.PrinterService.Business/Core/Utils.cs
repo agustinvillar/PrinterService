@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Menoo.PrinterService.Business
+namespace Menoo.PrinterService.Business.Core
 {
     /// <summary>
     /// Contiene métodos de uso común.
@@ -141,6 +141,17 @@ namespace Menoo.PrinterService.Business
         public static async Task<Google.Cloud.Firestore.WriteResult> SetOrderPrintedAsync(FirestoreDb db, string collection, string doc)
         {
             var result = await db.Collection(collection).Document(doc).UpdateAsync("printed", true);
+            return result;
+        }
+
+        /// <summary>Permite obtener un documento por su identificador.</summary>
+        /// <param name="db">Objeto de base de datos de firebase.</param>
+        /// <param name="collection">Colección a ser empleada.</param>
+        /// <param name="documentId">Identificador del documento.</param>
+        /// <returns>Documento</returns>
+        public static async Task<DocumentSnapshot> GetDocument(FirestoreDb db, string collection, string documentId) 
+        {
+            var result = await db.Collection(collection).Document(documentId).GetSnapshotAsync();
             return result;
         }
     }

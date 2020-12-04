@@ -12,15 +12,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using static Menoo.PrinterService.Business.Entities.Ticket;
 
-namespace Menoo.PrinterService.Business
+namespace Menoo.PrinterService.Business.Core
 {
     public static class Firebase
     {
         #region Attributes
         private static FirestoreDb _db;
 
+        public static PrintQueue<Print> PrintQueue = new PrintQueue<Print>();
+
         private const string TakeAway = "TAKEAWAY";
+
         private const string Reserva = "RESERVA";
+
         private const string Mesas = "MESAS";
 
         #endregion
@@ -258,6 +262,7 @@ namespace Menoo.PrinterService.Business
                .OrderByDescending("incremental")
                .Limit(1)
                .Listen(OrderFamilyListenCallback);
+
         }
 
         private static void OrderCancelledListen()
@@ -309,6 +314,12 @@ namespace Menoo.PrinterService.Business
                 _ = LogErrorAsync(ex.Message);
             }
         };
+
+        private static void OrderFamilyListener(QuerySnapshot snapshot) 
+        {
+            
+        }
+
 
         private static Task SaveOrderAsync(Entities.Orders order)
         {
@@ -412,15 +423,15 @@ namespace Menoo.PrinterService.Business
             switch (orderType.ToLower())
             {
                 case "reserva":
-                    title = "Orden de reserva cancelada";
+                    title = $"Orden #{order.OrderNumber} (RESERVA) cancelada";
                     break;
 
                 case "takeaway":
-                    title = "Orden Take Away cancelada";
+                    title = $"Orden #{order.OrderNumber} (TAKE AWAY) cancelada";
                     break;
 
                 default:
-                    title = "Orden cancelada";
+                    title = $"Orden #{order.OrderNumber} cancelada";
                     table = $"Servir en mesa: {order.Address}";
                     break;
             }
@@ -639,7 +650,7 @@ namespace Menoo.PrinterService.Business
             return splitDateTime[1];
         }
 
-        public static Task<List<Store>> GetStores()
+        private static Task<List<Store>> GetStores()
         {
             return Task.Run(async () =>
             {
@@ -657,7 +668,7 @@ namespace Menoo.PrinterService.Business
             });
         }
 
-        public static Task<Store> GetStores(string storeId)
+        private static Task<Store> GetStores(string storeId)
         {
             return Task.Run(async () =>
             {

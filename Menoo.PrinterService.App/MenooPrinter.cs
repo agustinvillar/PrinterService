@@ -1,4 +1,4 @@
-﻿using Menoo.PrinterService.Business;
+﻿using Menoo.PrinterService.Business.Core;
 using System;
 using System.Windows.Forms;
 

@@ -1,7 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using System.Collections.Generic;
 
-namespace Menoo.PrinterService.Business.Entities
+namespace Menoo.PrinterService.Business.Core
 {
     public static class PrintEvents
     {
