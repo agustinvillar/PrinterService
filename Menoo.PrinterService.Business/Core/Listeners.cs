@@ -43,7 +43,7 @@ namespace Menoo.PrinterService.Business.Core
         {
             _bookingManager.Listen();
             _orderManager.Listen();
-            //_tablesOpeningManager.Listen();
+            _tablesOpeningManager.Listen();
         }
 
         #region private methods

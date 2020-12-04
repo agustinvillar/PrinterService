@@ -20,7 +20,6 @@ namespace Menoo.PrinterService.Business.Core
             switch (document.PrintEvent)
             {
                 case nameof(PrintEvents.TABLE_OPENED):
-
                     break;
                 case nameof(PrintEvents.TABLE_CLOSED):
                     break;
@@ -29,10 +28,12 @@ namespace Menoo.PrinterService.Business.Core
                 case nameof(PrintEvents.CANCELED_BOOKING):
                     break;
                 case nameof(PrintEvents.NEW_TABLE_ORDER):
+                    Firebase.OrderFamilyListenCallback(document.Document);
                     break;
                 case nameof(PrintEvents.NEW_TAKE_AWAY):
                     break;
                 case nameof(PrintEvents.ORDER_CANCELLED):
+                    Firebase.OrdersCancelledCallBack(document.Document);
                     break;
             }
         }

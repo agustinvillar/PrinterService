@@ -258,21 +258,17 @@ namespace Menoo.PrinterService.Business.Core
         #region ORDERS
         private static void OrderFamilyListen()
         {
-            _db.Collection("orderFamily")
-               .OrderByDescending("incremental")
-               .Limit(1)
-               .Listen(OrderFamilyListenCallback);
-
+            //_db.Collection("orderFamily").OrderByDescending("incremental").Limit(1).Listen(OrderFamilyListenCallback);
+            _db.Collection("orderFamily").OrderByDescending("incremental").Limit(1).Listen(OrderFamilyListener);
         }
 
         private static void OrderCancelledListen()
         {
-            _db.Collection("orders")
-                .WhereEqualTo("status", "cancelado")
-                .Listen(OrdersCancelledCallBack);
+            //_db.Collection("orders").WhereEqualTo("status", "cancelado").Listen(OrdersCancelledCallBack);
+            _db.Collection("orders").WhereEqualTo("status", "cancelado").Listen(OrderCancelledListener);
         }
 
-        private static void OrdersCancelledCallBack(QuerySnapshot snapshot)
+        public static void OrdersCancelledCallBack(QuerySnapshot snapshot)
         {
             try
             {
@@ -295,17 +291,19 @@ namespace Menoo.PrinterService.Business.Core
             }
         }
 
-        private static readonly Action<QuerySnapshot> OrderFamilyListenCallback = async snapshot =>
+        public static void OrderFamilyListenCallback(QuerySnapshot snapshot) 
         {
             try
             {
                 var document = snapshot.Documents.Single();
                 var orden = document.ConvertTo<Entities.Orders>();
-                orden.Store = await GetStores(orden.StoreId);
+                orden.Store = GetStores(orden.StoreId).GetAwaiter().GetResult();
                 var dic = snapshot.Documents.Single().ToDictionary();
                 orden.Id = document.Id;
-                if (orden.Printed)
+                if (orden.Printed) 
+                {
                     return;
+                }
                 _ = SetOrderPrintedAsync("orderFamily", document.Id);
                 _ = SaveOrderAsync(orden);
             }
@@ -313,11 +311,26 @@ namespace Menoo.PrinterService.Business.Core
             {
                 _ = LogErrorAsync(ex.Message);
             }
-        };
+        }
 
+        [VerifyQueue]
         private static void OrderFamilyListener(QuerySnapshot snapshot) 
         {
-            
+            PrintQueue.Enqueue(new Print
+            {
+                Document = snapshot,
+                PrintEvent = PrintEvents.NEW_TABLE_ORDER
+            });
+        }
+
+        [VerifyQueue]
+        private static void OrderCancelledListener(QuerySnapshot snapshot) 
+        {
+            PrintQueue.Enqueue(new Print
+            {
+                Document = snapshot,
+                PrintEvent = PrintEvents.ORDER_CANCELLED
+            });
         }
 
 

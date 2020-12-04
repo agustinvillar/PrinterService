@@ -6,6 +6,6 @@ namespace Menoo.PrinterService.Business.Core
     {
         public string PrintEvent { get; set; }
 
-        public DocumentSnapshot Document { get; set; }
+        public QuerySnapshot Document { get; set; }
     }
 }
