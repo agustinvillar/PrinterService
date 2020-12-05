@@ -28,6 +28,7 @@ namespace Menoo.PrinterService.Business.Entities
         public virtual string Id { get; set; }
 
         private Store _store;
+       
         public virtual Store Store
         {
             get => _store;

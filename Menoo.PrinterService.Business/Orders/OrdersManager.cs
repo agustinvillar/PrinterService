@@ -44,7 +44,7 @@ namespace Menoo.PrinterService.Business.Orders
 
         #region events
 
-        /// <summary>
+         /// <summary>
         /// Orden cancelada en la colección 'orders'
         /// </summary>
         /// <param name="snapshot"></param>
@@ -85,14 +85,13 @@ namespace Menoo.PrinterService.Business.Orders
             {
                 var document = snapshot.Documents.Single();
                 var order = document.ConvertTo<Entities.Orders>();
-                order.Store = Utils.GetStores(_db, order.StoreId).GetAwaiter().GetResult();
-                var dic = snapshot.Documents.Single().ToDictionary();
+                var storeData = Utils.GetStores(_db, order.Store.StoreId).GetAwaiter().GetResult();
+                order.Store = storeData;
                 order.Id = document.Id;
                 if (order.Printed)
                 {
                     return;
                 }
-                var storeData = Utils.GetStores(_db, order.Store.StoreId).GetAwaiter().GetResult();
                 if (!storeData.AllowPrint(PrintEvents.NEW_TABLE_ORDER)) 
                 {
                     return;
@@ -180,13 +179,13 @@ namespace Menoo.PrinterService.Business.Orders
             string table = "";
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
             string title;
-            switch (orderType.ToLower())
+            switch (orderType.ToUpper())
             {
-                case "reserva":
+                case "RESERVA":
                     title = $"Orden #{order.OrderNumber} (RESERVA) cancelada";
                     break;
 
-                case "takeaway":
+                case "TAKEAWAY":
                     title = $"Orden #{order.OrderNumber} (TAKE AWAY) cancelada";
                     break;
 

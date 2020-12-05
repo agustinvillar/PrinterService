@@ -37,9 +37,16 @@ namespace Menoo.PrinterService.Business.Entities
             Geopay = 2
         }
 
-        public bool AllowPrint(string printEvent) 
+        public bool AllowPrint(string printEvent = "") 
         {
-            return this.Sectors != null && this.Sectors.Any(f => f.PrintEvents.Contains(printEvent) && f.AllowPrinting);
+            if (!string.IsNullOrEmpty(printEvent) && Sectors != null)
+            {
+                return this.Sectors != null && this.Sectors.Any(f => f.PrintEvents.Contains(printEvent) && f.AllowPrinting);
+            }
+            else 
+            {
+                return AllowPrinting.GetValueOrDefault();
+            }
         }
     }
 }

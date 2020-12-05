@@ -152,12 +152,6 @@ namespace Menoo.PrinterService.Business.Bookings
                                                                        : "printedCancelled", true);
             return result;
         }
-
-        private async Task<WriteResult> SetOrderPrintedAsync(string collection, string doc)
-        {
-            var result = await _db.Collection(collection).Document(doc).UpdateAsync("printed", true);
-            return result;
-        }
         #endregion
     }
 }
