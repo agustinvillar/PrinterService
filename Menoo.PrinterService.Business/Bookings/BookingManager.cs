@@ -52,7 +52,7 @@ namespace Menoo.PrinterService.Business.Bookings
                 {
                     user = snapshotUser.ConvertTo<User>();
                 }
-                if (!booking.PrintedAccepted && booking.BookingNumber.ToString().Length == 8)
+                if (!booking.PrintedAccepted && booking.BookingNumber.ToString().Length > 7)
                 {
                     SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED).GetAwaiter().GetResult();
                     _ = SaveAcceptedBooking(booking, user);
@@ -72,7 +72,7 @@ namespace Menoo.PrinterService.Business.Bookings
             try
             {
                 User user = null;
-                foreach (var document in snapshot.Documents)
+                foreach (var document in snapshot.Documents.OrderByDescending(o => o.CreateTime))
                 {
                     var booking = document.ConvertTo<Booking>();
                     var snapshotUser = _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync().GetAwaiter().GetResult();
