@@ -46,11 +46,11 @@ namespace Menoo.PrinterService.Business.Core
         /// Convierte un JSON en un objeto tipado.
         /// </summary>
         /// <typeparam name="T">Clase a ser transformada.</typeparam>
-        /// <param name="dict">json como diccionario (Es la forma como se obtiene el objeto desde firebase)</param>
+        /// <param name="element">json como diccionario (Es la forma como se obtiene el objeto desde firebase)</param>
         /// <returns>Objeto.</returns>
-        public static T GetObject<T>(this Dictionary<string, object> dict)
+        public static T GetObject<T>(this object element) 
         {
-            var json = JsonConvert.SerializeObject(dict, Newtonsoft.Json.Formatting.Indented);
+            var json = JsonConvert.SerializeObject(element, Newtonsoft.Json.Formatting.Indented);
             var result = JsonConvert.DeserializeObject<T>(json);
             return result;
         }

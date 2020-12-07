@@ -92,4 +92,17 @@ namespace Menoo.PrinterService.Business.Entities
             }
         }
     }
+
+    public class TableOpeningV2 : TableOpening
+    {
+        public string TableNumberToShow { get; set; }
+
+        public UserV2 User { get; set; }
+
+        public string UserId { get; set; }
+
+        public string CloseAt { get; set; }
+
+        public string StoreId { get; set; }
+    }
 }

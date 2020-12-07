@@ -18,6 +18,8 @@ namespace Menoo.PrinterService.Business.Core
         public static string TABLE_OPENED = "TABLE_OPENED";
 
         public static string CANCELED_BOOKING = "CANCELED_BOOKING";
+
+        public static string REQUEST_PAYMENT = "REQUEST_PAYMENT";
     }
 
     [FirestoreData]

@@ -68,6 +68,5 @@ namespace Menoo.PrinterService.Business.Entities
             OPENING,
             CLOSING
         }
-
     }
 }

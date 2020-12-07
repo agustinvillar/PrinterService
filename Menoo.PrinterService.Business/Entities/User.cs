@@ -8,4 +8,12 @@ namespace Menoo.PrinterService.Business.Entities
         [FirestoreProperty("name")]
         public string Name { get; set; }
     }
+
+    public class UserV2 
+    {
+        public string Email { get; set; }
+
+        public string Name { get; set; }
+        
+    }
 }
