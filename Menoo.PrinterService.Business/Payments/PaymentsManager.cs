@@ -35,29 +35,32 @@ namespace Menoo.PrinterService.Business.Tables
             try
             {
                 string now = DateTime.Now.ToString("yyyy-MM-dd");
-                var requestPayment = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault(f => f.CreateTime.GetValueOrDefault().ToDateTime().ToString("yyyy-MM-dd") == now);
-                if (requestPayment == null)
+                var requestPayments = snapshot.Documents.OrderByDescending(o => o.CreateTime).Where(f => f.CreateTime.GetValueOrDefault().ToDateTime().ToString("yyyy-MM-dd") == now);
+                foreach (var requestPayment in requestPayments)
                 {
-                    return;
-                }
-                var document = requestPayment.ToDictionary();
-                if (document.ContainsKey("printed"))
-                {
-                    return;
-                }
-                if (document.ContainsKey("taOpening") || document.ContainsKey("tableOpening"))
-                {
-                    Utils.SetOrderPrintedAsync(_db, "payments", requestPayment.Id).GetAwaiter().GetResult();
-                    TableOpeningV2 tableOpeningDocument = null;
-                    if (document.ContainsKey("taOpening"))
+                    if (requestPayment == null)
                     {
-                        tableOpeningDocument = document["taOpening"].GetObject<TableOpeningV2>();
+                        continue;
                     }
-                    else if (document.ContainsKey("tableOpening"))
+                    var document = requestPayment.ToDictionary();
+                    if (document.ContainsKey("printed"))
                     {
-                        tableOpeningDocument = document["tableOpening"].GetObject<TableOpeningV2>();
+                        continue;
                     }
-                    SaveCloseTableOpeningFamily(tableOpeningDocument).GetAwaiter().GetResult();
+                    if (document.ContainsKey("taOpening") || document.ContainsKey("tableOpening"))
+                    {
+                        Utils.SetOrderPrintedAsync(_db, "payments", requestPayment.Id).GetAwaiter().GetResult();
+                        TableOpeningV2 tableOpeningDocument = null;
+                        if (document.ContainsKey("taOpening"))
+                        {
+                            tableOpeningDocument = document["taOpening"].GetObject<TableOpeningV2>();
+                        }
+                        else if (document.ContainsKey("tableOpening"))
+                        {
+                            tableOpeningDocument = document["tableOpening"].GetObject<TableOpeningV2>();
+                        }
+                        SaveCloseTableOpeningFamily(tableOpeningDocument).GetAwaiter().GetResult();
+                    }
                 }
             }
             catch (Exception ex)
@@ -90,7 +93,7 @@ namespace Menoo.PrinterService.Business.Tables
             var orden = "<b>Pedidos</b>";
             orden += "<p><b>------------------------------------------------------</b></p>";
 
-            orden += $"<p>{tableOpening.User.Name}</p>";
+            orden += $"<p>{tableOpening.UserName}</p>";
             foreach (var order in tableOpening.Orders)
             {
                 foreach (var item in order.Items)
