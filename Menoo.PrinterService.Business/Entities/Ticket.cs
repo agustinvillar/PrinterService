@@ -30,7 +30,9 @@ namespace Menoo.PrinterService.Business.Entities
             CLOSE_TABLE,
             ORDER,
             NEW_BOOKING,
-            CANCELLED_BOOKING
+            CANCELLED_BOOKING,
+            CANCELLED_ORDER,
+            PAYMENT_REQUEST
         }
     }
 }

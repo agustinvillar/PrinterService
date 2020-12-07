@@ -251,11 +251,6 @@ namespace Menoo.PrinterService.Business.Orders
 
         private async Task SaveOrderAsync(Entities.Orders order)
         {
-            //if (!AllowPrint(order.Store)) 
-            //{
-            //    return;
-            //}
-           
             var comment = string.Empty;
             var ticket = Utils.CreateInstanceOfTicket();
             var lines = CreateComments(order);
@@ -274,6 +269,7 @@ namespace Menoo.PrinterService.Business.Orders
             await CreateOrderTicket(order, isOrderOk, ticket, line);
             ticket.StoreId = order.StoreId;
             ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+            ticket.TicketType = TicketTypeEnum.ORDER.ToString();
             await Utils.SaveTicketAsync(_db, ticket);
         }
 
@@ -281,7 +277,7 @@ namespace Menoo.PrinterService.Business.Orders
         {
             var ticket = Utils.CreateInstanceOfTicket();
             var lines = CreateComments(order);
-            if (order.OrderType.ToLower() == "takeaway")
+            if (order.OrderType.ToUpper() == TAKEAWAY)
             {
                 ticket.PrintBefore = Utils.BeforeAt(order.OrderDate, -5);
             }
@@ -293,6 +289,7 @@ namespace Menoo.PrinterService.Business.Orders
             CreateOrderTicket(order, ticket, line, order.OrderType);
             ticket.StoreId = order.Store.Id;
             ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
+            ticket.TicketType = TicketTypeEnum.CANCELLED_ORDER.ToString();
             await Utils.SaveTicketAsync(_db, ticket);
         }
         #endregion

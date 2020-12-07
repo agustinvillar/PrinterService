@@ -38,28 +38,35 @@ namespace Menoo.PrinterService.Business.Tables
                 var requestPayments = snapshot.Documents.OrderByDescending(o => o.CreateTime).Where(f => f.CreateTime.GetValueOrDefault().ToDateTime().ToString("yyyy-MM-dd") == now);
                 foreach (var requestPayment in requestPayments)
                 {
-                    if (requestPayment == null)
+                    try
                     {
-                        continue;
-                    }
-                    var document = requestPayment.ToDictionary();
-                    if (document.ContainsKey("printed"))
-                    {
-                        continue;
-                    }
-                    if (document.ContainsKey("taOpening") || document.ContainsKey("tableOpening"))
-                    {
-                        Utils.SetOrderPrintedAsync(_db, "payments", requestPayment.Id).GetAwaiter().GetResult();
-                        TableOpeningV2 tableOpeningDocument = null;
-                        if (document.ContainsKey("taOpening"))
+                        if (requestPayment == null)
                         {
-                            tableOpeningDocument = document["taOpening"].GetObject<TableOpeningV2>();
+                            continue;
                         }
-                        else if (document.ContainsKey("tableOpening"))
+                        var document = requestPayment.ToDictionary();
+                        if (document.ContainsKey("printed"))
                         {
-                            tableOpeningDocument = document["tableOpening"].GetObject<TableOpeningV2>();
+                            continue;
                         }
-                        SaveCloseTableOpeningFamily(tableOpeningDocument).GetAwaiter().GetResult();
+                        if (document.ContainsKey("taOpening") || document.ContainsKey("tableOpening"))
+                        {
+                            Utils.SetOrderPrintedAsync(_db, "payments", requestPayment.Id).GetAwaiter().GetResult();
+                            TableOpeningV2 tableOpeningDocument = null;
+                            if (document.ContainsKey("taOpening"))
+                            {
+                                tableOpeningDocument = document["taOpening"].GetObject<TableOpeningV2>();
+                            }
+                            else if (document.ContainsKey("tableOpening"))
+                            {
+                                tableOpeningDocument = document["tableOpening"].GetObject<TableOpeningV2>();
+                            }
+                            SaveCloseTableOpeningFamily(tableOpeningDocument).GetAwaiter().GetResult();
+                        }
+                    }
+                    catch (Exception ex) 
+                    {
+                        Utils.LogError(ex.Message);
                     }
                 }
             }
@@ -86,9 +93,9 @@ namespace Menoo.PrinterService.Business.Tables
                 return;
             }
             var ticket = Utils.CreateInstanceOfTicket();
-            ticket.TicketType = TicketTypeEnum.CLOSE_TABLE.ToString();
+            ticket.TicketType = TicketTypeEnum.PAYMENT_REQUEST.ToString();
 
-            string title = "Solicitud de pago (EFECTIVO O POS)";
+            string title = $"Solicitud de pago {tableOpening.PayMethod}";
             var tableNumber = $"Número de mesa: {tableOpening.TableNumberToShow}";
             var orden = "<b>Pedidos</b>";
             orden += "<p><b>------------------------------------------------------</b></p>";
@@ -113,7 +120,6 @@ namespace Menoo.PrinterService.Business.Tables
                 orden = tableOpening.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva)
                     .Aggregate(orden, (current, discount) => current + ($"<p>Descuento {discount.Name}: -${discount.Amount}</p>"));
 
-            if (!string.IsNullOrEmpty(tableOpening.PayMethod)) orden += $"Metodo de Pago: {tableOpening.PayMethod}";
             if (tableOpening.PagoPorTodos || tableOpening.PagoPorElMismo)
                 orden += $"<p>Subtotal: ${tableOpening.TotalToTicket(store)}</p>";
             if (tableOpening.PagoPorElMismo) orden += "<p>Pagó su propia cuenta</p>";
