@@ -154,5 +154,17 @@ namespace Menoo.PrinterService.Business.Core
             var result = await db.Collection(collection).Document(documentId).GetSnapshotAsync();
             return result;
         }
+
+        /// <summary>
+        /// Obtiene la plantilla de ticket según su nombre.
+        /// </summary>
+        /// <param name="fileTemplate">Nombre de la plantilla</param>
+        /// <returns>Cadena de texto con el html del ticket.</returns>
+        public static string GetTicketTemplate(string fileTemplate) 
+        {
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fileTemplate" + ".html");
+            string template = File.ReadAllText(path);
+            return template;
+        } 
     }
 }

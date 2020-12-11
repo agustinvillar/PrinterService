@@ -104,14 +104,9 @@ namespace Menoo.PrinterService.Business.Bookings
             }
             var ticket = Utils.CreateInstanceOfTicket();
             ticket.TicketType = PrintEvents.NEW_BOOKING;
-            if (booking.BookingState.Equals("aceptada"))
+            if (booking.BookingState.Equals("aceptada", StringComparison.OrdinalIgnoreCase))
             {
-                var title = "Nueva reserva";
-                var nroReserva = "Nro: " + booking.BookingNumber;
-                var fecha = "Fecha: " + booking.BookingDate;
-                var cantPersonas = "Cantidad de personas: " + booking.GuestQuantity;
-                var cliente = "Cliente: " + user.Name;
-                ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cantPersonas + "</p><p>" + cliente + "</p></h3></body></html>";
+                ticket.SetBookingData("Nueva reserva", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
             }
             ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
             ticket.PrintBefore = Utils.BeforeAt(booking.BookingDate, -10);
@@ -129,15 +124,9 @@ namespace Menoo.PrinterService.Business.Bookings
             }
             var ticket = Utils.CreateInstanceOfTicket();
             ticket.TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString();
-            if (booking.BookingState.Equals("cancelada"))
+            if (booking.BookingState.Equals("cancelada", StringComparison.OrdinalIgnoreCase))
             {
-                var title = "Reserva cancelada";
-                var nroReserva = "Nro: " + booking.BookingNumber;
-                var fecha = "Fecha: " + booking.BookingDate;
-                var cliente = string.Empty;
-                if (user != null)
-                    cliente = "Cliente: " + user.Name;
-                ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cliente + "</p></h3></body></html>";
+                ticket.SetBookingData("Reserva cancelada", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
             }
             ticket.PrintBefore = Utils.BeforeAt(booking.BookingDate, -10);
             ticket.StoreId = booking.Store.StoreId;
