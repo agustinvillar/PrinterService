@@ -45,9 +45,12 @@ namespace Menoo.PrinterService.Business.Entities
             set
             {
                 _store = value;
-                foreach (var item in Items)
+                if (Items != null) 
                 {
-                    item.Store = value;
+                    foreach (var item in Items)
+                    {
+                        item.Store = value;
+                    }
                 }
             }
         }

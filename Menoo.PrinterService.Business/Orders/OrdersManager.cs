@@ -137,7 +137,7 @@ namespace Menoo.PrinterService.Business.Orders
             return lines;
         }
 
-        private static List<string> CreateComments(OrderCancelled order)
+        private static List<string> CreateComments(OrdersCancelled order)
         {
             var lines = new List<string>();
             if (order.Items == null)
@@ -174,7 +174,7 @@ namespace Menoo.PrinterService.Business.Orders
             return items;
         }
 
-        private static void CreateOrderTicket(OrderCancelled order, Ticket ticket, string line, string orderType)
+        private static void CreateOrderTicket(OrdersCancelled order, Ticket ticket, string line, string orderType)
         {
             string table = "";
             ticket.TicketType = TicketTypeEnum.ORDER.ToString();
@@ -273,7 +273,7 @@ namespace Menoo.PrinterService.Business.Orders
             await Utils.SaveTicketAsync(_db, ticket);
         }
 
-        private async Task SaveOrderAsync(OrderCancelled order)
+        private async Task SaveOrderAsync(OrdersCancelled order)
         {
             var ticket = Utils.CreateInstanceOfTicket();
             var lines = CreateComments(order);

@@ -103,7 +103,7 @@ namespace Menoo.PrinterService.Business.Bookings
                 return;
             }
             var ticket = Utils.CreateInstanceOfTicket();
-            ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
+            ticket.TicketType = PrintEvents.NEW_BOOKING;
             if (booking.BookingState.Equals("aceptada"))
             {
                 var title = "Nueva reserva";
@@ -113,6 +113,7 @@ namespace Menoo.PrinterService.Business.Bookings
                 var cliente = "Cliente: " + user.Name;
                 ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cantPersonas + "</p><p>" + cliente + "</p></h3></body></html>";
             }
+            ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
             ticket.PrintBefore = Utils.BeforeAt(booking.BookingDate, -10);
             ticket.StoreId = booking.Store.StoreId;
             ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");

@@ -26,6 +26,7 @@ namespace Menoo.PrinterService.Business.Tables
         public void Listen()
         {
             _db.Collection("payments")
+                .WhereEqualTo("userId", "r19eJA2D8MWfZwCcR1NHrId97nE3")
                .Listen(OnRequest);
         }
 
@@ -61,7 +62,7 @@ namespace Menoo.PrinterService.Business.Tables
                             {
                                 tableOpeningDocument = document["tableOpening"].GetObject<TableOpeningV2>();
                             }
-                            SaveCloseTableOpeningFamily(tableOpeningDocument).GetAwaiter().GetResult();
+                            SavePaymentRequest(tableOpeningDocument).GetAwaiter().GetResult();
                         }
                     }
                     catch (Exception ex) 
@@ -85,7 +86,7 @@ namespace Menoo.PrinterService.Business.Tables
             return document;
         }
 
-        private async Task SaveCloseTableOpeningFamily(TableOpeningV2 tableOpening)
+        private async Task SavePaymentRequest(TableOpeningV2 tableOpening)
         {
             var store = await Utils.GetStores(_db, tableOpening.StoreId);
             if (!store.AllowPrint())
@@ -133,7 +134,7 @@ namespace Menoo.PrinterService.Business.Tables
             ticket.Data += $"<h1>{title}</h1><h3><p>{tableNumber}</p><p>{date}</p><p>{orden}</p></h3></body></html>";
 
             ticket.StoreId = tableOpening.StoreId;
-            ticket.PrintBefore = Utils.BeforeAt(tableOpening.CloseAt, 10);
+            //ticket.PrintBefore = Utils.BeforeAt(tableOpening.CloseAt, 10);
             ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
             Utils.SaveTicketAsync(_db, ticket).GetAwaiter().GetResult();
         }

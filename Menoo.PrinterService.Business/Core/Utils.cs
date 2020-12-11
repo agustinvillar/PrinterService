@@ -138,7 +138,7 @@ namespace Menoo.PrinterService.Business.Core
         /// <param name="db">Instancia de firebase.</param>
         /// <param name="collection">Nombre de la colección.</param>
         /// <param name="doc">Documento a ser actualizado.</param>
-        public static async Task<Google.Cloud.Firestore.WriteResult> SetOrderPrintedAsync(FirestoreDb db, string collection, string doc)
+        public static async Task<WriteResult> SetOrderPrintedAsync(FirestoreDb db, string collection, string doc)
         {
             var result = await db.Collection(collection).Document(doc).UpdateAsync("printed", true);
             return result;

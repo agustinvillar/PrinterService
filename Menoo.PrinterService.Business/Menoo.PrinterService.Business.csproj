@@ -103,7 +103,7 @@
     <Compile Include="Core\Print.cs" />
     <Compile Include="Entities\Booking.cs" />
     <Compile Include="Entities\CategoryStore.cs" />
-    <Compile Include="Entities\OrderCancelled.cs" />
+    <Compile Include="Entities\OrdersCancelled.cs" />
     <Compile Include="Entities\Payment.cs" />
     <Compile Include="Entities\Item.cs" />
     <Compile Include="Entities\Orders.cs" />
@@ -124,7 +124,14 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Templates\Ticket_Booking.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\Ticket.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Grpc.Core.1.22.0\build\net45\Grpc.Core.targets" Condition="Exists('..\packages\Grpc.Core.1.22.0\build\net45\Grpc.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
