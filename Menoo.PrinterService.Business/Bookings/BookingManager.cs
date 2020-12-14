@@ -123,16 +123,18 @@ namespace Menoo.PrinterService.Business.Bookings
             {
                 return;
             }
-            var ticket = Utils.CreateInstanceOfTicket();
-            ticket.TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString();
             if (booking.BookingState.Equals("cancelada", StringComparison.OrdinalIgnoreCase))
             {
+                var ticket = new Ticket 
+                {
+                    TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString(),
+                    PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
+                    StoreId = booking.Store.StoreId,
+                    Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
+                };
                 ticket.SetBookingData("Reserva cancelada", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
+                await Utils.SaveTicketAsync(_db, ticket);
             }
-            ticket.PrintBefore = Utils.BeforeAt(booking.BookingDate, -10);
-            ticket.StoreId = booking.Store.StoreId;
-            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-            await Utils.SaveTicketAsync(_db, ticket);
         }
 
         private async Task<WriteResult> SetBookingPrintedAsync(string doc, Booking.PRINT_TYPE type)
