@@ -162,7 +162,7 @@ namespace Menoo.PrinterService.Business.Core
         /// <returns>Cadena de texto con el html del ticket.</returns>
         public static string GetTicketTemplate(string fileTemplate) 
         {
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fileTemplate" + ".html");
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", fileTemplate + ".html");
             string template = File.ReadAllText(path);
             return template;
         } 

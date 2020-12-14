@@ -52,7 +52,7 @@ namespace Menoo.PrinterService.Business.Bookings
                 {
                     user = snapshotUser.ConvertTo<User>();
                 }
-                if (!booking.PrintedAccepted && booking.BookingNumber.ToString().Length > 7)
+                if (!booking.PrintedAccepted)
                 {
                     SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED).GetAwaiter().GetResult();
                     _ = SaveAcceptedBooking(booking, user);
@@ -102,17 +102,18 @@ namespace Menoo.PrinterService.Business.Bookings
             {
                 return;
             }
-            var ticket = Utils.CreateInstanceOfTicket();
-            ticket.TicketType = PrintEvents.NEW_BOOKING;
             if (booking.BookingState.Equals("aceptada", StringComparison.OrdinalIgnoreCase))
             {
+                var ticket = new Ticket
+                {
+                    TicketType = TicketTypeEnum.NEW_BOOKING.ToString(),
+                    PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
+                    StoreId = booking.Store.StoreId,
+                    Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                };
                 ticket.SetBookingData("Nueva reserva", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
+                await Utils.SaveTicketAsync(_db, ticket);
             }
-            ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
-            ticket.PrintBefore = Utils.BeforeAt(booking.BookingDate, -10);
-            ticket.StoreId = booking.Store.StoreId;
-            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-            await Utils.SaveTicketAsync(_db, ticket);
         }
 
         private async Task SaveCancelledBooking(Booking booking, User user)

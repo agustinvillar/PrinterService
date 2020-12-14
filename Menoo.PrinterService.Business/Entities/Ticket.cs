@@ -11,7 +11,7 @@ namespace Menoo.PrinterService.Business.Entities
         public string TicketType { get; set; }
         
         [FirestoreProperty("printData")]
-        public string Data { get; private set}
+        public string Data { get; set; }
         
         [FirestoreProperty("printed")]
         public bool Printed { get; set; }
