@@ -35,11 +35,11 @@ namespace Menoo.PrinterService.Business.Tables
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("closed", true)
                .WhereGreaterThanOrEqualTo("openedAtNumber", date)
-               .Listen(OnOpen);
+               .Listen(OnClose);
         }
 
         #region events
-        private void OnOpen(QuerySnapshot snapshot)
+        private void OnClose(QuerySnapshot snapshot)
         {
             try
             {
@@ -71,7 +71,6 @@ namespace Menoo.PrinterService.Business.Tables
             {
                 var document = snapshot.Documents.Single();
                 var tableOpeningFamily = document.ConvertTo<TableOpeningFamily>();
-
                 if (!tableOpeningFamily.Closed && !tableOpeningFamily.OpenPrinted)
                 {
                     SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PrintedEvent.OPENING).GetAwaiter().GetResult();

@@ -47,9 +47,9 @@ namespace Menoo.PrinterService.Business.Core
 
         public void Load() 
         {
-            _bookingManager.Listen();
+            //_bookingManager.Listen();
             //_orderManager.Listen();
-            //_tablesOpeningManager.Listen();
+            _tablesOpeningManager.Listen();
             //_paymentsManager.Listen();
         }
 
