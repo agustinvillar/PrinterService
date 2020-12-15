@@ -64,5 +64,21 @@ namespace Menoo.PrinterService.Business.Entities
             builder.Replace("@clienteName", clientName);
             Data = builder.ToString();
         }
+
+        /// <summary>
+        /// Inyecta los datos del ticket de apertura de mesa.
+        /// </summary>
+        /// <param name="title">Titulo del ticket.</param>
+        /// <param name="tableNumber">Número de mesa.</param>
+        /// <param name="date">Fecha de la apertura de la mesa.</param>
+        public void SetTableOpening(string title, string tableNumber, string date) 
+        {
+            string template = Utils.GetTicketTemplate("Ticket_Table_Opening");
+            var builder = new StringBuilder(template);
+            builder.Replace("@title", title);
+            builder.Replace("@tableNumber", tableNumber);
+            builder.Replace("@date", date);
+            Data = builder.ToString();
+        }
     }
 }

@@ -121,20 +121,28 @@ namespace Menoo.PrinterService.Business.Tables
                                     if (option != null) orden += $"<p>{option.Name} {option.Price}</p>";
                         }
                     }
-                    if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0) orden += $"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>";
-                    if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0) orden += $"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>";
-                    if (to.Tip != null && to.Tip > 0) orden += $"<p>Propina: ${to.Tip}</p>";
-                    if (to.Surcharge != null && to.Surcharge > 0) orden += $"<p>Adicional por servicio: ${to.Surcharge}</p>";
+                    if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0) 
+                        orden += $"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>";
+                    if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0) 
+                        orden += $"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>";
+                    if (to.Tip != null && to.Tip > 0) 
+                        orden += $"<p>Propina: ${to.Tip}</p>";
+                    if (to.Surcharge != null && to.Surcharge > 0) 
+                        orden += $"<p>Adicional por servicio: ${to.Surcharge}</p>";
                     if (to.Discounts != null)
                         orden = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva)
                             .Aggregate(orden, (current, discount) => current + ($"<p>Descuento {discount.Name}: -${discount.Amount}</p>"));
 
-                    if (!string.IsNullOrEmpty(to.PayMethod)) orden += $"Metodo de Pago: {to.PayMethod}";
+                    if (!string.IsNullOrEmpty(to.PayMethod)) 
+                        orden += $"Metodo de Pago: {to.PayMethod}";
                     if (to.PagoPorTodos || to.PagoPorElMismo)
                         orden += $"<p>Subtotal: ${to.TotalToTicket(store)}</p>";
-                    if (to.PagoPorElMismo) orden += "<p>Pagó su propia cuenta</p>";
-                    if (to.PagoPorTodos) orden += "<p>Pagó la cuenta de todos.</p>";
-                    if (to.AlguienLePago) orden += "<p>Le pagaron su cuenta.</p>";
+                    if (to.PagoPorElMismo) 
+                        orden += "<p>Pagó su propia cuenta</p>";
+                    if (to.PagoPorTodos) 
+                        orden += "<p>Pagó la cuenta de todos.</p>";
+                    if (to.AlguienLePago) 
+                        orden += "<p>Le pagaron su cuenta.</p>";
                     orden += "<p><b>------------------------------------------------------</b></p>";
                 }
 
@@ -156,18 +164,15 @@ namespace Menoo.PrinterService.Business.Tables
             {
                 return;
             }
-            var ticket = Utils.CreateInstanceOfTicket();
-            ticket.TicketType = TicketTypeEnum.OPEN_TABLE.ToString();
-
-            const string title = "Apertura de mesa";
-            var tableNumber = $"Número de mesa: {tableOpeningFamily.TableNumberToShow}";
-            var date = $"Fecha: {tableOpeningFamily.OpenedAt}";
-
-            ticket.Data += $"<h1>{title}</h1><h3><p>{tableNumber}</p><p>{date}</p></h3></body></html>";
-            ticket.PrintBefore = Utils.BeforeAt(tableOpeningFamily.OpenedAt, 10);
-            ticket.StoreId = tableOpeningFamily.StoreId;
-            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-            ticket.TableOpeningFamilyId = tableOpeningFamily.Id;
+            var ticket = new Ticket
+            {
+                TicketType = TicketTypeEnum.OPEN_TABLE.ToString(),
+                PrintBefore = Utils.BeforeAt(tableOpeningFamily.OpenedAt, 10),
+                StoreId = tableOpeningFamily.StoreId,
+                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                TableOpeningFamilyId = tableOpeningFamily.Id
+            };
+            ticket.SetTableOpening("Apertura de mesa", tableOpeningFamily.TableNumberToShow, tableOpeningFamily.OpenedAt);
             await Utils.SaveTicketAsync(_db, ticket);
         }
 
