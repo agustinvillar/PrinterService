@@ -85,7 +85,7 @@ namespace Menoo.PrinterService.Business.Entities
         /// Inyecta los datos del ticket de cierre/abandono de mesa.
         /// </summary>
         /// <param name="title">Titulo del ticket.</param>
-        /// <param name="tableNumber">Número de mesa.</param>
+        /// <param name="title">Titulo del ticket.</param>
         /// <param name="date">Fecha del cierre/abandono de mesa.</param>
         public void SetTableClosing(string title, string tableNumber, string date, string data = "")
         {
@@ -94,6 +94,22 @@ namespace Menoo.PrinterService.Business.Entities
             builder.Replace("@title", title);
             builder.Replace("@tableNumber", tableNumber);
             builder.Replace("@date", date);
+            builder.Replace("@data", data);
+            Data = builder.ToString();
+        }
+
+        /// <summary>
+        /// Inyecta los datos del ticket de nueva orden en mesa.
+        /// </summary>
+        /// <param name="title">Titulo del ticket.</param>
+        /// <param name="clientName">Nombre del cliente.</param>
+        /// <param name="title">Titulo del ticket.</param>
+        /// <param name="items">Comida o items que componen la orden</param>
+        public void SetNewOrderOnSite(string title, string data) 
+        {
+            string template = Utils.GetTicketTemplate("Ticket_Order");
+            var builder = new StringBuilder(template);
+            builder.Replace("@title", title);
             builder.Replace("@data", data);
             Data = builder.ToString();
         }

@@ -35,6 +35,12 @@ namespace Menoo.PrinterService.Business.Entities
         [FirestoreProperty("storeId")]
         public virtual string StoreId { get; set; }
 
+        [FirestoreProperty("orderNumber")]
+        public string OrderNumber { get; set; }
+
+        [FirestoreProperty("bookingId")]
+        public string BookingId { get; set; }
+
         public virtual string Id { get; set; }
 
         private Store _store;
