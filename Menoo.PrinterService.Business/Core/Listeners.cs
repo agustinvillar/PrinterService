@@ -34,7 +34,7 @@ namespace Menoo.PrinterService.Business.Core
         /// <summary>
         /// Manejador de eventos referentes a solicitudes de pagos.
         /// </summary>
-        private readonly PaymentsManager _paymentsManager;
+        // private readonly PaymentsManager _paymentsManager;
 
         public Listeners() 
         {
