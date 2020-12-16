@@ -42,13 +42,13 @@ namespace Menoo.PrinterService.Business.Core
             _bookingManager = new BookingManager(_db);
             _orderManager = new OrdersManager(_db);
             _tablesOpeningManager = new TablesOpeningManager(_db);
-            _paymentsManager = new PaymentsManager(_db);
+            //_paymentsManager = new PaymentsManager(_db);
         }
 
         public void Load() 
         {
-            //_bookingManager.Listen();
-            //_orderManager.Listen();
+            _bookingManager.Listen();
+            _orderManager.Listen();
             _tablesOpeningManager.Listen();
             //_paymentsManager.Listen();
         }

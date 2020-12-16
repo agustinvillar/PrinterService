@@ -141,14 +141,13 @@ namespace Menoo.PrinterService.Business.Orders
             return items;
         }
 
-        private static List<string> CreateComments(OrdersCancelled order)
+        private static string CreateHtmlFromLines(OrdersCancelled order)
         {
             var lines = new List<string>();
             if (order.Items == null)
             {
-                return lines;
+                return string.Empty;
             }
-
             foreach (var item in order.Items)
             {
                 if (item != null)
@@ -165,41 +164,58 @@ namespace Menoo.PrinterService.Business.Orders
                     lines.Add($"Comentario: {item.GuestComment}");
                 }
             }
-            return lines;
-        }
-
-        private static string CreateHtmlFromLines(List<string> lines)
-        {
-            if (lines == null)
-            {
-                throw new ArgumentNullException(nameof(lines));
-            }
             string items = lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
             return items;
         }
 
-        private static void CreateOrderTicket(OrdersCancelled order, Ticket ticket, string line, string orderType)
+        private void CreateOrderTicket(OrdersCancelled order, Ticket ticket, string line, string orderType)
         {
-            string table = "";
-            ticket.TicketType = TicketTypeEnum.ORDER.ToString();
-            string title;
+            StringBuilder builder = new StringBuilder();
             switch (orderType.ToUpper())
             {
                 case "RESERVA":
-                    title = $"Orden reserva cancelada";
+                    var bookingData = Utils.GetDocument(_db, "bookings", order.BookingId).GetAwaiter().GetResult().ConvertTo<Booking>();
+                    builder.Append(@"<table class=""top"">");
+                    builder.Append("<tr>");
+                    builder.Append("<td>Número de reserva : </td>");
+                    builder.Append($"<td>{bookingData.BookingNumber}</td>");
+                    builder.Append("</tr>");
+                    builder.Append("<tr>");
+                    builder.Append("<td>Cliente: </td>");
+                    builder.Append($"<td>{order.UserName}</td>");
+                    builder.Append("</tr>");
+                    builder.Append("<td>Número de orden: </td>");
+                    builder.Append($"<td>{order.OrderNumber}</td>");
+                    builder.Append("</tr>");
+                    builder.Append(line);
+                    ticket.SetOrder("Orden reserva cancelada", builder.ToString());
                     break;
-
                 case "TAKEAWAY":
-                    title = $"Orden Takeaway cancelada";
+                    builder.Append(@"<table class=""top"">");
+                    builder.Append("<tr>");
+                    builder.Append("<td>Cliente: </td>");
+                    builder.Append($"<td>{order.UserName}</td>");
+                    builder.Append("</tr>");
+                    builder.Append("<td>Hora de retiro: </td>");
+                    builder.Append($"<td>{order.TakeAwayHour}</td>");
+                    builder.Append("</tr>");
+                    builder.Append(line);
+                    ticket.SetOrder("Orden Takeaway cancelada", builder.ToString());
                     break;
-
                 default:
-                    title = $"Orden cancelada";
-                    table = $"Servir en mesa: {order.Address}";
+                    builder.Append(@"<table class=""top"">");
+                    builder.Append("<tr>");
+                    builder.Append("<td>Cliente: </td>");
+                    builder.Append($"<td>{order.UserName}</td>");
+                    builder.Append("</tr>");
+                    builder.Append("<tr>");
+                    builder.Append("<td>Servir en mesa: </td>");
+                    builder.Append($"<td>{order.Address}</td>");
+                    builder.Append("</tr>");
+                    builder.Append(line);
+                    ticket.SetOrder("Orden cancelada", builder.ToString());
                     break;
             }
-            string client = $"Cliente: {order.UserName}";
-            ticket.Data += $"<h1>{title}</h1><br/><h3>{client}{line}{table}</h3></body></html>";
         }
 
         private async Task CreateOrderTicket(Entities.Orders order, bool isOrderOk, Ticket ticket, string line)
@@ -217,7 +233,7 @@ namespace Menoo.PrinterService.Business.Orders
                 builder.Append($"<td>{order.Address}</td>");
                 builder.Append("</tr>");
                 builder.Append(line);
-                ticket.SetNewOrderOnSite("Nueva orden de mesa", builder.ToString());
+                ticket.SetOrder("Nueva orden de mesa", builder.ToString());
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == RESERVA)
             {
@@ -239,7 +255,7 @@ namespace Menoo.PrinterService.Business.Orders
                 builder.Append($"<td>{order.OrderNumber}</td>");
                 builder.Append("</tr>");
                 builder.Append(line);
-                ticket.SetNewOrderOnSite("Nueva orden de reserva", builder.ToString());
+                ticket.SetOrder("Nueva orden de reserva", builder.ToString());
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == TAKEAWAY)
             {
@@ -257,7 +273,7 @@ namespace Menoo.PrinterService.Business.Orders
                 {
                     builder.Append($"<h3>Método de Pago: {payment.PaymentMethod}</h3>");
                     builder.Append($"<h1>--------------------------------------------------</h1>");
-                    builder.Append($"<h1>Recuerde ACEPTAR el pedido.</h1>";
+                    builder.Append($"<h1>Recuerde ACEPTAR el pedido.</h1>");
                     if (order.Store.PaymentProvider == Store.ProviderEnum.MercadoPago)
                     {
                         builder.Append($"<h1>Pedido YA PAGO.</h1>");
@@ -265,7 +281,7 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append($"<h1>--------------------------------------------------</h1>");
                     builder.Append($"<h1>Total: ${payment.TotalToPayTicket}</h1>");
                 }
-                ticket.SetNewOrderOnSite("Nuevo Take Away", builder.ToString());
+                ticket.SetOrder("Nuevo Take Away", builder.ToString());
             }
         }
 
@@ -308,8 +324,11 @@ namespace Menoo.PrinterService.Business.Orders
 
         private async Task SaveOrderAsync(OrdersCancelled order)
         {
-            var ticket = Utils.CreateInstanceOfTicket();
-            var lines = CreateComments(order);
+            var ticket = new Ticket {
+                StoreId = order.Store.Id,
+                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                TicketType = TicketTypeEnum.CANCELLED_ORDER.ToString()
+            };
             if (order.OrderType.ToUpper() == TAKEAWAY)
             {
                 ticket.PrintBefore = Utils.BeforeAt(order.OrderDate, -5);
@@ -318,11 +337,8 @@ namespace Menoo.PrinterService.Business.Orders
             {
                 ticket.PrintBefore = Utils.BeforeAt(order.OrderDate, 30);
             }
-            var line = CreateHtmlFromLines(lines);
+            var line = CreateHtmlFromLines(order);
             CreateOrderTicket(order, ticket, line, order.OrderType);
-            ticket.StoreId = order.Store.Id;
-            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-            ticket.TicketType = TicketTypeEnum.CANCELLED_ORDER.ToString();
             await Utils.SaveTicketAsync(_db, ticket);
         }
         #endregion

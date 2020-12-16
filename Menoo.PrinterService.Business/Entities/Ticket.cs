@@ -105,7 +105,7 @@ namespace Menoo.PrinterService.Business.Entities
         /// <param name="clientName">Nombre del cliente.</param>
         /// <param name="title">Titulo del ticket.</param>
         /// <param name="items">Comida o items que componen la orden</param>
-        public void SetNewOrderOnSite(string title, string data) 
+        public void SetOrder(string title, string data) 
         {
             string template = Utils.GetTicketTemplate("Ticket_Order");
             var builder = new StringBuilder(template);
