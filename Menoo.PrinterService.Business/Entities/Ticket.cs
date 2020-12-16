@@ -80,5 +80,22 @@ namespace Menoo.PrinterService.Business.Entities
             builder.Replace("@date", date);
             Data = builder.ToString();
         }
+
+        /// <summary>
+        /// Inyecta los datos del ticket de cierre/abandono de mesa.
+        /// </summary>
+        /// <param name="title">Titulo del ticket.</param>
+        /// <param name="tableNumber">Número de mesa.</param>
+        /// <param name="date">Fecha del cierre/abandono de mesa.</param>
+        public void SetTableClosing(string title, string tableNumber, string date, string data = "")
+        {
+            string template = Utils.GetTicketTemplate("Ticket_Table_Closing");
+            var builder = new StringBuilder(template);
+            builder.Replace("@title", title);
+            builder.Replace("@tableNumber", tableNumber);
+            builder.Replace("@date", date);
+            builder.Replace("@data", data);
+            Data = builder.ToString();
+        }
     }
 }

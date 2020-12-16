@@ -125,6 +125,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Templates\Ticket_Table_Closing.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Templates\Ticket_Table_Opening.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
