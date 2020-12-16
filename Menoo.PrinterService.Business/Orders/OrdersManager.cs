@@ -204,7 +204,6 @@ namespace Menoo.PrinterService.Business.Orders
 
         private async Task CreateOrderTicket(Entities.Orders order, bool isOrderOk, Ticket ticket, string line)
         {
-            string title, client;
             StringBuilder builder = new StringBuilder();
             if (isOrderOk && order.OrderType.ToUpper().Trim() == MESAS)
             {
@@ -245,20 +244,28 @@ namespace Menoo.PrinterService.Business.Orders
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == TAKEAWAY)
             {
                 var payment = await GetPayment(order.TableOpeningFamilyId, TAKEAWAY);
-                title = "Nuevo Take Away";
-                client = $"Cliente: {order.UserName}";
-                var time = $"Hora de retiro: {order.TakeAwayHour}";
-                var paymentInfo = string.Empty;
+                builder.Append(@"<table class=""top"">");
+                builder.Append("<tr>");
+                builder.Append("<td>Cliente: </td>");
+                builder.Append($"<td>{order.UserName}</td>");
+                builder.Append("</tr>");
+                builder.Append("<td>Hora de retiro: </td>");
+                builder.Append($"<td>{order.TakeAwayHour}</td>");
+                builder.Append("</tr>");
+                builder.Append(line);
                 if (payment != null)
                 {
-                    paymentInfo += $"<h3>Método de Pago: {payment.PaymentMethod}</h3>";
-                    paymentInfo += $"<h1>--------------------------------------------------</h1>";
-                    paymentInfo += $"<h1>Recuerde ACEPTAR el pedido.</h1>";
-                    if (order.Store.PaymentProvider == Store.ProviderEnum.MercadoPago) paymentInfo += $"<h1>Pedido YA PAGO.</h1>";
-                    paymentInfo += $"<h1>--------------------------------------------------</h1>";
-                    paymentInfo += $"<h1>Total: ${payment.TotalToPayTicket}</h1>";
+                    builder.Append($"<h3>Método de Pago: {payment.PaymentMethod}</h3>");
+                    builder.Append($"<h1>--------------------------------------------------</h1>");
+                    builder.Append($"<h1>Recuerde ACEPTAR el pedido.</h1>";
+                    if (order.Store.PaymentProvider == Store.ProviderEnum.MercadoPago)
+                    {
+                        builder.Append($"<h1>Pedido YA PAGO.</h1>");
+                    }
+                    builder.Append($"<h1>--------------------------------------------------</h1>");
+                    builder.Append($"<h1>Total: ${payment.TotalToPayTicket}</h1>");
                 }
-                ticket.Data += $"<h1>{title}</h1><h3>{client}{line}{time}</h3>{paymentInfo}</body></html>";
+                ticket.SetNewOrderOnSite("Nuevo Take Away", builder.ToString());
             }
         }
 
