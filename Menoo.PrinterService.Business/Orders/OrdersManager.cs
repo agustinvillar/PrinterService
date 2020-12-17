@@ -192,10 +192,13 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append("<tr>");
                     builder.Append("<td>Cliente: </td>");
                     builder.Append($"<td>{order.UserName}</td>");
-                    builder.Append("</tr>");
-                    builder.Append("<td>Número de orden: </td>");
-                    builder.Append($"<td>{order.OrderNumber}</td>");
-                    builder.Append("</tr>");
+                    if (!string.IsNullOrEmpty(order.OrderNumber)) 
+                    {
+                        builder.Append("</tr>");
+                        builder.Append("<td>Número de orden: </td>");
+                        builder.Append($"<td>{order.OrderNumber}</td>");
+                        builder.Append("</tr>");
+                    }
                     ticket.SetOrder("Orden reserva cancelada", builder.ToString());
                     break;
                 case "TAKEAWAY":
@@ -208,6 +211,13 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append("<td>Hora de retiro: </td>");
                     builder.Append($"<td>{order.TakeAwayHour}</td>");
                     builder.Append("</tr>");
+                    if (!string.IsNullOrEmpty(order.OrderNumber))
+                    {
+                        builder.Append("</tr>");
+                        builder.Append("<td>Número de orden: </td>");
+                        builder.Append($"<td>{order.OrderNumber}</td>");
+                        builder.Append("</tr>");
+                    }
                     ticket.SetOrder("Orden Takeaway cancelada", builder.ToString());
                     break;
                 default:
@@ -220,7 +230,14 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append("<tr>");
                     builder.Append("<td>Servir en mesa: </td>");
                     builder.Append($"<td>{order.Address}</td>");
-                    builder.Append("</tr>"); 
+                    builder.Append("</tr>");
+                    if (!string.IsNullOrEmpty(order.OrderNumber))
+                    {
+                        builder.Append("</tr>");
+                        builder.Append("<td>Número de orden: </td>");
+                        builder.Append($"<td>{order.OrderNumber}</td>");
+                        builder.Append("</tr>");
+                    }
                     ticket.SetOrder("Orden cancelada", builder.ToString());
                     break;
             }
@@ -281,21 +298,24 @@ namespace Menoo.PrinterService.Business.Orders
                 builder.Append("<td>Hora de retiro: </td>");
                 builder.Append($"<td>{order.TakeAwayHour}</td>");
                 builder.Append("</tr>");
-                builder.Append("</tr>");
-                builder.Append("<td>Número de orden: </td>");
-                builder.Append($"<td>{order.OrderNumber}</td>");
-                builder.Append("</tr>");
+                if (!string.IsNullOrEmpty(order.OrderNumber)) 
+                {
+                    builder.Append("</tr>");
+                    builder.Append("<td>Número de orden: </td>");
+                    builder.Append($"<td>{order.OrderNumber}</td>");
+                    builder.Append("</tr>");
+                }
                 if (payment != null)
                 {
-                    builder.Append($"<h3>Método de Pago: {payment.PaymentMethod}</h3>");
-                    builder.Append($"<h1>--------------------------------------------------</h1>");
-                    builder.Append($"<h1>Recuerde ACEPTAR el pedido.</h1>");
+                    builder.Append($"<p>Método de Pago: {payment.PaymentMethod}</p>");
+                    builder.Append($"<p>--------------------------------------------------</p>");
+                    builder.Append($"<p>Recuerde <b>ACEPTAR</b> el pedido.</p");
                     if (order.Store.PaymentProvider == Store.ProviderEnum.MercadoPago)
                     {
-                        builder.Append($"<h1>Pedido YA PAGO.</h1>");
+                        builder.Append($"<p>Pedido <b>YA PAGO</b>.</p>");
                     }
-                    builder.Append($"<h1>--------------------------------------------------</h1>");
-                    builder.Append($"<h1>Total: ${payment.TotalToPayTicket}</h1>");
+                    builder.Append($"<p>--------------------------------------------------</p>");
+                    builder.Append($"<p>Total: ${payment.TotalToPayTicket}</p>");
                 }
                 ticket.SetOrder("Nuevo Take Away", builder.ToString());
             }
