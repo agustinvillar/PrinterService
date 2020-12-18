@@ -248,7 +248,6 @@ namespace Menoo.PrinterService.Business.Orders
             StringBuilder builder = new StringBuilder();
             if (isOrderOk && order.OrderType.ToUpper().Trim() == MESAS)
             {
-                builder.Append(line);
                 builder.Append(@"<table class=""top"">");
                 builder.Append("<tr>");
                 builder.Append("<td>Cliente: </td>");
@@ -262,12 +261,12 @@ namespace Menoo.PrinterService.Business.Orders
                 builder.Append("<td>Servir en mesa: </td>");
                 builder.Append($"<td>{order.Address}</td>");
                 builder.Append("</tr>");
+                builder.Append(line);
                 ticket.SetOrder("Nueva orden de mesa", builder.ToString());
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == RESERVA)
             {
                 var bookingData = Utils.GetDocument(_db, "bookings", order.BookingId).GetAwaiter().GetResult().ConvertTo<Booking>();
-                builder.Append(line);
                 builder.Append(@"<table class=""top"">");
                 builder.Append("<tr>");
                 builder.Append("<td>Número de reserva : </td>");
@@ -284,12 +283,12 @@ namespace Menoo.PrinterService.Business.Orders
                 builder.Append("<td>Número de orden: </td>");
                 builder.Append($"<td>{order.OrderNumber}</td>");
                 builder.Append("</tr>");
+                builder.Append(line);
                 ticket.SetOrder("Nueva orden de reserva", builder.ToString());
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == TAKEAWAY)
             {
                 var payment = await GetPayment(order.TableOpeningFamilyId, TAKEAWAY);
-                builder.Append(line);
                 builder.Append(@"<table class=""top"">");
                 builder.Append("<tr>");
                 builder.Append("<td>Cliente: </td>");
@@ -305,6 +304,7 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append($"<td>{order.OrderNumber}</td>");
                     builder.Append("</tr>");
                 }
+                builder.Append(line);
                 if (payment != null)
                 {
                     builder.Append($"<p>Método de Pago: {payment.PaymentMethod}</p>");

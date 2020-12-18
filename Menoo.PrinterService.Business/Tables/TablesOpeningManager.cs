@@ -30,13 +30,14 @@ namespace Menoo.PrinterService.Business.Tables
                   .OrderByDescending("openedAtNumber")
                   .Limit(1)
                   .Listen(OnOpenFamily);
-
             var date = (DateTime.UtcNow.AddHours(-15) - new DateTime(1970, 1, 1)).TotalSeconds;
-
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("closed", true)
                .WhereGreaterThanOrEqualTo("openedAtNumber", date)
                .Listen(OnClose);
+            _db.Collection("tableOpeningFamily")
+                .WhereEqualTo("closed", false)
+                .Listen(OnRequestPayment);
         }
 
         #region events
@@ -53,7 +54,7 @@ namespace Menoo.PrinterService.Business.Tables
                 });
                 foreach (var tableOpeningFamily in docs)
                 {
-                    if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinter)
+                    if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinted)
                     {
                         SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, TableOpeningFamily.PrintedEvent.CLOSING).GetAwaiter().GetResult();
                         SaveCloseTableOpeningFamily(tableOpeningFamily).GetAwaiter().GetResult();
@@ -81,6 +82,29 @@ namespace Menoo.PrinterService.Business.Tables
             catch (Exception ex)
             {
                 Utils.LogError(ex.Message);
+            }
+        }
+
+        private void OnRequestPayment(QuerySnapshot snapshot)
+        {
+            try
+            {
+                var requestPayment = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
+                var document = requestPayment.ToDictionary();
+                bool isClosed = bool.Parse(document["closed"].ToString());
+                if (!document.ContainsKey("requestPaymentCount") && !isClosed)
+                {
+
+                }
+                else if (document.ContainsKey("requestPaymentCount") && !isClosed)
+                {
+                    var tableOpeningFamily = document.GetObject<TableOpeningFamily>();
+
+                }
+            }
+            catch (Exception e) 
+            {
+                Utils.LogError(e.Message);
             }
         }
         #endregion

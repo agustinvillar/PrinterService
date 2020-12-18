@@ -25,8 +25,7 @@ namespace Menoo.PrinterService.Business.Tables
         /// </summary>
         public void Listen()
         {
-            _db.Collection("payments")
-                .WhereEqualTo("userId", "r19eJA2D8MWfZwCcR1NHrId97nE3")
+            _db.Collection("closeTableConfirmations")
                .Listen(OnRequest);
         }
 

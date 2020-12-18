@@ -22,12 +22,16 @@ namespace Menoo.PrinterService.Business.Entities
 
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }
+
         public double TotalToPay { get; set; }
+
         [FirestoreProperty("tableOpenings")]
+
         public TableOpening[] TableOpenings { get; set; }
 
         [FirestoreProperty("pending")]
         public bool? Pending { get; set; }
+
         [FirestoreProperty("storeId")]
         public string StoreId { get; set; }
 
@@ -35,7 +39,7 @@ namespace Menoo.PrinterService.Business.Entities
         public bool OpenPrinted { get; set; }
 
         [FirestoreProperty("closedPrinted")]
-        public bool ClosedPrinter { get; set; }
+        public bool ClosedPrinted { get; set; }
 
         [FirestoreProperty("totalToPayWithSurcharge")]
         public double? TotalToPayWithSurcharge { get; set; }
@@ -45,6 +49,9 @@ namespace Menoo.PrinterService.Business.Entities
 
         [FirestoreProperty("propina")]
         public double? Tip { get; set; }
+
+        [FirestoreProperty("requestPaymentCount")]
+        public string RequestPaymentCount { get; set; }
 
         public string TableNumberToShow => NumberToShow != null ? NumberToShow.ToString() : TableNumberId.ToString();
 
