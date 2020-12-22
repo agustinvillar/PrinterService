@@ -40,11 +40,11 @@ namespace Menoo.PrinterService.Business.Entities
         public bool? Pending { get; set; }
 
         [FirestoreProperty("storeId")]
-        [JsonProperty("pending")]
+        [JsonProperty("storeId")]
         public string StoreId { get; set; }
 
         [FirestoreProperty("openPrinted")]
-        [JsonProperty("pending")]
+        [JsonProperty("openPrinted")]
         public bool OpenPrinted { get; set; }
 
         [FirestoreProperty("closedPrinted")]
@@ -67,7 +67,7 @@ namespace Menoo.PrinterService.Business.Entities
         [JsonProperty("requestPaymentCount")]
         public int RequestPaymentCount { get; set; }
 
-        public string TableNumberToShow => NumberToShow != null ? NumberToShow.ToString() : TableNumberId.ToString();
+        public string TableNumberToShow => NumberToShow > 0 ? NumberToShow.ToString() : TableNumberId.ToString();
 
         public double TotalToTicket(Store store)
         {

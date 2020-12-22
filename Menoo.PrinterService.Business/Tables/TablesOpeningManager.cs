@@ -35,9 +35,9 @@ namespace Menoo.PrinterService.Business.Tables
                .WhereEqualTo("closed", true)
                .WhereGreaterThanOrEqualTo("openedAtNumber", date)
                .Listen(OnClose);
-            _db.Collection("tableOpeningFamily")
-                .WhereEqualTo("closed", false)
-                .Listen(OnRequestPayment);
+            //_db.Collection("tableOpeningFamily")
+            //    .WhereEqualTo("closed", false)
+            //    .Listen(OnRequestPayment);
         }
 
         #region events
@@ -48,7 +48,7 @@ namespace Menoo.PrinterService.Business.Tables
                 var docs = snapshot.Documents.Select(d =>
                 {
                     var dic = d.ToDictionary();
-                    var toFamily = d.ConvertTo<TableOpeningFamily>();
+                    var toFamily = d.GetObject<TableOpeningFamily>();
                     toFamily.TotalToPay = dic.ContainsKey("totalToPay") && dic["totalToPay"] != null ? double.Parse(dic["totalToPay"].ToString()) : 0;
                     return toFamily;
                 });
@@ -72,7 +72,7 @@ namespace Menoo.PrinterService.Business.Tables
             try
             {
                 var document = snapshot.Documents.Single();
-                var tableOpeningFamily = document.ConvertTo<TableOpeningFamily>();
+                var tableOpeningFamily = document.ToDictionary().GetObject<TableOpeningFamily>();
                 if (!tableOpeningFamily.Closed && !tableOpeningFamily.OpenPrinted)
                 {
                     SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PrintedEvent.OPENING).GetAwaiter().GetResult();
@@ -89,11 +89,15 @@ namespace Menoo.PrinterService.Business.Tables
         {
             try
             {
-                var requestPayment = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
+                string now = DateTime.Now.ToString("dd/MM/yyyy");
+                var requestPayment = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault(f => f.CreateTime.Value.ToDateTime().ToString("dd/MM/yyyy") == now);
+                if (requestPayment == null)
+                {
+                    return;
+                }
                 var document = requestPayment.ToDictionary();
-                bool isClosed = bool.Parse(document["closed"].ToString());
                 var tableOpeningFamily = document.GetObject<TableOpeningFamily>();
-                if (!isClosed) 
+                if (!tableOpeningFamily.Closed)
                 {
                     if (!document.ContainsKey("requestPaymentCount"))
                     {

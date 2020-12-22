@@ -93,7 +93,7 @@ namespace Menoo.PrinterService.Business.Entities
         public string StoreId { get; set; }
 
         [FirestoreProperty("total")]
-        [JsonProperty("storeId")]
+        [JsonProperty("total")]
         public string Total { get; set; }
 
         [FirestoreProperty("guestComment")]
