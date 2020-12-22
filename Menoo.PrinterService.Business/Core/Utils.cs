@@ -28,21 +28,6 @@ namespace Menoo.PrinterService.Business.Core
         }
 
         /// <summary>
-        /// Crea el objeto de impresión o ticket.
-        /// </summary>
-        /// <returns>Objeto de impresión.</returns>
-        public static Ticket CreateInstanceOfTicket()
-        {
-            return new Ticket()
-            {
-                PrintedAt = null,
-                Expired = false,
-                Data = "<!DOCTYPE html><html><body><div class='logoImg'> <img src='\\assets\\img\\Menoo_Logo-Final_color-3.png'> </div>",
-                Printed = false,
-            };
-        }
-
-        /// <summary>
         /// Convierte un JSON en un objeto tipado.
         /// </summary>
         /// <typeparam name="T">Clase a ser transformada.</typeparam>

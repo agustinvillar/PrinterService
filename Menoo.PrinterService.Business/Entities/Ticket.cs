@@ -1,5 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Business.Core;
+using Newtonsoft.Json;
 using System.Text;
 
 namespace Menoo.PrinterService.Business.Entities
@@ -7,33 +8,6 @@ namespace Menoo.PrinterService.Business.Entities
     [FirestoreData]
     public class Ticket
     {
-        [FirestoreProperty("ticketType")]
-        public string TicketType { get; set; }
-        
-        [FirestoreProperty("printData")]
-        public string Data { get; set; }
-        
-        [FirestoreProperty("printed")]
-        public bool Printed { get; set; }
-        
-        [FirestoreProperty("printedAt")]
-        public string PrintedAt { get; set; }
-        
-        [FirestoreProperty("storeId")]
-        public string StoreId { get; set; }
-        
-        [FirestoreProperty("printBefore")]
-        public string PrintBefore { get; set; }
-        
-        [FirestoreProperty("expired")]
-        public bool Expired { get; set; }
-        
-        [FirestoreProperty("date")]
-        public string Date { get; set; }
-        
-        [FirestoreProperty("tableOpeningFamilyId")]
-        public string TableOpeningFamilyId { get; set; }
-
         public enum TicketTypeEnum
         {
             OPEN_TABLE,
@@ -44,6 +18,42 @@ namespace Menoo.PrinterService.Business.Entities
             CANCELLED_ORDER,
             PAYMENT_REQUEST
         }
+
+        [FirestoreProperty("printData")]
+        [JsonProperty("printData")]
+        public string Data { get; private set; }
+
+        [FirestoreProperty("date")]
+        [JsonProperty("date")]
+        public string Date { get; set; }
+
+        [FirestoreProperty("expired")]
+        [JsonProperty("expired")]
+        public bool Expired { get; set; }
+
+        [FirestoreProperty("printBefore")]
+        [JsonProperty("printBefore")]
+        public string PrintBefore { get; set; }
+
+        [FirestoreProperty("printed")]
+        [JsonProperty("printed")]
+        public bool Printed { get; set; }
+
+        [FirestoreProperty("printedAt")]
+        [JsonProperty("printedAt")]
+        public string PrintedAt { get; set; }
+
+        [FirestoreProperty("storeId")]
+        [JsonProperty("storeId")]
+        public string StoreId { get; set; }
+
+        [FirestoreProperty("tableOpeningFamilyId")]
+        [JsonProperty("tableOpeningFamilyId")]
+        public string TableOpeningFamilyId { get; set; }
+
+        [FirestoreProperty("ticketType")]
+        [JsonProperty("ticketType")]
+        public string TicketType { get; set; }
 
         /// <summary>
         /// Inyecta los datos del ticket de reserva en la plantilla.
@@ -66,6 +76,60 @@ namespace Menoo.PrinterService.Business.Entities
         }
 
         /// <summary>
+        /// Inyecta los datos del ticket de nueva orden en mesa.
+        /// </summary>
+        /// <param name="title">Titulo del ticket.</param>
+        /// <param name="clientName">Nombre del cliente.</param>
+        /// <param name="title">Titulo del ticket.</param>
+        /// <param name="items">Comida o items que componen la orden</param>
+        public void SetOrder(string title, string data)
+        {
+            string template = Utils.GetTicketTemplate("Ticket_Order");
+            var builder = new StringBuilder(template);
+            builder.Replace("@title", title);
+            builder.Replace("@data", data);
+            Data = builder.ToString();
+        }
+
+        /// <summary>
+        /// Inyecta los datos del ticket de solicitud de pago.
+        /// </summary>
+        /// <param name="title">Titulo del ticket.</param>
+        /// <param name="tableNumber">Número de mesa</param>
+        /// <param name="date">Fecha de la solicitud.</param>
+        /// <param name="data">Información del ticket.</param>
+        public void SetRequestPayment(string title, string tableNumber, string date, string total, string data = "")
+        {
+            string template = Utils.GetTicketTemplate("Ticket_Table_Closing");
+            var builder = new StringBuilder(template);
+            builder.Replace("@title", title);
+            builder.Replace("@tableNumber", tableNumber);
+            builder.Replace("@date", date);
+            builder.Replace("@data", data);
+            builder.Replace("@total", total);
+            Data = builder.ToString();
+        }
+
+        /// <summary>
+        /// Inyecta los datos del ticket de cierre/abandono de mesa.
+        /// </summary>
+        /// <param name="title">Titulo del ticket.</param>
+        /// <param name="tableNumber">Número de mesa</param>
+        /// <param name="date">Fecha del cierre/abandono de mesa.</param>
+        /// <param name="data">Información del ticket.</param>
+        public void SetTableClosing(string title, string tableNumber, string date, string total, string data = "")
+        {
+            string template = Utils.GetTicketTemplate("Ticket_Table_Closing");
+            var builder = new StringBuilder(template);
+            builder.Replace("@title", title);
+            builder.Replace("@tableNumber", tableNumber);
+            builder.Replace("@date", date);
+            builder.Replace("@data", data);
+            builder.Replace("@total", total);
+            Data = builder.ToString();
+        }
+
+        /// <summary>
         /// Inyecta los datos del ticket de apertura de mesa.
         /// </summary>
         /// <param name="title">Titulo del ticket.</param>
@@ -78,39 +142,6 @@ namespace Menoo.PrinterService.Business.Entities
             builder.Replace("@title", title);
             builder.Replace("@tableNumber", tableNumber);
             builder.Replace("@date", date);
-            Data = builder.ToString();
-        }
-
-        /// <summary>
-        /// Inyecta los datos del ticket de cierre/abandono de mesa.
-        /// </summary>
-        /// <param name="title">Titulo del ticket.</param>
-        /// <param name="title">Titulo del ticket.</param>
-        /// <param name="date">Fecha del cierre/abandono de mesa.</param>
-        public void SetTableClosing(string title, string tableNumber, string date, string data = "")
-        {
-            string template = Utils.GetTicketTemplate("Ticket_Table_Closing");
-            var builder = new StringBuilder(template);
-            builder.Replace("@title", title);
-            builder.Replace("@tableNumber", tableNumber);
-            builder.Replace("@date", date);
-            builder.Replace("@data", data);
-            Data = builder.ToString();
-        }
-
-        /// <summary>
-        /// Inyecta los datos del ticket de nueva orden en mesa.
-        /// </summary>
-        /// <param name="title">Titulo del ticket.</param>
-        /// <param name="clientName">Nombre del cliente.</param>
-        /// <param name="title">Titulo del ticket.</param>
-        /// <param name="items">Comida o items que componen la orden</param>
-        public void SetOrder(string title, string data) 
-        {
-            string template = Utils.GetTicketTemplate("Ticket_Order");
-            var builder = new StringBuilder(template);
-            builder.Replace("@title", title);
-            builder.Replace("@data", data);
             Data = builder.ToString();
         }
     }

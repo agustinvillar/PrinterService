@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using Newtonsoft.Json;
 
 namespace Menoo.PrinterService.Business.Entities
 {
@@ -6,19 +7,24 @@ namespace Menoo.PrinterService.Business.Entities
     public class TableOpeningFamily
     {
         [FirestoreProperty("id")]
+        [JsonProperty("id")]
         public string Id { get; set; }
 
         [FirestoreProperty("openedAt")]
+        [JsonProperty("openedAt")]
         public string OpenedAt { get; set; }
 
         [FirestoreProperty("closedAt")]
+        [JsonProperty("closedAt")]
         public string ClosedAt { get; set; }
 
         [FirestoreProperty("tableNumberId")]
+        [JsonProperty("tableNumberId")]
         public int TableNumberId { get; set; }
 
         [FirestoreProperty("tableNumberToShow")]
-        public object NumberToShow { get; set; }
+        [JsonProperty("tableNumberToShow")]
+        public int NumberToShow { get; set; }
 
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }
@@ -26,32 +32,40 @@ namespace Menoo.PrinterService.Business.Entities
         public double TotalToPay { get; set; }
 
         [FirestoreProperty("tableOpenings")]
-
+        [JsonProperty("tableOpenings")]
         public TableOpening[] TableOpenings { get; set; }
 
         [FirestoreProperty("pending")]
+        [JsonProperty("pending")]
         public bool? Pending { get; set; }
 
         [FirestoreProperty("storeId")]
+        [JsonProperty("pending")]
         public string StoreId { get; set; }
 
         [FirestoreProperty("openPrinted")]
+        [JsonProperty("pending")]
         public bool OpenPrinted { get; set; }
 
         [FirestoreProperty("closedPrinted")]
+        [JsonProperty("closedPrinted")]
         public bool ClosedPrinted { get; set; }
 
         [FirestoreProperty("totalToPayWithSurcharge")]
+        [JsonProperty("totalToPayWithSurcharge")]
         public double? TotalToPayWithSurcharge { get; set; }
 
         [FirestoreProperty("totalPaidByClient")]
+        [JsonProperty("totalPaidByClient")]
         public double? TotalPaidByClient { get; set; }
 
         [FirestoreProperty("propina")]
+        [JsonProperty("propina")]
         public double? Tip { get; set; }
 
         [FirestoreProperty("requestPaymentCount")]
-        public string RequestPaymentCount { get; set; }
+        [JsonProperty("requestPaymentCount")]
+        public int RequestPaymentCount { get; set; }
 
         public string TableNumberToShow => NumberToShow != null ? NumberToShow.ToString() : TableNumberId.ToString();
 

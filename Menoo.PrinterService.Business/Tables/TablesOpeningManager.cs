@@ -63,7 +63,7 @@ namespace Menoo.PrinterService.Business.Tables
             }
             catch (Exception ex)
             {
-                Utils.LogError(ex.Message);
+                Utils.LogError(ex.ToString());
             }
         }
 
@@ -81,7 +81,7 @@ namespace Menoo.PrinterService.Business.Tables
             }
             catch (Exception ex)
             {
-                Utils.LogError(ex.Message);
+                Utils.LogError(ex.ToString());
             }
         }
 
@@ -92,19 +92,24 @@ namespace Menoo.PrinterService.Business.Tables
                 var requestPayment = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
                 var document = requestPayment.ToDictionary();
                 bool isClosed = bool.Parse(document["closed"].ToString());
-                if (!document.ContainsKey("requestPaymentCount") && !isClosed)
+                var tableOpeningFamily = document.GetObject<TableOpeningFamily>();
+                if (!isClosed) 
                 {
-
-                }
-                else if (document.ContainsKey("requestPaymentCount") && !isClosed)
-                {
-                    var tableOpeningFamily = document.GetObject<TableOpeningFamily>();
-
+                    if (!document.ContainsKey("requestPaymentCount"))
+                    {
+                        SetQuantityRequestPayment(requestPayment.Id).GetAwaiter().GetResult();
+                    }
+                    else if (document.ContainsKey("requestPaymentCount"))
+                    {
+                        int quantity = tableOpeningFamily.RequestPaymentCount + 1;
+                        SetQuantityRequestPayment(requestPayment.Id, quantity).GetAwaiter().GetResult();
+                    }
+                    SaveRequestPayment(tableOpeningFamily).GetAwaiter().GetResult();
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
-                Utils.LogError(e.Message);
+                Utils.LogError(e.ToString());
             }
         }
         #endregion
@@ -133,6 +138,7 @@ namespace Menoo.PrinterService.Business.Tables
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
                 };
                 StringBuilder orderData = new StringBuilder();
+                double total = 0;
                 if (tableOpeningFamily.TableOpenings.Count() > 0)
                 {
                     foreach (var to in tableOpeningFamily.TableOpenings)
@@ -211,9 +217,9 @@ namespace Menoo.PrinterService.Business.Tables
                             orderData.Append("<p>Le pagaron su cuenta.</p>");
                         }
                     }
-                    orderData.Append($"<h1>TOTAL: ${tableOpeningFamily.TotalToTicket(store)}</h1>");
+                    total = tableOpeningFamily.TotalToTicket(store);
                 }
-                ticket.SetTableClosing(SetTitleForCloseTable(tableOpeningFamily), tableOpeningFamily.TableNumberToShow, tableOpeningFamily.ClosedAt, orderData.ToString());
+                ticket.SetTableClosing(SetTitleForCloseTable(tableOpeningFamily), tableOpeningFamily.TableNumberToShow, tableOpeningFamily.ClosedAt, total.ToString(), orderData.ToString());
                 Utils.SaveTicketAsync(_db, ticket).GetAwaiter().GetResult();
             }
         }
@@ -237,6 +243,95 @@ namespace Menoo.PrinterService.Business.Tables
             await Utils.SaveTicketAsync(_db, ticket);
         }
 
+        private async Task SaveRequestPayment(TableOpeningFamily tableOpeningFamily)
+        {
+            bool tableOpeningFamilyAlreadyExists = await TableOpeningFamilyAlreadyExists(tableOpeningFamily.Id);
+            if (tableOpeningFamilyAlreadyExists)
+            {
+                return;
+            }
+            var store = await Utils.GetStores(_db, tableOpeningFamily.StoreId);
+            if (!store.AllowPrint(PrintEvents.REQUEST_PAYMENT))
+            {
+                return;
+            }
+            var ticket = new Ticket
+            {
+                TicketType = TicketTypeEnum.PAYMENT_REQUEST.ToString(),
+                StoreId = tableOpeningFamily.StoreId,
+                TableOpeningFamilyId = tableOpeningFamily.Id,
+                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
+            };
+            StringBuilder orderData = new StringBuilder();
+            if (tableOpeningFamily.TableOpenings.Count() > 0)
+            {
+                foreach (var to in tableOpeningFamily.TableOpenings)
+                {
+                    orderData.Append($"<p>Cliente: {to.UserName}</p>");
+                    foreach (var order in to.Orders)
+                    {
+                        foreach (var item in order.Items)
+                        {
+                            var quantityLabel = item.Quantity > 1 ? "unidades" : "unidad";
+                            orderData.Append($"<p>{Utils.GetTime(order.MadeAt)} {item.Name} x {item.Quantity} {quantityLabel} ${item.PriceToTicket}</p>");
+                            if (item.Options != null)
+                            {
+                                foreach (var option in item.Options)
+                                {
+                                    if (option != null)
+                                    {
+                                        orderData.Append($"<p>{option.Name} {option.Price}</p>");
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0)
+                    {
+                        orderData.Append($"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>");
+                    }
+
+                    if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0)
+                    {
+                        orderData.Append($"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>");
+                    }
+
+                    if (to.Tip != null && to.Tip > 0)
+                    {
+                        orderData.Append($"<p>Propina: ${to.Tip}</p>");
+                    }
+
+                    if (to.Surcharge != null && to.Surcharge > 0)
+                    {
+                        orderData.Append($"<p>Adicional por servicio: ${to.Surcharge}</p>");
+                    }
+
+                    if (to.Discounts != null && to.Discounts.Length > 0)
+                    {
+                        var discounts = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva);
+                        foreach (var detail in discounts)
+                        {
+                            orderData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
+                        }
+                    }
+
+                    if (to.PagoPorTodos || to.PagoPorElMismo)
+                    {
+                        orderData.Append($"<p>Subtotal: ${to.TotalToTicket(store)}</p>");
+                    }
+                }
+                double total = tableOpeningFamily.TotalToTicket(store);
+                ticket.SetRequestPayment(SetTitleForRequestPayment(tableOpeningFamily), tableOpeningFamily.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy hh:mm"), total.ToString(), orderData.ToString());
+                Utils.SaveTicketAsync(_db, ticket).GetAwaiter().GetResult();
+            }
+        }
+
+        private async Task SetQuantityRequestPayment(string doc, int quantity = 1)
+        {
+            await _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("requestPaymentCount", quantity);
+        }
+
         private async Task<WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PrintedEvent printEvent)
         {
             if (printEvent == TableOpeningFamily.PrintedEvent.CLOSING)
@@ -252,7 +347,6 @@ namespace Menoo.PrinterService.Business.Tables
                 throw new Exception("No se actualizo el estado impreso de la mesa.");
             }
         }
-
         private string SetTitleForCloseTable(TableOpeningFamily tableOpening)
         {
             string title;
@@ -263,6 +357,20 @@ namespace Menoo.PrinterService.Business.Tables
             else
             {
                 title = "Mesa cerrada";
+            }
+            return title;
+        }
+
+        private string SetTitleForRequestPayment(TableOpeningFamily tableOpening)
+        {
+            string title;
+            if (!tableOpening.TableOpenings.FirstOrDefault().PayWithPOS)
+            {
+                title = "Solicitud de pago efectivo";
+            }
+            else
+            {
+                title = "Solicitud de pago POS";
             }
             return title;
         }

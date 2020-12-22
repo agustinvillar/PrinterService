@@ -31,18 +31,12 @@ namespace Menoo.PrinterService.Business.Core
         /// </summary>
         private readonly TablesOpeningManager _tablesOpeningManager;
 
-        /// <summary>
-        /// Manejador de eventos referentes a solicitudes de pagos.
-        /// </summary>
-        // private readonly PaymentsManager _paymentsManager;
-
         public Listeners() 
         {
             _db = GetInstanceDb();
             _bookingManager = new BookingManager(_db);
             _orderManager = new OrdersManager(_db);
             _tablesOpeningManager = new TablesOpeningManager(_db);
-            //_paymentsManager = new PaymentsManager(_db);
         }
 
         public void Load() 
@@ -50,7 +44,6 @@ namespace Menoo.PrinterService.Business.Core
             _bookingManager.Listen();
             _orderManager.Listen();
             _tablesOpeningManager.Listen();
-            //_paymentsManager.Listen();
         }
 
         #region private methods

@@ -197,6 +197,7 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append("<td>Número de reserva : </td>");
                     builder.Append($"<td>{bookingData.BookingNumber}</td>");
                     builder.Append("</tr>");
+                    builder.Append("</table>");
                     if (!string.IsNullOrEmpty(order.OrderNumber)) 
                     {
                         builder.Append("</tr>");
@@ -204,7 +205,6 @@ namespace Menoo.PrinterService.Business.Orders
                         builder.Append($"<td>{order.OrderNumber}</td>");
                         builder.Append("</tr>");
                     }
-                    builder.Append("</table>");
                     builder.Append(line);
                     ticket.SetOrder("Orden reserva cancelada", builder.ToString());
                     break;
@@ -218,6 +218,7 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append("<td>Hora de retiro: </td>");
                     builder.Append($"<td>{order.TakeAwayHour}</td>");
                     builder.Append("</tr>");
+                    builder.Append("</table>");
                     if (!string.IsNullOrEmpty(order.OrderNumber))
                     {
                         builder.Append("<tr>");
@@ -225,11 +226,11 @@ namespace Menoo.PrinterService.Business.Orders
                         builder.Append($"<td>{order.OrderNumber}</td>");
                         builder.Append("</tr>");
                     }
-                    builder.Append("</table>");
                     builder.Append(line);
                     ticket.SetOrder("Orden TakeAway cancelada", builder.ToString());
                     break;
                 default:
+                    string orderNumber = GetOrderNumber(order.TableOpeningFamilyId).GetAwaiter().GetResult();
                     builder.Append(@"<table class=""top"">");
                     builder.Append("<tr>");
                     builder.Append("<td>Cliente: </td>");
@@ -239,14 +240,13 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append("<td>Servir en mesa: </td>");
                     builder.Append($"<td>{order.Address}</td>");
                     builder.Append("</tr>");
-                    if (!string.IsNullOrEmpty(order.OrderNumber))
-                    {
+                    builder.Append("</table>");
+
                         builder.Append("</tr>");
                         builder.Append("<td>Número de orden: </td>");
-                        builder.Append($"<td>{order.OrderNumber}</td>");
+                        builder.Append($"<td>{orderNumber}</td>");
                         builder.Append("</tr>");
-                    }
-                    builder.Append("</table>");
+                    
                     builder.Append(line);
                     ticket.SetOrder("Orden cancelada", builder.ToString());
                     break;
