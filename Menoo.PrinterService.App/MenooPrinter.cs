@@ -1,4 +1,4 @@
-﻿using Menoo.PrinterService.Business;
+﻿using Menoo.PrinterService.Business.Core;
 using System;
 using System.Windows.Forms;
 
@@ -21,7 +21,6 @@ namespace Menoo.PrinterService.App
         {
             try
             {
-                //Firebase.RunAsync();
                 _triggers.Load();
             }
             catch (Exception ex)

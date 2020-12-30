@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using Menoo.PrinterService.Business.Core;
 using Menoo.PrinterService.Business.Entities;
 using System;
 using System.Linq;
@@ -51,7 +52,7 @@ namespace Menoo.PrinterService.Business.Bookings
                 {
                     user = snapshotUser.ConvertTo<User>();
                 }
-                if (!booking.PrintedAccepted && booking.BookingNumber.ToString().Length == 8)
+                if (!booking.PrintedAccepted)
                 {
                     SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED).GetAwaiter().GetResult();
                     _ = SaveAcceptedBooking(booking, user);
@@ -71,7 +72,7 @@ namespace Menoo.PrinterService.Business.Bookings
             try
             {
                 User user = null;
-                foreach (var document in snapshot.Documents)
+                foreach (var document in snapshot.Documents.OrderByDescending(o => o.CreateTime))
                 {
                     var booking = document.ConvertTo<Booking>();
                     var snapshotUser = _db.Collection("customers").Document(booking.UserId).GetSnapshotAsync().GetAwaiter().GetResult();
@@ -101,21 +102,18 @@ namespace Menoo.PrinterService.Business.Bookings
             {
                 return;
             }
-            var ticket = Utils.CreateInstanceOfTicket();
-            ticket.TicketType = TicketTypeEnum.NEW_BOOKING.ToString();
-            if (booking.BookingState.Equals("aceptada"))
+            if (booking.BookingState.Equals("aceptada", StringComparison.OrdinalIgnoreCase))
             {
-                var title = "Nueva reserva";
-                var nroReserva = "Nro: " + booking.BookingNumber;
-                var fecha = "Fecha: " + booking.BookingDate;
-                var cantPersonas = "Cantidad de personas: " + booking.GuestQuantity;
-                var cliente = "Cliente: " + user.Name;
-                ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cantPersonas + "</p><p>" + cliente + "</p></h3></body></html>";
+                var ticket = new Ticket
+                {
+                    TicketType = TicketTypeEnum.NEW_BOOKING.ToString(),
+                    PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
+                    StoreId = booking.Store.StoreId,
+                    Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                };
+                ticket.SetBookingData("Nueva reserva", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
+                await Utils.SaveTicketAsync(_db, ticket);
             }
-            ticket.PrintBefore = Utils.BeforeAt(booking.BookingDate, -10);
-            ticket.StoreId = booking.Store.StoreId;
-            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-            await Utils.SaveTicketAsync(_db, ticket);
         }
 
         private async Task SaveCancelledBooking(Booking booking, User user)
@@ -125,22 +123,18 @@ namespace Menoo.PrinterService.Business.Bookings
             {
                 return;
             }
-            var ticket = Utils.CreateInstanceOfTicket();
-            ticket.TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString();
-            if (booking.BookingState.Equals("cancelada"))
+            if (booking.BookingState.Equals("cancelada", StringComparison.OrdinalIgnoreCase))
             {
-                var title = "Reserva cancelada";
-                var nroReserva = "Nro: " + booking.BookingNumber;
-                var fecha = "Fecha: " + booking.BookingDate;
-                var cliente = string.Empty;
-                if (user != null)
-                    cliente = "Cliente: " + user.Name;
-                ticket.Data += "<h1>" + title + "</h1><h3><p>" + nroReserva + "</p><p>" + fecha + "</p><p>" + cliente + "</p></h3></body></html>";
+                var ticket = new Ticket 
+                {
+                    TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString(),
+                    PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
+                    StoreId = booking.Store.StoreId,
+                    Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
+                };
+                ticket.SetBookingData("Reserva cancelada", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
+                await Utils.SaveTicketAsync(_db, ticket);
             }
-            ticket.PrintBefore = Utils.BeforeAt(booking.BookingDate, -10);
-            ticket.StoreId = booking.Store.StoreId;
-            ticket.Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm");
-            await Utils.SaveTicketAsync(_db, ticket);
         }
 
         private async Task<WriteResult> SetBookingPrintedAsync(string doc, Booking.PRINT_TYPE type)
@@ -149,12 +143,6 @@ namespace Menoo.PrinterService.Business.Bookings
                       .Document(doc)
                       .UpdateAsync(type == Booking.PRINT_TYPE.ACCEPTED ? "printedAccepted"
                                                                        : "printedCancelled", true);
-            return result;
-        }
-
-        private async Task<WriteResult> SetOrderPrintedAsync(string collection, string doc)
-        {
-            var result = await _db.Collection(collection).Document(doc).UpdateAsync("printed", true);
             return result;
         }
         #endregion

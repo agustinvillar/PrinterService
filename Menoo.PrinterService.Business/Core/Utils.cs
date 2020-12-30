@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Menoo.PrinterService.Business
+namespace Menoo.PrinterService.Business.Core
 {
     /// <summary>
     /// Contiene métodos de uso común.
@@ -28,29 +28,14 @@ namespace Menoo.PrinterService.Business
         }
 
         /// <summary>
-        /// Crea el objeto de impresión o ticket.
-        /// </summary>
-        /// <returns>Objeto de impresión.</returns>
-        public static Ticket CreateInstanceOfTicket()
-        {
-            return new Ticket()
-            {
-                PrintedAt = null,
-                Expired = false,
-                Data = "<!DOCTYPE html><html><body><div class='logoImg'> <img src='\\assets\\img\\Menoo_Logo-Final_color-3.png'> </div>",
-                Printed = false,
-            };
-        }
-
-        /// <summary>
         /// Convierte un JSON en un objeto tipado.
         /// </summary>
         /// <typeparam name="T">Clase a ser transformada.</typeparam>
-        /// <param name="dict">json como diccionario (Es la forma como se obtiene el objeto desde firebase)</param>
+        /// <param name="element">json como diccionario (Es la forma como se obtiene el objeto desde firebase)</param>
         /// <returns>Objeto.</returns>
-        public static T GetObject<T>(this Dictionary<string, object> dict)
+        public static T GetObject<T>(this object element) 
         {
-            var json = JsonConvert.SerializeObject(dict, Newtonsoft.Json.Formatting.Indented);
+            var json = JsonConvert.SerializeObject(element, Newtonsoft.Json.Formatting.Indented);
             var result = JsonConvert.DeserializeObject<T>(json);
             return result;
         }
@@ -138,10 +123,33 @@ namespace Menoo.PrinterService.Business
         /// <param name="db">Instancia de firebase.</param>
         /// <param name="collection">Nombre de la colección.</param>
         /// <param name="doc">Documento a ser actualizado.</param>
-        public static async Task<Google.Cloud.Firestore.WriteResult> SetOrderPrintedAsync(FirestoreDb db, string collection, string doc)
+        public static async Task<WriteResult> SetOrderPrintedAsync(FirestoreDb db, string collection, string doc)
         {
             var result = await db.Collection(collection).Document(doc).UpdateAsync("printed", true);
             return result;
         }
+
+        /// <summary>Permite obtener un documento por su identificador.</summary>
+        /// <param name="db">Objeto de base de datos de firebase.</param>
+        /// <param name="collection">Colección a ser empleada.</param>
+        /// <param name="documentId">Identificador del documento.</param>
+        /// <returns>Documento</returns>
+        public static async Task<DocumentSnapshot> GetDocument(FirestoreDb db, string collection, string documentId) 
+        {
+            var result = await db.Collection(collection).Document(documentId).GetSnapshotAsync();
+            return result;
+        }
+
+        /// <summary>
+        /// Obtiene la plantilla de ticket según su nombre.
+        /// </summary>
+        /// <param name="fileTemplate">Nombre de la plantilla</param>
+        /// <returns>Cadena de texto con el html del ticket.</returns>
+        public static string GetTicketTemplate(string fileTemplate) 
+        {
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", fileTemplate + ".html");
+            string template = File.ReadAllText(path);
+            return template;
+        } 
     }
 }

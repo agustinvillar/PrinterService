@@ -1,7 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using System.Collections.Generic;
 
-namespace Menoo.PrinterService.Business.Entities
+namespace Menoo.PrinterService.Business.Core
 {
     public static class PrintEvents
     {
@@ -18,6 +18,8 @@ namespace Menoo.PrinterService.Business.Entities
         public static string TABLE_OPENED = "TABLE_OPENED";
 
         public static string CANCELED_BOOKING = "CANCELED_BOOKING";
+
+        public static string REQUEST_PAYMENT = "REQUEST_PAYMENT";
     }
 
     [FirestoreData]

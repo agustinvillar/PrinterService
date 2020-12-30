@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using Newtonsoft.Json;
 
 namespace Menoo.PrinterService.Business.Entities
 {
@@ -6,47 +7,67 @@ namespace Menoo.PrinterService.Business.Entities
     public class TableOpeningFamily
     {
         [FirestoreProperty("id")]
+        [JsonProperty("id")]
         public string Id { get; set; }
 
         [FirestoreProperty("openedAt")]
+        [JsonProperty("openedAt")]
         public string OpenedAt { get; set; }
 
         [FirestoreProperty("closedAt")]
+        [JsonProperty("closedAt")]
         public string ClosedAt { get; set; }
 
         [FirestoreProperty("tableNumberId")]
+        [JsonProperty("tableNumberId")]
         public int TableNumberId { get; set; }
 
         [FirestoreProperty("tableNumberToShow")]
-        public object NumberToShow { get; set; }
+        [JsonProperty("tableNumberToShow")]
+        public int NumberToShow { get; set; }
 
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }
+
         public double TotalToPay { get; set; }
+
         [FirestoreProperty("tableOpenings")]
+        [JsonProperty("tableOpenings")]
         public TableOpening[] TableOpenings { get; set; }
 
         [FirestoreProperty("pending")]
+        [JsonProperty("pending")]
         public bool? Pending { get; set; }
+
         [FirestoreProperty("storeId")]
+        [JsonProperty("storeId")]
         public string StoreId { get; set; }
 
         [FirestoreProperty("openPrinted")]
+        [JsonProperty("openPrinted")]
         public bool OpenPrinted { get; set; }
 
         [FirestoreProperty("closedPrinted")]
-        public bool ClosedPrinter { get; set; }
+        [JsonProperty("closedPrinted")]
+        public bool ClosedPrinted { get; set; }
 
         [FirestoreProperty("totalToPayWithSurcharge")]
+        [JsonProperty("totalToPayWithSurcharge")]
         public double? TotalToPayWithSurcharge { get; set; }
 
         [FirestoreProperty("totalPaidByClient")]
+        [JsonProperty("totalPaidByClient")]
         public double? TotalPaidByClient { get; set; }
 
         [FirestoreProperty("propina")]
+        [JsonProperty("propina")]
         public double? Tip { get; set; }
 
-        public string TableNumberToShow => NumberToShow != null ? NumberToShow.ToString() : TableNumberId.ToString();
+        [FirestoreProperty("requestPaymentCount")]
+        [JsonProperty("requestPaymentCount")]
+        public int RequestPaymentCount { get; set; }
+
+        public string TableNumberToShow => NumberToShow > 0 ? NumberToShow.ToString() : TableNumberId.ToString();
 
         public double TotalToTicket(Store store)
         {
@@ -68,6 +89,5 @@ namespace Menoo.PrinterService.Business.Entities
             OPENING,
             CLOSING
         }
-
     }
 }
