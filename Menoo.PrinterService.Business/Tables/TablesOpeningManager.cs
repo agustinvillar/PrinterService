@@ -2,6 +2,8 @@
 using Menoo.PrinterService.Business.Core;
 using Menoo.PrinterService.Business.Entities;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,14 +32,24 @@ namespace Menoo.PrinterService.Business.Tables
                   .OrderByDescending("openedAtNumber")
                   .Limit(1)
                   .Listen(OnOpenFamily);
-            var date = (DateTime.UtcNow.AddHours(-15) - new DateTime(1970, 1, 1)).TotalSeconds;
+
+            //var date = (DateTime.UtcNow.AddHours(-15) - new DateTime(1970, 1, 1)).TotalSeconds;
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("closed", true)
-               .WhereGreaterThanOrEqualTo("openedAtNumber", date)
+               //.WhereGreaterThanOrEqualTo("openedAtNumber", date)
                .Listen(OnClose);
-            //_db.Collection("tableOpeningFamily")
-            //    .WhereEqualTo("closed", false)
-            //    .Listen(OnRequestPayment);
+
+            _db.Collection("tableOpeningFamily")
+                .WhereEqualTo("closed", false)
+                .Listen(OnRequestPayment);
+
+            _db.Collection("posConfirmations")
+                .Limit(1)
+                .Listen(OnPosRequest);
+
+            _db.Collection("cashConfirmations")
+                 .Limit(1)
+                 .Listen(OnCashRequest);
         }
 
         #region events
@@ -45,20 +57,12 @@ namespace Menoo.PrinterService.Business.Tables
         {
             try
             {
-                var docs = snapshot.Documents.Select(d =>
+                var document = snapshot.Documents.OrderByDescending(o => o.UpdateTime).FirstOrDefault();
+                var tableOpeningFamily = document.ToDictionary().GetObject<TableOpeningFamily>();
+                if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinted)
                 {
-                    var dic = d.ToDictionary();
-                    var toFamily = d.GetObject<TableOpeningFamily>();
-                    toFamily.TotalToPay = dic.ContainsKey("totalToPay") && dic["totalToPay"] != null ? double.Parse(dic["totalToPay"].ToString()) : 0;
-                    return toFamily;
-                });
-                foreach (var tableOpeningFamily in docs)
-                {
-                    if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinted)
-                    {
-                        SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, TableOpeningFamily.PrintedEvent.CLOSING).GetAwaiter().GetResult();
-                        SaveCloseTableOpeningFamily(tableOpeningFamily).GetAwaiter().GetResult();
-                    }
+                    SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, TableOpeningFamily.PrintedEvent.CLOSING).GetAwaiter().GetResult();
+                    SaveCloseTableOpeningFamily(tableOpeningFamily).GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
@@ -89,26 +93,21 @@ namespace Menoo.PrinterService.Business.Tables
         {
             try
             {
-                string now = DateTime.Now.ToString("dd/MM/yyyy");
-                var requestPayment = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault(f => f.CreateTime.Value.ToDateTime().ToString("dd/MM/yyyy") == now);
-                if (requestPayment == null)
-                {
-                    return;
-                }
+                var requestPayment = snapshot.Documents.OrderByDescending(o => o.UpdateTime).FirstOrDefault();
                 var document = requestPayment.ToDictionary();
-                var tableOpeningFamily = document.GetObject<TableOpeningFamily>();
-                if (!tableOpeningFamily.Closed)
+                bool isClosed = bool.Parse(document["closed"].ToString());
+                var tableOpenings = ((IEnumerable)document["tableOpenings"]).Cast<dynamic>();
+                if (!isClosed && ContainsPayWithPOSProperty(tableOpenings))
                 {
-                    if (!document.ContainsKey("requestPaymentCount"))
+                    bool payWithPos = document.GetObject<TableOpeningFamily>().TableOpenings.Any(f => f.PayWithPOS);
+                    if (payWithPos)
                     {
-                        SetQuantityRequestPayment(requestPayment.Id).GetAwaiter().GetResult();
+                        _db.Collection("posConfirmations").AddAsync(document).GetAwaiter().GetResult();
                     }
-                    else if (document.ContainsKey("requestPaymentCount"))
+                    else
                     {
-                        int quantity = tableOpeningFamily.RequestPaymentCount + 1;
-                        SetQuantityRequestPayment(requestPayment.Id, quantity).GetAwaiter().GetResult();
+                        _db.Collection("cashConfirmations").AddAsync(document).GetAwaiter().GetResult();
                     }
-                    SaveRequestPayment(tableOpeningFamily).GetAwaiter().GetResult();
                 }
             }
             catch (Exception e)
@@ -116,9 +115,62 @@ namespace Menoo.PrinterService.Business.Tables
                 Utils.LogError(e.ToString());
             }
         }
+
+        private void OnPosRequest(QuerySnapshot snapshot)
+        {
+            try
+            {
+                if (snapshot.Documents.Count == 0) 
+                {
+                    return;
+                }
+                var document = snapshot.Documents.Single();
+                var tableOpeningFamily = document.ToDictionary().GetObject<TableOpeningFamily>();
+                SaveRequestPayment(tableOpeningFamily, "Solicitud de pago POS").GetAwaiter().GetResult();
+                _db.Collection("posConfirmations").Document(document.Id).DeleteAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                Utils.LogError(e.ToString());
+            }
+        }
+
+        private void OnCashRequest(QuerySnapshot snapshot)
+        {
+            try
+            {
+                if (snapshot.Documents.Count == 0)
+                {
+                    return;
+                }
+                var document = snapshot.Documents.Single();
+                var tableOpeningFamily = document.ToDictionary().GetObject<TableOpeningFamily>();
+                SaveRequestPayment(tableOpeningFamily, "Solicitud de pago efectivo").GetAwaiter().GetResult();
+                _db.Collection("cashConfirmations").Document(document.Id).DeleteAsync().GetAwaiter().GetResult();
+            }
+            catch (Exception e)
+            {
+                Utils.LogError(e.ToString());
+            }
+        }
+
         #endregion
 
         #region private methods
+        private bool ContainsPayWithPOSProperty(IEnumerable<dynamic> tableOpenings)
+        {
+            int count = 0;
+            foreach (var element in tableOpenings)
+            {
+                var item = (Dictionary<string, object>)element;
+                if (item.ContainsKey("payWithPOS"))
+                {
+                    count++;
+                }
+            }
+            return count > 0;
+        }
+
         private async Task SaveCloseTableOpeningFamily(TableOpeningFamily tableOpeningFamily)
         {
             bool tableOpeningFamilyAlreadyExists = await TableOpeningFamilyAlreadyExists(tableOpeningFamily.Id);
@@ -247,7 +299,7 @@ namespace Menoo.PrinterService.Business.Tables
             await Utils.SaveTicketAsync(_db, ticket);
         }
 
-        private async Task SaveRequestPayment(TableOpeningFamily tableOpeningFamily)
+        private async Task SaveRequestPayment(TableOpeningFamily tableOpeningFamily, string title)
         {
             bool tableOpeningFamilyAlreadyExists = await TableOpeningFamilyAlreadyExists(tableOpeningFamily.Id);
             if (tableOpeningFamilyAlreadyExists)
@@ -326,7 +378,7 @@ namespace Menoo.PrinterService.Business.Tables
                     }
                 }
                 double total = tableOpeningFamily.TotalToTicket(store);
-                ticket.SetRequestPayment(SetTitleForRequestPayment(tableOpeningFamily), tableOpeningFamily.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy hh:mm"), total.ToString(), orderData.ToString());
+                ticket.SetRequestPayment(title, tableOpeningFamily.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy hh:mm"), total.ToString(), orderData.ToString());
                 Utils.SaveTicketAsync(_db, ticket).GetAwaiter().GetResult();
             }
         }
@@ -351,30 +403,17 @@ namespace Menoo.PrinterService.Business.Tables
                 throw new Exception("No se actualizo el estado impreso de la mesa.");
             }
         }
+
         private string SetTitleForCloseTable(TableOpeningFamily tableOpening)
         {
             string title;
-            if (tableOpening.Pending.GetValueOrDefault())
+            if (tableOpening.Pending == null || tableOpening.Pending.GetValueOrDefault())
             {
                 title = "Mesa abandonada";
             }
             else
             {
                 title = "Mesa cerrada";
-            }
-            return title;
-        }
-
-        private string SetTitleForRequestPayment(TableOpeningFamily tableOpening)
-        {
-            string title;
-            if (!tableOpening.TableOpenings.FirstOrDefault().PayWithPOS)
-            {
-                title = "Solicitud de pago efectivo";
-            }
-            else
-            {
-                title = "Solicitud de pago POS";
             }
             return title;
         }
