@@ -189,7 +189,6 @@ namespace Menoo.PrinterService.Business.Tables
                 {
                     TicketType = TicketTypeEnum.CLOSE_TABLE.ToString(),
                     StoreId = tableOpeningFamily.StoreId,
-                    TableOpeningFamilyId = tableOpeningFamily.Id,
                     PrintBefore = Utils.BeforeAt(tableOpeningFamily.ClosedAt, 10),
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
                 };
@@ -292,8 +291,7 @@ namespace Menoo.PrinterService.Business.Tables
                 TicketType = TicketTypeEnum.OPEN_TABLE.ToString(),
                 PrintBefore = Utils.BeforeAt(tableOpeningFamily.OpenedAt, 10),
                 StoreId = tableOpeningFamily.StoreId,
-                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
-                TableOpeningFamilyId = tableOpeningFamily.Id
+                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
             };
             ticket.SetTableOpening("Apertura de mesa", tableOpeningFamily.TableNumberToShow, tableOpeningFamily.OpenedAt);
             await Utils.SaveTicketAsync(_db, ticket);
@@ -315,7 +313,6 @@ namespace Menoo.PrinterService.Business.Tables
             {
                 TicketType = TicketTypeEnum.PAYMENT_REQUEST.ToString(),
                 StoreId = tableOpeningFamily.StoreId,
-                TableOpeningFamilyId = tableOpeningFamily.Id,
                 Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
             };
             StringBuilder orderData = new StringBuilder();
@@ -378,7 +375,7 @@ namespace Menoo.PrinterService.Business.Tables
                     }
                 }
                 double total = tableOpeningFamily.TotalToTicket(store);
-                ticket.SetRequestPayment(title, tableOpeningFamily.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy hh:mm"), total.ToString(), orderData.ToString());
+                ticket.SetRequestPayment(title, tableOpeningFamily.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy HH:mm"), total.ToString(), orderData.ToString());
                 Utils.SaveTicketAsync(_db, ticket).GetAwaiter().GetResult();
             }
         }

@@ -16,8 +16,13 @@ namespace Menoo.PrinterService.Business.Entities
             NEW_BOOKING,
             CANCELLED_BOOKING,
             CANCELLED_ORDER,
-            PAYMENT_REQUEST
+            PAYMENT_REQUEST,
+            ORDER_QR
         }
+
+        [FirestoreProperty("copies")]
+        [JsonProperty("copies")]
+        public int Copies { get; set; }
 
         [FirestoreProperty("printData")]
         [JsonProperty("printData")]
@@ -31,6 +36,10 @@ namespace Menoo.PrinterService.Business.Entities
         [JsonProperty("expired")]
         public bool Expired { get; set; }
 
+        [FirestoreProperty("itemId")]
+        [JsonProperty("itemId")]
+        public string ItemId { get; set; }
+
         [FirestoreProperty("printBefore")]
         [JsonProperty("printBefore")]
         public string PrintBefore { get; set; }
@@ -43,13 +52,13 @@ namespace Menoo.PrinterService.Business.Entities
         [JsonProperty("printedAt")]
         public string PrintedAt { get; set; }
 
+        [FirestoreProperty("printer")]
+        [JsonProperty("printer")]
+        public string PrinterName { get; set; }
+
         [FirestoreProperty("storeId")]
         [JsonProperty("storeId")]
         public string StoreId { get; set; }
-
-        [FirestoreProperty("tableOpeningFamilyId")]
-        [JsonProperty("tableOpeningFamilyId")]
-        public string TableOpeningFamilyId { get; set; }
 
         [FirestoreProperty("ticketType")]
         [JsonProperty("ticketType")]
@@ -63,7 +72,7 @@ namespace Menoo.PrinterService.Business.Entities
         /// <param name="date">Fecha de la reserva.</param>
         /// <param name="guestQuantity">Cantidad de personas.</param>
         /// <param name="clientName">Nombre de quien realizó la reserva.</param>
-        public void SetBookingData(string title, long bookingNumber, string date, int guestQuantity, string clientName) 
+        public void SetBookingData(string title, long bookingNumber, string date, int guestQuantity, string clientName)
         {
             string template = Utils.GetTicketTemplate("Ticket_Booking");
             var builder = new StringBuilder(template);
@@ -135,7 +144,7 @@ namespace Menoo.PrinterService.Business.Entities
         /// <param name="title">Titulo del ticket.</param>
         /// <param name="tableNumber">Número de mesa.</param>
         /// <param name="date">Fecha de la apertura de la mesa.</param>
-        public void SetTableOpening(string title, string tableNumber, string date) 
+        public void SetTableOpening(string title, string tableNumber, string date)
         {
             string template = Utils.GetTicketTemplate("Ticket_Table_Opening");
             var builder = new StringBuilder(template);

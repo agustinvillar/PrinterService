@@ -108,7 +108,7 @@ namespace Menoo.PrinterService.Business.Entities
 
         [FirestoreProperty("orders")]
         [JsonProperty("orders")]
-        public Orders[] Orders { get; set; }
+        public Order[] Orders { get; set; }
 
         [FirestoreProperty("userName")]
         [JsonProperty("userName")]

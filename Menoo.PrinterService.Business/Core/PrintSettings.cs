@@ -26,11 +26,10 @@ namespace Menoo.PrinterService.Business.Core
     public class PrintSettings
     {
         [FirestoreProperty("allowPrinting")]
-
         public bool AllowPrinting { get; set; }
 
         [FirestoreProperty("copies")]
-        public string Copies { get; set; }
+        public int Copies { get; set; }
 
         [FirestoreProperty("id")]
         public string Id { get; set; }

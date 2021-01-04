@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Menoo.PrinterService.Business.Entities
 {
     [FirestoreData]
-    public class Orders
+    public class Order
     {
         [FirestoreProperty("address")]
         [JsonProperty("address")]
@@ -80,7 +80,7 @@ namespace Menoo.PrinterService.Business.Entities
     }
 
     [FirestoreData]
-    public class OrdersCancelled
+    public class OrderCancelled
     {
         [FirestoreProperty("guestComment")]
         [JsonProperty("guestComment")]
@@ -186,10 +186,10 @@ namespace Menoo.PrinterService.Business.Entities
             }
         }
 
-        public static OrdersCancelled GetOrderData(this DocumentSnapshot snapshot)
+        public static OrderCancelled GetOrderData(this DocumentSnapshot snapshot)
         {
             var document = snapshot.ToDictionary();
-            var objectCasted = Utils.GetObject<OrdersCancelled>(document);
+            var objectCasted = Utils.GetObject<OrderCancelled>(document);
             return objectCasted;
         }
     }

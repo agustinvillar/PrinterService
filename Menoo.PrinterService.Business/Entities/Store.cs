@@ -1,8 +1,10 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Business.Core;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Business.Entities
 {
@@ -66,6 +68,17 @@ namespace Menoo.PrinterService.Business.Entities
             {
                 return AllowPrinting.GetValueOrDefault();
             }
+        }
+
+        public List<PrintSettings> GetPrintSettings(string printEvent) 
+        {
+            List<PrintSettings> printSettings = new List<PrintSettings>();
+            var queryResult = this.Sectors?.FindAll(f => f.PrintEvents.Contains(printEvent));
+            if (queryResult != null && queryResult.Count > 0) 
+            {
+                printSettings.AddRange(queryResult);
+            }
+            return printSettings;
         }
     }
 
