@@ -15,7 +15,7 @@ namespace Menoo.PrinterService.Business.Orders
     /// </summary>
     public class OrdersManager
     {
-        private const string MESAS = "MESAS";
+        private const string MESA = "MESA";
 
         private const string RESERVA = "RESERVA";
 
@@ -106,7 +106,10 @@ namespace Menoo.PrinterService.Business.Orders
                     return;
                 }
                 Utils.SetOrderPrintedAsync(_db, "orderFamily", document.Id).GetAwaiter().GetResult();
+                //Nueva orden 
                 SaveOrderAsync(order).GetAwaiter().GetResult();
+                //Código QR
+
             }
             catch (Exception ex)
             {
@@ -257,7 +260,7 @@ namespace Menoo.PrinterService.Business.Orders
         {
             StringBuilder builder = new StringBuilder();
             string orderNumber = GetOrderNumber(order.TableOpeningFamilyId).GetAwaiter().GetResult();
-            if (isOrderOk && order.OrderType.ToUpper().Trim() == MESAS)
+            if (isOrderOk && order.OrderType.ToUpper().Trim() == MESA)
             {
                 builder.Append(@"<table class=""top"">");
                 builder.Append("<tr>");
@@ -354,7 +357,7 @@ namespace Menoo.PrinterService.Business.Orders
 
         private async Task<Payment> GetPayment(string id, string type)
         {
-            string filter = type == MESAS ? "tableOpening.id" : "taOpening.id";
+            string filter = type == MESA ? "tableOpening.id" : "taOpening.id";
             var documentSnapshots = await _db.Collection("payments").WhereEqualTo(filter, id).GetSnapshotAsync();
             var payments = documentSnapshots.Documents.Select(d => d.ConvertTo<Payment>()).ToList();
             return payments.FirstOrDefault();
@@ -402,6 +405,11 @@ namespace Menoo.PrinterService.Business.Orders
             var line = CreateHtmlFromLines(order);
             CreateOrderTicket(order, ticket, line, order.OrderType);
             await Utils.SaveTicketAsync(_db, ticket);
+        }
+
+        private async Task GenerateOrderQR(Entities.Orders order) 
+        {
+            
         }
         #endregion
     }

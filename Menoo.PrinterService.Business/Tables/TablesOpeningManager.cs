@@ -61,7 +61,7 @@ namespace Menoo.PrinterService.Business.Tables
                 var tableOpeningFamily = document.ToDictionary().GetObject<TableOpeningFamily>();
                 if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinted)
                 {
-                    SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, TableOpeningFamily.PrintedEvent.CLOSING).GetAwaiter().GetResult();
+                    SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, PrintedEvent.CLOSING).GetAwaiter().GetResult();
                     SaveCloseTableOpeningFamily(tableOpeningFamily).GetAwaiter().GetResult();
                 }
             }
@@ -79,7 +79,7 @@ namespace Menoo.PrinterService.Business.Tables
                 var tableOpeningFamily = document.ToDictionary().GetObject<TableOpeningFamily>();
                 if (!tableOpeningFamily.Closed && !tableOpeningFamily.OpenPrinted)
                 {
-                    SetTableOpeningFamilyPrintedAsync(document.Id, TableOpeningFamily.PrintedEvent.OPENING).GetAwaiter().GetResult();
+                    SetTableOpeningFamilyPrintedAsync(document.Id, PrintedEvent.OPENING).GetAwaiter().GetResult();
                     SaveOpenTableOpeningFamily(tableOpeningFamily).GetAwaiter().GetResult();
                 }
             }
@@ -241,7 +241,7 @@ namespace Menoo.PrinterService.Business.Tables
 
                         if (to.Discounts != null && to.Discounts.Length > 0)
                         {
-                            var discounts = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva);
+                            var discounts = to.Discounts.Where(discount => discount.Type != DiscountType.Iva);
                             foreach (var detail in discounts)
                             {
                                 orderData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
@@ -365,7 +365,7 @@ namespace Menoo.PrinterService.Business.Tables
 
                     if (to.Discounts != null && to.Discounts.Length > 0)
                     {
-                        var discounts = to.Discounts.Where(discount => discount.Type != TableOpening.Discount.DiscountType.Iva);
+                        var discounts = to.Discounts.Where(discount => discount.Type != DiscountType.Iva);
                         foreach (var detail in discounts)
                         {
                             orderData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
@@ -388,13 +388,13 @@ namespace Menoo.PrinterService.Business.Tables
             await _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("requestPaymentCount", quantity);
         }
 
-        private async Task<WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, TableOpeningFamily.PrintedEvent printEvent)
+        private async Task<WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, PrintedEvent printEvent)
         {
-            if (printEvent == TableOpeningFamily.PrintedEvent.CLOSING)
+            if (printEvent == PrintedEvent.CLOSING)
             {
                 return await _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("closedPrinted", true);
             }
-            else if (printEvent == TableOpeningFamily.PrintedEvent.OPENING)
+            else if (printEvent == PrintedEvent.OPENING)
             {
                 return await _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("openPrinted", true);
             }

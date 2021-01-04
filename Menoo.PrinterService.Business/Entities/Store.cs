@@ -6,16 +6,28 @@ using System.Linq;
 
 namespace Menoo.PrinterService.Business.Entities
 {
+    public enum ProviderEnum
+    {
+        None = 0,
+        MercadoPago = 1,
+        Geopay = 2
+    }
+
+    [FirestoreData]
+    public class CategoryStore
+    {
+        [FirestoreProperty("id")]
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        [FirestoreProperty("name")]
+        [JsonProperty("name")]
+        public string Name { get; set; }
+    }
+
     [FirestoreData]
     public class Store
     {
-        public enum ProviderEnum
-        {
-            None = 0,
-            MercadoPago = 1,
-            Geopay = 2
-        }
-
         [FirestoreProperty("allowPrinting")]
         [JsonProperty("allowPrinting")]
         public bool? AllowPrinting { get; set; }
@@ -55,5 +67,21 @@ namespace Menoo.PrinterService.Business.Entities
                 return AllowPrinting.GetValueOrDefault();
             }
         }
+    }
+
+    [FirestoreData]
+    public class StoreV2
+    {
+        [FirestoreProperty("id")]
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        [FirestoreProperty("name")]
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [FirestoreProperty("logoImage")]
+        [JsonProperty("logoImage")]
+        public string LogoImage { get; set; }
     }
 }
