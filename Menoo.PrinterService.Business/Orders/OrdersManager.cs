@@ -289,7 +289,7 @@ namespace Menoo.PrinterService.Business.Orders
             var ticket = new Ticket {
                 StoreId = order.Store.Id,
                 Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
-                TicketType = TicketTypeEnum.CANCELLED_ORDER.ToString(),
+                TicketType = isCancelled ? TicketTypeEnum.CANCELLED_ORDER.ToString() : TicketTypeEnum.ORDER.ToString(),
                 PrinterName = printerName,
                 Copies = copies
             };
