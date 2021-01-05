@@ -60,22 +60,21 @@ namespace Menoo.PrinterService.Business.Orders
                 {
                     return;
                 }
-                var document = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
-                if (document.AsCancelledPrinted())
+                var order = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault().GetOrderData();
+                if (order.OnCreatedPrinted && !order.OnCancelledPrinted)
                 {
-                    return;
-                }
-                var order = document.GetOrderData();
-                var storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
-                var sectors = storeData.GetPrintSettings(PrintEvents.ORDER_CANCELLED);
-                if (sectors.Count > 0)
-                {
-                    Utils.SetOrderPrintedAsync(_db, "orders", document.Id, "orderCancelledPrinted").GetAwaiter().GetResult();
-                    foreach (var sector in sectors)
+                    order.Id = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault().Id;
+                    var storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
+                    var sectors = storeData.GetPrintSettings(PrintEvents.ORDER_CANCELLED);
+                    if (sectors.Count > 0)
                     {
-                        if (sector.AllowPrinting)
+                        Utils.SetOrderPrintedAsync(_db, "orders", order.Id, "orderCancelledPrinted").GetAwaiter().GetResult();
+                        foreach (var sector in sectors)
                         {
-                            SaveOrderAsync(order, sector.Copies, sector.Printer, true, sector.PrintQR).GetAwaiter().GetResult();
+                            if (sector.AllowPrinting)
+                            {
+                                SaveOrderAsync(order, sector.Copies, sector.Printer, true, sector.PrintQR).GetAwaiter().GetResult();
+                            }
                         }
                     }
                 }
@@ -95,36 +94,35 @@ namespace Menoo.PrinterService.Business.Orders
             {
                 var document = snapshot.Documents.Single();
                 var order = document.ToDictionary().GetObject<OrderV2>();
-                if (order.OnCreatedPrinted)
+                if (!order.OnCreatedPrinted && !order.OnCancelledPrinted)
                 {
-                    return;
-                }
-                Store storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
-                order.Store = storeData;
-                order.Id = document.Id;
-                string printEvent = "";
-                string orderType = order.OrderType.ToUpper().Trim();
-                if (orderType == MESA)
-                {
-                    printEvent = PrintEvents.NEW_TABLE_ORDER;
-                }
-                else if (orderType == TAKEAWAY)
-                {
-                    printEvent = PrintEvents.NEW_TAKE_AWAY;
-                }
-                else if (orderType == RESERVA) 
-                {
-                    printEvent = PrintEvents.NEW_BOOKING;
-                }
-                var sectors = storeData.GetPrintSettings(printEvent);
-                if (sectors.Count > 0)
-                {
-                    Utils.SetOrderPrintedAsync(_db, "orders", document.Id, "orderCreatedPrinted").GetAwaiter().GetResult();
-                    foreach (var sector in sectors)
+                    Store storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
+                    order.Store = storeData;
+                    order.Id = document.Id;
+                    string printEvent = "";
+                    string orderType = order.OrderType.ToUpper().Trim();
+                    if (orderType == MESA)
                     {
-                        if (sector.AllowPrinting)
+                        printEvent = PrintEvents.NEW_TABLE_ORDER;
+                    }
+                    else if (orderType == TAKEAWAY)
+                    {
+                        printEvent = PrintEvents.NEW_TAKE_AWAY;
+                    }
+                    else if (orderType == RESERVA)
+                    {
+                        printEvent = PrintEvents.NEW_BOOKING;
+                    }
+                    var sectors = storeData.GetPrintSettings(printEvent);
+                    if (sectors.Count > 0)
+                    {
+                        Utils.SetOrderPrintedAsync(_db, "orders", document.Id, "orderCreatedPrinted").GetAwaiter().GetResult();
+                        foreach (var sector in sectors)
                         {
-                            SaveOrderAsync(order, sector.Copies, sector.Printer, false, sector.PrintQR).GetAwaiter().GetResult();
+                            if (sector.AllowPrinting)
+                            {
+                                SaveOrderAsync(order, sector.Copies, sector.Printer, false, sector.PrintQR).GetAwaiter().GetResult();
+                            }
                         }
                     }
                 }
@@ -172,7 +170,7 @@ namespace Menoo.PrinterService.Business.Orders
         private async Task CreateOrderTicket(OrderV2 order, Ticket ticket, string line, bool isOrderOk, bool isCancelled = false, bool printQR = false)
         {
             StringBuilder builder = new StringBuilder();
-            string qrCode = printQR ? GenerateOrderQR(order) : string.Empty;
+            string qrCode = printQR && !isCancelled ? GenerateOrderQR(order) : string.Empty;
             string title;
             if (isOrderOk && order.OrderType.ToUpper().Trim() == MESA)
             {
@@ -223,7 +221,7 @@ namespace Menoo.PrinterService.Business.Orders
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == TAKEAWAY)
             {
-                var payment = await GetPayment(order.TableOpeningFamilyId, TAKEAWAY);
+                var payment = await GetPayment(order.TableOpeningId, TAKEAWAY);
                 builder.Append(@"<table class=""top"">");
                 builder.Append("<tr>");
                 builder.Append("<td>Cliente: </td>");
@@ -246,7 +244,7 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append($"<p>Recuerde <b>ACEPTAR</b> el pedido.</p>");
                     builder.Append($"<p>Pedido <b>YA PAGO</b>.</p>");
                     builder.Append($"<p>--------------------------------------------------</p>");
-                    builder.Append($"<p>Total: ${payment.TotalToPayTicket}</p>");
+                    builder.Append(@"<div style=""text-align: center !important""><b>TOTAL: " + payment.TotalToPayTicket + "</b></div>");
                 }
                 else
                 {

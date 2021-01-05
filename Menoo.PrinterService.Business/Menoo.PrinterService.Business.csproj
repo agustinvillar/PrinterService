@@ -106,7 +106,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Bookings\BookingManager.cs" />
-    <Compile Include="Core\Print.cs" />
     <Compile Include="Entities\Booking.cs" />
     <Compile Include="Entities\Payment.cs" />
     <Compile Include="Entities\Item.cs" />

@@ -92,10 +92,6 @@ namespace Menoo.PrinterService.Business.Entities
         [JsonProperty("userName")]
         public string UserName { get; set; }
 
-        [FirestoreProperty("tableOpeningFamilyId")]
-        [JsonProperty("tableOpeningFamilyId")]
-        public string TableOpeningFamilyId { get; set; }
-
         [FirestoreProperty("address")]
         [JsonProperty("address")]
         public string Address { get; set; }
@@ -181,7 +177,7 @@ namespace Menoo.PrinterService.Business.Entities
 
     public static class OrderPrintedExtensions
     {
-        public static bool AsCancelledPrinted(this DocumentSnapshot snapshot)
+        public static bool IsExistsPropertyCancelledPrinted(this DocumentSnapshot snapshot)
         {
             try
             {
@@ -192,6 +188,25 @@ namespace Menoo.PrinterService.Business.Entities
             {
                 return false;
             }
+        }
+
+        public static bool AsCreatedPrinted(this DocumentSnapshot snapshot) 
+        {
+            bool asCreated = false;
+            try
+            {
+                var document = snapshot.ToDictionary();
+                bool isExists = document.ContainsKey("orderCreatedPrinted");
+                if (isExists) 
+                {
+                    asCreated = bool.Parse(document["orderCreatedPrinted"].ToString());
+                }
+            }
+            catch
+            {
+                asCreated = false;
+            }
+            return asCreated;
         }
 
         public static OrderV2 GetOrderData(this DocumentSnapshot snapshot)

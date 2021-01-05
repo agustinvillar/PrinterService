@@ -35,7 +35,6 @@ namespace Menoo.PrinterService.Business.Tables
 
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("closed", true)
-               //.WhereGreaterThanOrEqualTo("openedAtNumber", date)
                .Listen(OnClose);
 
             _db.Collection("tableOpeningFamily")
@@ -328,7 +327,8 @@ namespace Menoo.PrinterService.Business.Tables
                         StoreId = tableOpeningFamily.StoreId,
                         Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                         Copies = sector.Copies,
-                        PrinterName = sector.Printer
+                        PrinterName = sector.Printer,
+                        TableOpeningFamilyId = tableOpeningFamily.Id
                     };
                     StringBuilder orderData = new StringBuilder();
                     if (tableOpeningFamily.TableOpenings.Count() > 0)
@@ -416,13 +416,20 @@ namespace Menoo.PrinterService.Business.Tables
         private string SetTitleForCloseTable(TableOpeningFamily tableOpening)
         {
             string title;
-            if (tableOpening.Pending.GetValueOrDefault())
+            if (tableOpening.Pending == null)
             {
                 title = "Mesa abandonada";
             }
-            else
+            else 
             {
-                title = "Mesa cerrada";
+                if (tableOpening.Pending.GetValueOrDefault())
+                {
+                    title = "Mesa abandonada";
+                }
+                else
+                {
+                    title = "Mesa cerrada";
+                }
             }
             return title;
         }

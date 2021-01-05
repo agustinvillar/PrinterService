@@ -63,6 +63,10 @@ namespace Menoo.PrinterService.Business.Entities
         [JsonProperty("ticketType")]
         public string TicketType { get; set; }
 
+        [FirestoreProperty("tableOpeningFamilyId")]
+        [JsonProperty("tableOpeningFamilyId")]
+        public string TableOpeningFamilyId { get; set; }
+
         /// <summary>
         /// Inyecta los datos del ticket de reserva en la plantilla.
         /// </summary>
