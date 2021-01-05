@@ -96,7 +96,7 @@ namespace Menoo.PrinterService.Business.Bookings
         #region private methods
         private async Task SaveAcceptedBooking(string documentId, Booking booking, User user)
         {
-            var store = await Utils.GetStores(_db, booking.Store.StoreId);
+            var store = await Utils.GetStores(_db, booking.Store.Id);
             var sectors = store.GetPrintSettings(PrintEvents.NEW_BOOKING);
             if (sectors.Count > 0) 
             {
@@ -109,7 +109,7 @@ namespace Menoo.PrinterService.Business.Bookings
                         {
                             TicketType = TicketTypeEnum.NEW_BOOKING.ToString(),
                             PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
-                            StoreId = booking.Store.StoreId,
+                            StoreId = booking.Store.Id,
                             Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                             Copies = sector.Copies,
                             PrinterName = sector.Printer
@@ -123,7 +123,7 @@ namespace Menoo.PrinterService.Business.Bookings
 
         private async Task SaveCancelledBooking(string documentId, Booking booking, User user)
         {
-            var store = await Utils.GetStores(_db, booking.Store.StoreId);
+            var store = await Utils.GetStores(_db, booking.Store.Id);
             var sectors = store.GetPrintSettings(PrintEvents.NEW_BOOKING);
             if (sectors.Count > 0)
             {
@@ -136,7 +136,7 @@ namespace Menoo.PrinterService.Business.Bookings
                         {
                             TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString(),
                             PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
-                            StoreId = booking.Store.StoreId,
+                            StoreId = booking.Store.Id,
                             Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                             Copies = sector.Copies,
                             PrinterName = sector.Printer

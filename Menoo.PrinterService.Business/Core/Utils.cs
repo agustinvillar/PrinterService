@@ -72,7 +72,7 @@ namespace Menoo.PrinterService.Business.Core
             {
                 var storeData = item.ToDictionary();
                 var storeObject = storeData.GetObject<Store>();
-                storeObject.StoreId = item.Id;
+                storeObject.Id = item.Id;
                 stores.Add(storeObject);
             }
             return stores;
@@ -87,7 +87,7 @@ namespace Menoo.PrinterService.Business.Core
         public static async Task<Store> GetStores(FirestoreDb db, string storeId)
         {
             var stores = await GetStores(db);
-            return stores.SingleOrDefault(s => s != null && !string.IsNullOrEmpty(s.StoreId) && s.StoreId == storeId);
+            return stores.SingleOrDefault(s => s != null && !string.IsNullOrEmpty(s.Id) && s.Id == storeId);
         }
 
         /// <summary>
@@ -136,9 +136,9 @@ namespace Menoo.PrinterService.Business.Core
         /// <param name="db">Instancia de firebase.</param>
         /// <param name="collection">Nombre de la colección.</param>
         /// <param name="doc">Documento a ser actualizado.</param>
-        public static async Task<WriteResult> SetOrderPrintedAsync(FirestoreDb db, string collection, string doc)
+        public static async Task<WriteResult> SetOrderPrintedAsync(FirestoreDb db, string collection, string doc, string field)
         {
-            var result = await db.Collection(collection).Document(doc).UpdateAsync("printed", true);
+            var result = await db.Collection(collection).Document(doc).UpdateAsync(field, true);
             return result;
         }
 

@@ -12,10 +12,6 @@ namespace Menoo.PrinterService.Business.Entities
         [JsonProperty("address")]
         public virtual string Address { get; set; }
 
-        [FirestoreProperty("printed")]
-        [JsonProperty("printed")]
-        public virtual bool Printed { get; set; }
-
         [FirestoreProperty("items")]
         [JsonProperty("items")]
         public virtual Item[] Items { get; set; }
@@ -80,15 +76,17 @@ namespace Menoo.PrinterService.Business.Entities
     }
 
     [FirestoreData]
-    public class OrderCancelled
+    public class OrderV2
     {
+        public virtual string Id { get; set; }
+
         [FirestoreProperty("guestComment")]
         [JsonProperty("guestComment")]
         public string GuestComment { get; set; }
 
         [FirestoreProperty("store")]
         [JsonProperty("store")]
-        public StoreV2 Store { get; set; }
+        public Store Store { get; set; }
 
         [FirestoreProperty("userName")]
         [JsonProperty("userName")]
@@ -157,6 +155,16 @@ namespace Menoo.PrinterService.Business.Entities
         [FirestoreProperty("total")]
         [JsonProperty("total")]
         public string Total { get; set; }
+
+        [FirestoreProperty("orderCreatedPrinted")]
+        [JsonProperty("orderCreatedPrinted")]
+        public virtual bool OnCreatedPrinted { get; set; }
+
+        [FirestoreProperty("orderCancelledPrinted")]
+        [JsonProperty("orderCancelledPrinted")]
+        public virtual bool OnCancelledPrinted { get; set; }
+
+        public virtual bool IsTakeAway => OrderType.ToUpper() == "TAKEAWAY";
     }
 
     public sealed class OrderQR
@@ -173,12 +181,12 @@ namespace Menoo.PrinterService.Business.Entities
 
     public static class OrderPrintedExtensions
     {
-        public static bool IsPrinted(this DocumentSnapshot snapshot)
+        public static bool AsCancelledPrinted(this DocumentSnapshot snapshot)
         {
             try
             {
                 var document = snapshot.ToDictionary();
-                return document.ContainsKey("printed");
+                return document.ContainsKey("orderCancelledPrinted");
             }
             catch
             {
@@ -186,10 +194,10 @@ namespace Menoo.PrinterService.Business.Entities
             }
         }
 
-        public static OrderCancelled GetOrderData(this DocumentSnapshot snapshot)
+        public static OrderV2 GetOrderData(this DocumentSnapshot snapshot)
         {
             var document = snapshot.ToDictionary();
-            var objectCasted = Utils.GetObject<OrderCancelled>(document);
+            var objectCasted = Utils.GetObject<OrderV2>(document);
             return objectCasted;
         }
     }

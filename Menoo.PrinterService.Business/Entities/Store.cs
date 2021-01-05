@@ -56,7 +56,11 @@ namespace Menoo.PrinterService.Business.Entities
 
         [FirestoreProperty("id")]
         [JsonProperty("id")]
-        public string StoreId { get; set; }
+        public string Id { get; set; }
+
+        [FirestoreProperty("logoImage")]
+        [JsonProperty("logoImage")]
+        public string LogoImage { get; set; }
 
         public bool AllowPrint(string printEvent = "")
         {
@@ -80,21 +84,5 @@ namespace Menoo.PrinterService.Business.Entities
             }
             return printSettings;
         }
-    }
-
-    [FirestoreData]
-    public class StoreV2
-    {
-        [FirestoreProperty("id")]
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
-        [FirestoreProperty("name")]
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        [FirestoreProperty("logoImage")]
-        [JsonProperty("logoImage")]
-        public string LogoImage { get; set; }
     }
 }
