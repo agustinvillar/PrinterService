@@ -75,7 +75,7 @@ namespace Menoo.PrinterService.Business.Orders
                     {
                         if (sector.AllowPrinting)
                         {
-                            SaveOrderAsync(order, sector.Copies, sector.Printer).GetAwaiter().GetResult();
+                            SaveOrderAsync(order, sector.Copies, sector.Printer, true, sector.PrintQR).GetAwaiter().GetResult();
                         }
                     }
                 }
@@ -119,18 +119,12 @@ namespace Menoo.PrinterService.Business.Orders
                 var sectors = storeData.GetPrintSettings(printEvent);
                 if (sectors.Count > 0)
                 {
-                    Utils.SetOrderPrintedAsync(_db, "orders", "orderCreatedPrinted", document.Id).GetAwaiter().GetResult();
+                    Utils.SetOrderPrintedAsync(_db, "orders", document.Id, "orderCreatedPrinted").GetAwaiter().GetResult();
                     foreach (var sector in sectors)
                     {
                         if (sector.AllowPrinting)
                         {
-                            //Nueva orden 
-                            SaveOrderAsync(order, sector.Copies, sector.Printer).GetAwaiter().GetResult();
-                            //Código QR
-                            if (sector.PrintQR)
-                            {
-                                GenerateOrderQR(order, sector.Copies, sector.Printer).GetAwaiter().GetResult();
-                            }
+                            SaveOrderAsync(order, sector.Copies, sector.Printer, false, sector.PrintQR).GetAwaiter().GetResult();
                         }
                     }
                 }
@@ -175,9 +169,11 @@ namespace Menoo.PrinterService.Business.Orders
             return orderOk && order.IsTakeAway;
         }
 
-        private async Task CreateOrderTicket(OrderV2 order, bool isOrderOk, Ticket ticket, string line)
+        private async Task CreateOrderTicket(OrderV2 order, Ticket ticket, string line, bool isOrderOk, bool isCancelled = false, bool printQR = false)
         {
             StringBuilder builder = new StringBuilder();
+            string qrCode = printQR ? GenerateOrderQR(order) : string.Empty;
+            string title;
             if (isOrderOk && order.OrderType.ToUpper().Trim() == MESA)
             {
                 builder.Append(@"<table class=""top"">");
@@ -195,7 +191,9 @@ namespace Menoo.PrinterService.Business.Orders
                 builder.Append("</tr>");
                 builder.Append("</table>");
                 builder.Append(line);
-                ticket.SetOrder("Nueva orden de mesa", builder.ToString());
+                builder.Append(qrCode);
+                title = isCancelled ? "Orden de mesa cancelada" : "Nueva orden de mesa";
+                ticket.SetOrder(title, builder.ToString());
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == RESERVA)
             {
@@ -219,7 +217,9 @@ namespace Menoo.PrinterService.Business.Orders
                 builder.Append("</tr>");
                 builder.Append("</table>");
                 builder.Append(line);
-                ticket.SetOrder("Nueva orden de reserva", builder.ToString());
+                builder.Append(qrCode);
+                title = isCancelled ? "Orden de reserva" : "Nueva orden de reserva";
+                ticket.SetOrder(title, builder.ToString());
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == TAKEAWAY)
             {
@@ -248,27 +248,19 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append($"<p>--------------------------------------------------</p>");
                     builder.Append($"<p>Total: ${payment.TotalToPayTicket}</p>");
                 }
-                else 
+                else
                 {
                     builder.Append(line);
                 }
-                ticket.SetOrder("Nuevo TakeAway", builder.ToString());
+                builder.Append(qrCode);
+                title = isCancelled ? "Takeaway cancelado" : "Nuevo TakeAway";
+                ticket.SetOrder(title, builder.ToString());
             }
             builder.Clear();
         }
 
-        private async Task GenerateOrderQR(OrderV2 order, int copies, string printerName)
+        private string GenerateOrderQR(OrderV2 order)
         {
-            string orderType = order.OrderType.ToUpper();
-            var ticket = new Ticket
-            {
-                StoreId = order.Store.Id,
-                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
-                TicketType = TicketTypeEnum.ORDER_QR.ToString(),
-                PrintBefore = orderType == TAKEAWAY ? Utils.BeforeAt(order.OrderDate, -5) : Utils.BeforeAt(order.OrderDate, 30),
-                PrinterName = printerName,
-                Copies = copies
-            };
             OrderQR orderInfoQR = new OrderQR
             {
                 OrderId = order.Id,
@@ -281,8 +273,7 @@ namespace Menoo.PrinterService.Business.Orders
             Base64QRCode qrCode = new Base64QRCode(qrCodeData);
             string qrCodeImageAsBase64 = qrCode.GetGraphic(20, Color.Black, Color.White, true, imgType);
             string htmlPictureTag = $"<img alt=\"Embedded QR Code\" src=\"data:image/{imgType.ToString().ToLower()};base64,{qrCodeImageAsBase64}\" style=\"width: 50%; height: 50%\"/>";
-            ticket.SetOrder("Código QR Orden", htmlPictureTag);
-            await Utils.SaveTicketAsync(_db, ticket);
+            return htmlPictureTag;
         }
 
         private async Task<Payment> GetPayment(string id, string type)
@@ -293,7 +284,7 @@ namespace Menoo.PrinterService.Business.Orders
             return payments.FirstOrDefault();
         }
 
-        private async Task SaveOrderAsync(OrderV2 order, int copies, string printerName)
+        private async Task SaveOrderAsync(OrderV2 order, int copies, string printerName, bool isCancelled, bool printQR)
         {
             var ticket = new Ticket {
                 StoreId = order.Store.Id,
@@ -312,7 +303,7 @@ namespace Menoo.PrinterService.Business.Orders
                 ticket.PrintBefore = Utils.BeforeAt(order.OrderDate, 30);
             }
             var line = CreateHtmlFromLines(order);
-            await CreateOrderTicket(order, isOrderOk, ticket, line);
+            await CreateOrderTicket(order, ticket, line, isOrderOk, isCancelled, printQR);
             await Utils.SaveTicketAsync(_db, ticket);
         }
         #endregion

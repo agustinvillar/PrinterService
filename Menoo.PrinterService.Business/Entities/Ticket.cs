@@ -16,8 +16,7 @@ namespace Menoo.PrinterService.Business.Entities
             NEW_BOOKING,
             CANCELLED_BOOKING,
             CANCELLED_ORDER,
-            PAYMENT_REQUEST,
-            ORDER_QR
+            PAYMENT_REQUEST
         }
 
         [FirestoreProperty("copies")]
