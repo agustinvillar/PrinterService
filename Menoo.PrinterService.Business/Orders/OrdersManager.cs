@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using QRCoder;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -359,10 +360,9 @@ namespace Menoo.PrinterService.Business.Orders
         private async Task GenerateOrderQR(Order order, int copies, string printerName)
         {
             string orderType = order.OrderType.ToUpper();
-            string imageTag = "<img src='data:image/png;base64, @base64' alt='Order QR'/>";
             var ticket = new Ticket
             {
-                StoreId = order.Id,
+                StoreId = order.StoreId,
                 Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                 TicketType = TicketTypeEnum.ORDER_QR.ToString(),
                 PrintBefore = orderType == TAKEAWAY ? Utils.BeforeAt(order.OrderDate, -5) : Utils.BeforeAt(order.OrderDate, 30),
@@ -377,9 +377,11 @@ namespace Menoo.PrinterService.Business.Orders
             };
             QRCodeGenerator qrGenerator = new QRCodeGenerator();
             QRCodeData qrCodeData = qrGenerator.CreateQrCode(JsonConvert.SerializeObject(orderInfoQR, Formatting.Indented), QRCodeGenerator.ECCLevel.Q);
+            var imgType = Base64QRCode.ImageType.Jpeg;
             Base64QRCode qrCode = new Base64QRCode(qrCodeData);
-            string qrCodeImageAsBase64 = imageTag.Replace("@base64", qrCode.GetGraphic(20));
-            ticket.SetOrder("Código QR Orden", qrCodeImageAsBase64);
+            string qrCodeImageAsBase64 = qrCode.GetGraphic(20, Color.Black, Color.White, true, imgType);
+            string htmlPictureTag = $"<img alt=\"Embedded QR Code\" src=\"data:image/{imgType.ToString().ToLower()};base64,{qrCodeImageAsBase64}\" style=\"width: 50%; height: 50%\"/>";
+            ticket.SetOrder("Código QR Orden", htmlPictureTag);
             await Utils.SaveTicketAsync(_db, ticket);
         }
 
