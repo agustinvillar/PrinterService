@@ -110,7 +110,21 @@ namespace Menoo.PrinterService.Business.Orders
                 }
                 order.Store = storeData;
                 order.Id = document.Id;
-                var sectors = storeData.GetPrintSettings(PrintEvents.NEW_TABLE_ORDER);
+                string printEvent = "";
+                string orderType = order.OrderType.ToUpper().Trim();
+                if (orderType == MESA)
+                {
+                    printEvent = PrintEvents.NEW_TABLE_ORDER;
+                }
+                else if (orderType == TAKEAWAY)
+                {
+                    printEvent = PrintEvents.NEW_TAKE_AWAY;
+                }
+                else if (orderType == RESERVA) 
+                {
+                    printEvent = PrintEvents.NEW_BOOKING;
+                }
+                var sectors = storeData.GetPrintSettings(printEvent);
                 if (sectors.Count > 0)
                 {
                     Utils.SetOrderPrintedAsync(_db, "orderFamily", document.Id).GetAwaiter().GetResult();

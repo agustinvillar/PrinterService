@@ -33,7 +33,6 @@ namespace Menoo.PrinterService.Business.Tables
                   .Limit(1)
                   .Listen(OnOpenFamily);
 
-            //var date = (DateTime.UtcNow.AddHours(-15) - new DateTime(1970, 1, 1)).TotalSeconds;
             _db.Collection("tableOpeningFamily")
                .WhereEqualTo("closed", true)
                //.WhereGreaterThanOrEqualTo("openedAtNumber", date)
@@ -417,7 +416,7 @@ namespace Menoo.PrinterService.Business.Tables
         private string SetTitleForCloseTable(TableOpeningFamily tableOpening)
         {
             string title;
-            if (tableOpening.Pending == null || tableOpening.Pending.GetValueOrDefault())
+            if (tableOpening.Pending.GetValueOrDefault())
             {
                 title = "Mesa abandonada";
             }
