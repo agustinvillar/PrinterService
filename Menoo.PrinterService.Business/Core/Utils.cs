@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Business.Core
@@ -25,6 +26,18 @@ namespace Menoo.PrinterService.Business.Core
                 DateTime.TryParseExact(date, "dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
             }
             return result.AddMinutes(minutes).ToString("yyyy/MM/dd HH:mm");
+        }
+
+        /// <summary>
+        /// Capitaliza texto.
+        /// </summary>
+        /// <param name="text">Texto a capitalizar.</param>
+        /// <returns>Texto capitalizado.</returns>
+        public static string Capitalize(this string text)
+        {
+            CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
+            TextInfo textInfo = cultureInfo.TextInfo;
+            return textInfo.ToTitleCase(text.ToLower());
         }
 
         /// <summary>
@@ -150,6 +163,6 @@ namespace Menoo.PrinterService.Business.Core
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", fileTemplate + ".html");
             string template = File.ReadAllText(path);
             return template;
-        } 
+        }
     }
 }

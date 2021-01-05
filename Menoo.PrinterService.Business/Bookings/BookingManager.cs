@@ -54,8 +54,8 @@ namespace Menoo.PrinterService.Business.Bookings
                 }
                 if (!booking.PrintedAccepted)
                 {
-                    SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.ACCEPTED).GetAwaiter().GetResult();
-                    _ = SaveAcceptedBooking(booking, user);
+
+                    SaveAcceptedBooking(document.Id, booking, user).GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
@@ -82,8 +82,7 @@ namespace Menoo.PrinterService.Business.Bookings
                     }
                     if (!booking.PrintedCancelled)
                     {
-                        SetBookingPrintedAsync(document.Id, Booking.PRINT_TYPE.CANCELLED).GetAwaiter().GetResult();
-                        _ = SaveCancelledBooking(booking, user);
+                        SaveCancelledBooking(document.Id, booking, user).GetAwaiter().GetResult();
                     }
                 }
             }
@@ -95,45 +94,57 @@ namespace Menoo.PrinterService.Business.Bookings
         #endregion
 
         #region private methods
-        private async Task SaveAcceptedBooking(Booking booking, User user)
+        private async Task SaveAcceptedBooking(string documentId, Booking booking, User user)
         {
             var store = await Utils.GetStores(_db, booking.Store.StoreId);
-            if (!store.AllowPrint(PrintEvents.NEW_BOOKING)) 
+            var sectors = store.GetPrintSettings(PrintEvents.NEW_BOOKING);
+            if (sectors.Count > 0) 
             {
-                return;
-            }
-            if (booking.BookingState.Equals("aceptada", StringComparison.OrdinalIgnoreCase))
-            {
-                var ticket = new Ticket
+                SetBookingPrintedAsync(documentId, Booking.PRINT_TYPE.ACCEPTED).GetAwaiter().GetResult();
+                foreach (var sector in sectors) 
                 {
-                    TicketType = TicketTypeEnum.NEW_BOOKING.ToString(),
-                    PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
-                    StoreId = booking.Store.StoreId,
-                    Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
-                };
-                ticket.SetBookingData("Nueva reserva", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
-                await Utils.SaveTicketAsync(_db, ticket);
+                    if (sector.AllowPrinting && booking.BookingState.Equals("aceptada", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var ticket = new Ticket
+                        {
+                            TicketType = TicketTypeEnum.NEW_BOOKING.ToString(),
+                            PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
+                            StoreId = booking.Store.StoreId,
+                            Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                            Copies = sector.Copies,
+                            PrinterName = sector.Printer
+                        };
+                        ticket.SetBookingData("Nueva reserva", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
+                        await Utils.SaveTicketAsync(_db, ticket);
+                    }
+                }
             }
         }
 
-        private async Task SaveCancelledBooking(Booking booking, User user)
+        private async Task SaveCancelledBooking(string documentId, Booking booking, User user)
         {
             var store = await Utils.GetStores(_db, booking.Store.StoreId);
-            if (!store.AllowPrint(PrintEvents.CANCELED_BOOKING))
+            var sectors = store.GetPrintSettings(PrintEvents.NEW_BOOKING);
+            if (sectors.Count > 0)
             {
-                return;
-            }
-            if (booking.BookingState.Equals("cancelada", StringComparison.OrdinalIgnoreCase))
-            {
-                var ticket = new Ticket 
+                foreach (var sector in sectors) 
                 {
-                    TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString(),
-                    PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
-                    StoreId = booking.Store.StoreId,
-                    Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
-                };
-                ticket.SetBookingData("Reserva cancelada", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
-                await Utils.SaveTicketAsync(_db, ticket);
+                    SetBookingPrintedAsync(documentId, Booking.PRINT_TYPE.CANCELLED).GetAwaiter().GetResult();
+                    if (sector.AllowPrinting && booking.BookingState.Equals("cancelada", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var ticket = new Ticket
+                        {
+                            TicketType = TicketTypeEnum.CANCELLED_BOOKING.ToString(),
+                            PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
+                            StoreId = booking.Store.StoreId,
+                            Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                            Copies = sector.Copies,
+                            PrinterName = sector.Printer
+                        };
+                        ticket.SetBookingData("Reserva cancelada", booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
+                        await Utils.SaveTicketAsync(_db, ticket);
+                    }
+                }
             }
         }
 

@@ -61,8 +61,7 @@ namespace Menoo.PrinterService.Business.Tables
                 var tableOpeningFamily = document.ToDictionary().GetObject<TableOpeningFamily>();
                 if (tableOpeningFamily.Closed && !tableOpeningFamily.ClosedPrinted)
                 {
-                    SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, PrintedEvent.CLOSING).GetAwaiter().GetResult();
-                    SaveCloseTableOpeningFamily(tableOpeningFamily).GetAwaiter().GetResult();
+                    SaveCloseTableOpeningFamily(document.Id, tableOpeningFamily).GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
@@ -79,8 +78,7 @@ namespace Menoo.PrinterService.Business.Tables
                 var tableOpeningFamily = document.ToDictionary().GetObject<TableOpeningFamily>();
                 if (!tableOpeningFamily.Closed && !tableOpeningFamily.OpenPrinted)
                 {
-                    SetTableOpeningFamilyPrintedAsync(document.Id, PrintedEvent.OPENING).GetAwaiter().GetResult();
-                    SaveOpenTableOpeningFamily(tableOpeningFamily).GetAwaiter().GetResult();
+                    SaveOpenTableOpeningFamily(document.Id, tableOpeningFamily).GetAwaiter().GetResult();
                 }
             }
             catch (Exception ex)
@@ -171,7 +169,7 @@ namespace Menoo.PrinterService.Business.Tables
             return count > 0;
         }
 
-        private async Task SaveCloseTableOpeningFamily(TableOpeningFamily tableOpeningFamily)
+        private async Task SaveCloseTableOpeningFamily(string documentId, TableOpeningFamily tableOpeningFamily)
         {
             bool tableOpeningFamilyAlreadyExists = await TableOpeningFamilyAlreadyExists(tableOpeningFamily.Id);
             if (tableOpeningFamilyAlreadyExists)
@@ -179,122 +177,137 @@ namespace Menoo.PrinterService.Business.Tables
                 return;
             }
             var store = await Utils.GetStores(_db, tableOpeningFamily.StoreId);
-            if (!store.AllowPrint(PrintEvents.TABLE_CLOSED))
+            var sectors = store.GetPrintSettings(PrintEvents.TABLE_CLOSED);
+            if (sectors.Count > 0)
             {
-                return;
-            }
-            if (tableOpeningFamily.Closed)
-            {
-                var ticket = new Ticket
+                SetTableOpeningFamilyPrintedAsync(tableOpeningFamily.Id, PrintedEvent.CLOSING).GetAwaiter().GetResult();
+                foreach (var sector in sectors)
                 {
-                    TicketType = TicketTypeEnum.CLOSE_TABLE.ToString(),
-                    StoreId = tableOpeningFamily.StoreId,
-                    PrintBefore = Utils.BeforeAt(tableOpeningFamily.ClosedAt, 10),
-                    Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
-                };
-                StringBuilder orderData = new StringBuilder();
-                double total = 0;
-                if (tableOpeningFamily.TableOpenings.Count() > 0)
-                {
-                    foreach (var to in tableOpeningFamily.TableOpenings)
+                    if (sector.AllowPrinting && tableOpeningFamily.Closed)
                     {
-                        orderData.Append($"<p>{to.UserName}</p>");
-                        foreach (var order in to.Orders)
+                        var ticket = new Ticket
                         {
-                            foreach (var item in order.Items)
+                            TicketType = TicketTypeEnum.CLOSE_TABLE.ToString(),
+                            StoreId = tableOpeningFamily.StoreId,
+                            PrintBefore = Utils.BeforeAt(tableOpeningFamily.ClosedAt, 10),
+                            Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                            Copies = sector.Copies,
+                            PrinterName = sector.Printer
+                        };
+                        StringBuilder orderData = new StringBuilder();
+                        double total = 0;
+                        if (tableOpeningFamily.TableOpenings.Count() > 0)
+                        {
+                            foreach (var to in tableOpeningFamily.TableOpenings)
                             {
-                                var quantityLabel = item.Quantity > 1 ? "unidades" : "unidad";
-                                orderData.Append($"<p>{Utils.GetTime(order.MadeAt)} {item.Name} x {item.Quantity} {quantityLabel} ${item.PriceToTicket}</p>");
-                                if (item.Options != null)
+                                orderData.Append($"<p>{to.UserName}</p>");
+                                foreach (var order in to.Orders)
                                 {
-                                    foreach (var option in item.Options)
+                                    foreach (var item in order.Items)
                                     {
-                                        if (option != null)
+                                        var quantityLabel = item.Quantity > 1 ? "unidades" : "unidad";
+                                        orderData.Append($"<p>{Utils.GetTime(order.MadeAt)} {item.Name} x {item.Quantity} {quantityLabel} ${item.PriceToTicket}</p>");
+                                        if (item.Options != null)
                                         {
-                                            orderData.Append($"<p>{option.Name} {option.Price}</p>");
-                                        }
+                                            foreach (var option in item.Options)
+                                            {
+                                                if (option != null)
+                                                {
+                                                    orderData.Append($"<p>{option.Name} {option.Price}</p>");
+                                                }
 
+                                            }
+                                        }
                                     }
                                 }
+                                if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0)
+                                {
+                                    orderData.Append($"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>");
+                                }
+
+                                if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0)
+                                {
+                                    orderData.Append($"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>");
+                                }
+
+                                if (to.Tip != null && to.Tip > 0)
+                                {
+                                    orderData.Append($"<p>Propina: ${to.Tip}</p>");
+                                }
+
+                                if (to.Surcharge != null && to.Surcharge > 0)
+                                {
+                                    orderData.Append($"<p>Adicional por servicio: ${to.Surcharge}</p>");
+                                }
+
+                                if (to.Discounts != null && to.Discounts.Length > 0)
+                                {
+                                    var discounts = to.Discounts.Where(discount => discount.Type != DiscountType.Iva);
+                                    foreach (var detail in discounts)
+                                    {
+                                        orderData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
+                                    }
+                                }
+
+                                if (!string.IsNullOrEmpty(to.PayMethod))
+                                {
+                                    orderData.Append($"Método de Pago: {to.PayMethod}");
+                                }
+
+                                if (to.PagoPorTodos || to.PagoPorElMismo)
+                                {
+                                    orderData.Append($"<p>Subtotal: ${to.TotalToTicket(store)}</p>");
+                                }
+
+                                if (to.PagoPorElMismo)
+                                {
+                                    orderData.Append("<p>Pagó su propia cuenta</p>");
+                                }
+
+                                if (to.PagoPorTodos)
+                                {
+                                    orderData.Append("<p>Pagó la cuenta de todos.</p>");
+                                }
+
+                                if (to.AlguienLePago)
+                                {
+                                    orderData.Append("<p>Le pagaron su cuenta.</p>");
+                                }
                             }
+                            total = tableOpeningFamily.TotalToTicket(store);
                         }
-                        if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0)
-                        {
-                            orderData.Append($"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>");
-                        }
-
-                        if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0)
-                        {
-                            orderData.Append($"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>");
-                        }
-
-                        if (to.Tip != null && to.Tip > 0)
-                        {
-                            orderData.Append($"<p>Propina: ${to.Tip}</p>");
-                        }
-
-                        if (to.Surcharge != null && to.Surcharge > 0)
-                        {
-                            orderData.Append($"<p>Adicional por servicio: ${to.Surcharge}</p>");
-                        }
-
-                        if (to.Discounts != null && to.Discounts.Length > 0)
-                        {
-                            var discounts = to.Discounts.Where(discount => discount.Type != DiscountType.Iva);
-                            foreach (var detail in discounts)
-                            {
-                                orderData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(to.PayMethod))
-                        {
-                            orderData.Append($"Método de Pago: {to.PayMethod}");
-                        }
-
-                        if (to.PagoPorTodos || to.PagoPorElMismo)
-                        {
-                            orderData.Append($"<p>Subtotal: ${to.TotalToTicket(store)}</p>");
-                        }
-
-                        if (to.PagoPorElMismo)
-                        {
-                            orderData.Append("<p>Pagó su propia cuenta</p>");
-                        }
-
-                        if (to.PagoPorTodos)
-                        {
-                            orderData.Append("<p>Pagó la cuenta de todos.</p>");
-                        }
-
-                        if (to.AlguienLePago)
-                        {
-                            orderData.Append("<p>Le pagaron su cuenta.</p>");
-                        }
+                        ticket.SetTableClosing(SetTitleForCloseTable(tableOpeningFamily), tableOpeningFamily.TableNumberToShow, tableOpeningFamily.ClosedAt, total.ToString(), orderData.ToString());
+                        Utils.SaveTicketAsync(_db, ticket).GetAwaiter().GetResult();
                     }
-                    total = tableOpeningFamily.TotalToTicket(store);
                 }
-                ticket.SetTableClosing(SetTitleForCloseTable(tableOpeningFamily), tableOpeningFamily.TableNumberToShow, tableOpeningFamily.ClosedAt, total.ToString(), orderData.ToString());
-                Utils.SaveTicketAsync(_db, ticket).GetAwaiter().GetResult();
             }
         }
 
-        private async Task SaveOpenTableOpeningFamily(TableOpeningFamily tableOpeningFamily)
+        private async Task SaveOpenTableOpeningFamily(string documentId, TableOpeningFamily tableOpeningFamily)
         {
             var store = await Utils.GetStores(_db, tableOpeningFamily.StoreId);
-            if (!store.AllowPrint(PrintEvents.TABLE_OPENED))
+            var sectors = store.GetPrintSettings(PrintEvents.TABLE_OPENED);
+            if (sectors.Count > 0)
             {
-                return;
+                SetTableOpeningFamilyPrintedAsync(documentId, PrintedEvent.OPENING).GetAwaiter().GetResult();
+                foreach (var sector in sectors)
+                {
+                    if (sector.AllowPrinting)
+                    {
+                        var ticket = new Ticket
+                        {
+                            TicketType = TicketTypeEnum.OPEN_TABLE.ToString(),
+                            PrintBefore = Utils.BeforeAt(tableOpeningFamily.OpenedAt, 10),
+                            StoreId = tableOpeningFamily.StoreId,
+                            Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                            Copies = sector.Copies,
+                            PrinterName = sector.Printer
+                        };
+                        ticket.SetTableOpening("Apertura de mesa", tableOpeningFamily.TableNumberToShow, tableOpeningFamily.OpenedAt);
+                        await Utils.SaveTicketAsync(_db, ticket);
+                    }
+                }
             }
-            var ticket = new Ticket
-            {
-                TicketType = TicketTypeEnum.OPEN_TABLE.ToString(),
-                PrintBefore = Utils.BeforeAt(tableOpeningFamily.OpenedAt, 10),
-                StoreId = tableOpeningFamily.StoreId,
-                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
-            };
-            ticket.SetTableOpening("Apertura de mesa", tableOpeningFamily.TableNumberToShow, tableOpeningFamily.OpenedAt);
-            await Utils.SaveTicketAsync(_db, ticket);
         }
 
         private async Task SaveRequestPayment(TableOpeningFamily tableOpeningFamily, string title)
@@ -305,84 +318,84 @@ namespace Menoo.PrinterService.Business.Tables
                 return;
             }
             var store = await Utils.GetStores(_db, tableOpeningFamily.StoreId);
-            if (!store.AllowPrint(PrintEvents.REQUEST_PAYMENT))
+            var sectors = store.GetPrintSettings(PrintEvents.REQUEST_PAYMENT);
+            if (sectors.Count > 0)
             {
-                return;
-            }
-            var ticket = new Ticket
-            {
-                TicketType = TicketTypeEnum.PAYMENT_REQUEST.ToString(),
-                StoreId = tableOpeningFamily.StoreId,
-                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm")
-            };
-            StringBuilder orderData = new StringBuilder();
-            if (tableOpeningFamily.TableOpenings.Count() > 0)
-            {
-                foreach (var to in tableOpeningFamily.TableOpenings)
+                foreach (var sector in sectors) 
                 {
-                    orderData.Append($"<p>Cliente: {to.UserName}</p>");
-                    foreach (var order in to.Orders)
+                    var ticket = new Ticket
                     {
-                        foreach (var item in order.Items)
+                        TicketType = TicketTypeEnum.PAYMENT_REQUEST.ToString(),
+                        StoreId = tableOpeningFamily.StoreId,
+                        Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                        Copies = sector.Copies,
+                        PrinterName = sector.Printer
+                    };
+                    StringBuilder orderData = new StringBuilder();
+                    if (tableOpeningFamily.TableOpenings.Count() > 0)
+                    {
+                        foreach (var to in tableOpeningFamily.TableOpenings)
                         {
-                            var quantityLabel = item.Quantity > 1 ? "unidades" : "unidad";
-                            orderData.Append($"<p>{Utils.GetTime(order.MadeAt)} {item.Name} x {item.Quantity} {quantityLabel} ${item.PriceToTicket}</p>");
-                            if (item.Options != null)
+                            orderData.Append($"<p>Cliente: {to.UserName}</p>");
+                            foreach (var order in to.Orders)
                             {
-                                foreach (var option in item.Options)
+                                foreach (var item in order.Items)
                                 {
-                                    if (option != null)
+                                    var quantityLabel = item.Quantity > 1 ? "unidades" : "unidad";
+                                    orderData.Append($"<p>{Utils.GetTime(order.MadeAt)} {item.Name} x {item.Quantity} {quantityLabel} ${item.PriceToTicket}</p>");
+                                    if (item.Options != null)
                                     {
-                                        orderData.Append($"<p>{option.Name} {option.Price}</p>");
-                                    }
+                                        foreach (var option in item.Options)
+                                        {
+                                            if (option != null)
+                                            {
+                                                orderData.Append($"<p>{option.Name} {option.Price}</p>");
+                                            }
 
+                                        }
+                                    }
                                 }
                             }
+                            if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0)
+                            {
+                                orderData.Append($"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>");
+                            }
+
+                            if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0)
+                            {
+                                orderData.Append($"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>");
+                            }
+
+                            if (to.Tip != null && to.Tip > 0)
+                            {
+                                orderData.Append($"<p>Propina: ${to.Tip}</p>");
+                            }
+
+                            if (to.Surcharge != null && to.Surcharge > 0)
+                            {
+                                orderData.Append($"<p>Adicional por servicio: ${to.Surcharge}</p>");
+                            }
+
+                            if (to.Discounts != null && to.Discounts.Length > 0)
+                            {
+                                var discounts = to.Discounts.Where(discount => discount.Type != DiscountType.Iva);
+                                foreach (var detail in discounts)
+                                {
+                                    orderData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
+                                }
+                            }
+
+                            if (to.PagoPorTodos || to.PagoPorElMismo)
+                            {
+                                orderData.Append($"<p>Subtotal: ${to.TotalToTicket(store)}</p>");
+                            }
                         }
-                    }
-                    if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0)
-                    {
-                        orderData.Append($"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>");
-                    }
-
-                    if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0)
-                    {
-                        orderData.Append($"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>");
-                    }
-
-                    if (to.Tip != null && to.Tip > 0)
-                    {
-                        orderData.Append($"<p>Propina: ${to.Tip}</p>");
-                    }
-
-                    if (to.Surcharge != null && to.Surcharge > 0)
-                    {
-                        orderData.Append($"<p>Adicional por servicio: ${to.Surcharge}</p>");
-                    }
-
-                    if (to.Discounts != null && to.Discounts.Length > 0)
-                    {
-                        var discounts = to.Discounts.Where(discount => discount.Type != DiscountType.Iva);
-                        foreach (var detail in discounts)
-                        {
-                            orderData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
-                        }
-                    }
-
-                    if (to.PagoPorTodos || to.PagoPorElMismo)
-                    {
-                        orderData.Append($"<p>Subtotal: ${to.TotalToTicket(store)}</p>");
+                        double total = tableOpeningFamily.TotalToTicket(store);
+                        ticket.SetRequestPayment(title, tableOpeningFamily.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy HH:mm"), total.ToString(), orderData.ToString());
+                        Utils.SaveTicketAsync(_db, ticket).GetAwaiter().GetResult();
                     }
                 }
-                double total = tableOpeningFamily.TotalToTicket(store);
-                ticket.SetRequestPayment(title, tableOpeningFamily.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy HH:mm"), total.ToString(), orderData.ToString());
-                Utils.SaveTicketAsync(_db, ticket).GetAwaiter().GetResult();
             }
-        }
-
-        private async Task SetQuantityRequestPayment(string doc, int quantity = 1)
-        {
-            await _db.Collection("tableOpeningFamily").Document(doc).UpdateAsync("requestPaymentCount", quantity);
         }
 
         private async Task<WriteResult> SetTableOpeningFamilyPrintedAsync(string doc, PrintedEvent printEvent)

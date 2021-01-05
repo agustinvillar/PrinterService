@@ -371,8 +371,8 @@ namespace Menoo.PrinterService.Business.Orders
             };
             OrderQR orderInfoQR = new OrderQR
             {
-                OrderId = order.Id,
-                OrderType = order.OrderType.ToUpper().Trim(),
+                OrderId = await GetOrderIdFromTableOpeningFamily(order.TableOpeningFamilyId),
+                OrderType = order.OrderType.Trim().Capitalize(),
                 StoreId = order.StoreId
             };
             QRCodeGenerator qrGenerator = new QRCodeGenerator();
@@ -399,6 +399,22 @@ namespace Menoo.PrinterService.Business.Orders
                 return itemsWithOrderNumber.FirstOrDefault().Key;
             }
             return string.Empty;
+        }
+
+        private async Task<string> GetOrderIdFromTableOpeningFamily(string tableOpeningFamilyId) 
+        {
+            string orderId = "";
+            QuerySnapshot documentSnapshots = await _db.Collection("orders").WhereEqualTo("tableOpeningFamilyId", tableOpeningFamilyId).GetSnapshotAsync();
+            if (documentSnapshots.Documents.Count() == 0)
+            {
+                documentSnapshots = await _db.Collection("orders").WhereEqualTo("tableOpeningId", tableOpeningFamilyId).GetSnapshotAsync();
+            }
+            var documents = documentSnapshots.Documents.OrderByDescending(o => o.CreateTime);
+            if (documents.Count() > 0) 
+            {
+                orderId = documents.FirstOrDefault().Id;
+            }
+            return orderId;
         }
 
         private async Task<Payment> GetPayment(string id, string type)
