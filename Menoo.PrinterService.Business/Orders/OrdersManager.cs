@@ -58,10 +58,14 @@ namespace Menoo.PrinterService.Business.Orders
                 {
                     return;
                 }
-                var order = snapshot.Documents.OrderByDescending(o => o.UpdateTime).FirstOrDefault().GetOrderData();
+                var document = snapshot.Documents.Where(f => f.IsCreatedPrinted() && !f.IsCancelledPrinted()).OrderByDescending(o => o.UpdateTime).FirstOrDefault();
+                if (document == null) 
+                {
+                    return;
+                }
+                var order = document.GetOrderData();
                 if (order.OnCreatedPrinted && !order.OnCancelledPrinted)
                 {
-                    order.Id = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault().Id;
                     var storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
                     var sectors = storeData.GetPrintSettings(PrintEvents.ORDER_CANCELLED);
                     if (sectors.Count > 0)
@@ -94,12 +98,16 @@ namespace Menoo.PrinterService.Business.Orders
                 {
                     return;
                 }
-                var order = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault().GetOrderData();
-                if (!order.OnCreatedPrinted && !order.OnCancelledPrinted)
+                var document = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
+                if (document == null) 
+                {
+                    return;
+                }
+                var order = document.GetOrderData();
+                if (!order.OnCreatedPrinted && !order.OnCancelledPrinted && order.Status.ToLower() != "cancelado")
                 {
                     Store storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
                     order.Store = storeData;
-                    order.Id = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault().Id;
                     string printEvent = "";
                     string orderType = order.OrderType.ToUpper().Trim();
                     if (orderType == MESA)
@@ -242,10 +250,17 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append(line);
                     builder.Append($"<p>Método de Pago: {payment.PaymentMethod}</p>");
                     builder.Append($"<p>--------------------------------------------------</p>");
-                    builder.Append($"<p>Recuerde <b>ACEPTAR</b> el pedido.</p>");
-                    builder.Append($"<p>Pedido <b>YA PAGO</b>.</p>");
+                    if (!isCancelled)
+                    {
+                        builder.Append($"<p>Recuerde <b>ACEPTAR</b> el pedido.</p>");
+                        builder.Append($"<p>Pedido <b>YA PAGO</b>.</p>");
+                    }
+                    else 
+                    {
+                        builder.Append($"<p>Pedido <b>CANCELADO</b>.</p>");
+                    }
                     builder.Append($"<p>--------------------------------------------------</p>");
-                    builder.Append(@"<div style=""text-align: center !important""><b>TOTAL: " + payment.TotalToPayTicket + "</b></div>");
+                    builder.Append(@"<div class=""center""><b>TOTAL: $" + payment.TotalToPayTicket + "</b></div>");
                 }
                 else
                 {
