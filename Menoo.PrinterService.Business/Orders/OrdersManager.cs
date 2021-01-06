@@ -179,8 +179,19 @@ namespace Menoo.PrinterService.Business.Orders
         private async Task CreateOrderTicket(OrderV2 order, Ticket ticket, string line, bool isOrderOk, bool isCancelled = false, bool printQR = false)
         {
             StringBuilder builder = new StringBuilder();
-            string qrCode = printQR && !isCancelled ? GenerateOrderQR(order) : string.Empty;
+            string qrCode = "";
             string title;
+            if (!isCancelled) 
+            {
+                if (order.IsTakeAway && !printQR)
+                {
+                    qrCode = GenerateOrderQR(order);
+                }
+                else if (printQR) 
+                {
+                    qrCode = GenerateOrderQR(order);
+                }
+            }
             if (isOrderOk && order.OrderType.ToUpper().Trim() == MESA)
             {
                 builder.Append(@"<table class=""top"">");

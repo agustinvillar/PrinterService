@@ -416,20 +416,13 @@ namespace Menoo.PrinterService.Business.Tables
         private string SetTitleForCloseTable(TableOpeningFamily tableOpening)
         {
             string title;
-            if (tableOpening.Pending == null)
+            if (tableOpening.Pending.GetValueOrDefault())
             {
                 title = "Mesa abandonada";
             }
-            else 
+            else
             {
-                if (tableOpening.Pending.GetValueOrDefault())
-                {
-                    title = "Mesa abandonada";
-                }
-                else
-                {
-                    title = "Mesa cerrada";
-                }
+                title = "Mesa cerrada";
             }
             return title;
         }
