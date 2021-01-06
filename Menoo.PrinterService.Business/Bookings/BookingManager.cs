@@ -54,7 +54,6 @@ namespace Menoo.PrinterService.Business.Bookings
                 }
                 if (!booking.PrintedAccepted)
                 {
-
                     SaveAcceptedBooking(document.Id, booking, user).GetAwaiter().GetResult();
                 }
             }

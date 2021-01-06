@@ -37,8 +37,6 @@ namespace Menoo.PrinterService.Business.Orders
         public void Listen()
         {
             _db.Collection("orders")
-               .OrderByDescending("orderNumber")
-               .Limit(1)
                .Listen(OnCreated);
 
             _db.Collection("orders")
@@ -60,7 +58,7 @@ namespace Menoo.PrinterService.Business.Orders
                 {
                     return;
                 }
-                var order = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault().GetOrderData();
+                var order = snapshot.Documents.OrderByDescending(o => o.UpdateTime).FirstOrDefault().GetOrderData();
                 if (order.OnCreatedPrinted && !order.OnCancelledPrinted)
                 {
                     order.Id = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault().Id;
@@ -92,13 +90,16 @@ namespace Menoo.PrinterService.Business.Orders
         {
             try
             {
-                var document = snapshot.Documents.Single();
-                var order = document.ToDictionary().GetObject<OrderV2>();
+                if (snapshot.Documents == null || snapshot.Documents.Count == 0)
+                {
+                    return;
+                }
+                var order = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault().GetOrderData();
                 if (!order.OnCreatedPrinted && !order.OnCancelledPrinted)
                 {
                     Store storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
                     order.Store = storeData;
-                    order.Id = document.Id;
+                    order.Id = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault().Id;
                     string printEvent = "";
                     string orderType = order.OrderType.ToUpper().Trim();
                     if (orderType == MESA)
@@ -116,7 +117,7 @@ namespace Menoo.PrinterService.Business.Orders
                     var sectors = storeData.GetPrintSettings(printEvent);
                     if (sectors.Count > 0)
                     {
-                        Utils.SetOrderPrintedAsync(_db, "orders", document.Id, "orderCreatedPrinted").GetAwaiter().GetResult();
+                        Utils.SetOrderPrintedAsync(_db, "orders", order.Id, "orderCreatedPrinted").GetAwaiter().GetResult();
                         foreach (var sector in sectors)
                         {
                             if (sector.AllowPrinting)

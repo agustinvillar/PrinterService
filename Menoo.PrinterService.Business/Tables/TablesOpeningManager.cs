@@ -169,11 +169,11 @@ namespace Menoo.PrinterService.Business.Tables
 
         private async Task SaveCloseTableOpeningFamily(string documentId, TableOpeningFamily tableOpeningFamily)
         {
-            bool tableOpeningFamilyAlreadyExists = await TableOpeningFamilyAlreadyExists(tableOpeningFamily.Id);
-            if (tableOpeningFamilyAlreadyExists)
-            {
-                return;
-            }
+            //bool tableOpeningFamilyAlreadyExists = await TableOpeningFamilyAlreadyExists(tableOpeningFamily.Id);
+            //if (tableOpeningFamilyAlreadyExists)
+            //{
+            //    return;
+            //}
             var store = await Utils.GetStores(_db, tableOpeningFamily.StoreId);
             var sectors = store.GetPrintSettings(PrintEvents.TABLE_CLOSED);
             if (sectors.Count > 0)
