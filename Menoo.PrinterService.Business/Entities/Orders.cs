@@ -80,7 +80,7 @@ namespace Menoo.PrinterService.Business.Entities
 
         [FirestoreProperty("items")]
         [JsonProperty("items")]
-        public virtual Item[] Items { get; set; }
+        public virtual ItemOrder[] Items { get; set; }
 
         [FirestoreProperty("madeAt")]
         [JsonProperty("madeAt")]
@@ -171,7 +171,7 @@ namespace Menoo.PrinterService.Business.Entities
 
         [FirestoreProperty("items")]
         [JsonProperty("items")]
-        public List<ItemV2> Items { get; set; }
+        public List<ItemOrderV2> Items { get; set; }
 
         [FirestoreProperty("madeAt")]
         [JsonProperty("madeAt")]

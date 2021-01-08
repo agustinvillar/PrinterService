@@ -1,11 +1,47 @@
-﻿using System.Linq;
-using Google.Cloud.Firestore;
+﻿using Google.Cloud.Firestore;
+using Menoo.PrinterService.Business.Core;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Business.Entities
 {
+    public class SectorItem 
+    {
+        public string ItemId { get; set; }
+
+        [JsonProperty("sectors")]
+        public List<PrintSettings> Sectors { get; set; }
+    }
+
+    public static class SectorItemExtensions 
+    {
+        public static List<SectorItem> GetPrintSector(List<ItemOrderV2> items, FirestoreDb db) 
+        {
+            List<SectorItem> sectorItems = new List<SectorItem>();
+            foreach (var item in items)
+            {
+                var sectorByItem = GetItemById(db, item.Id).GetAwaiter().GetResult();
+                sectorItems.Add(sectorByItem);
+            }
+            return sectorItems;
+        }
+
+        #region private methods
+
+        private static async Task<SectorItem> GetItemById(FirestoreDb db, string documentId) 
+        {
+            var resultQuery = await Utils.GetDocument(db, "items", documentId);
+            var document = resultQuery.ToDictionary().GetObject<SectorItem>();
+            document.ItemId = documentId;
+            return document;
+        }
+        #endregion
+    }
+
     [FirestoreData]
-    public class Item
+    public class ItemOrder
     {
         [FirestoreProperty("categoryId")]
         [JsonProperty("categoryId")]
@@ -64,7 +100,7 @@ namespace Menoo.PrinterService.Business.Entities
     }
 
     [FirestoreData]
-    public class ItemV2
+    public class ItemOrderV2
     {
         [FirestoreProperty("storeId")]
         [JsonProperty("storeId")]

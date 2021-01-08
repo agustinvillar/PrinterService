@@ -106,23 +106,24 @@ namespace Menoo.PrinterService.Business.Orders
                 var order = document.GetOrderData();
                 if (!order.OnCreatedPrinted && !order.OnCancelledPrinted && order.Status.ToLower() != "cancelado")
                 {
-                    Store storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
-                    order.Store = storeData;
-                    string printEvent = "";
-                    string orderType = order.OrderType.ToUpper().Trim();
-                    if (orderType == MESA)
+                    List<PrintSettings> sectors = new List<PrintSettings>();
+                    var sectorsByItems = SectorItemExtensions.GetPrintSector(order.Items, _db);
+                    if (sectorsByItems.Count > 0)
                     {
-                        printEvent = PrintEvents.NEW_TABLE_ORDER;
+                        sectors.AddRange(sectorsByItems.Select(s => s.Sectors).FirstOrDefault());
+                        if (order.OrderType.ToUpper().Trim() == TAKEAWAY) 
+                        {
+                            var sectorByEvents = GetSectorByEvent(order);
+                            if (sectorByEvents.Count > 0) 
+                            {
+                                sectors.AddRange(sectorByEvents);
+                            }
+                        }
                     }
-                    else if (orderType == TAKEAWAY)
+                    else 
                     {
-                        printEvent = PrintEvents.NEW_TAKE_AWAY;
+                        sectors.AddRange(GetSectorByEvent(order));
                     }
-                    else if (orderType == RESERVA)
-                    {
-                        printEvent = PrintEvents.NEW_BOOKING;
-                    }
-                    var sectors = storeData.GetPrintSettings(printEvent);
                     if (sectors.Count > 0)
                     {
                         Utils.SetOrderPrintedAsync(_db, "orders", order.Id, "orderCreatedPrinted").GetAwaiter().GetResult();
@@ -183,11 +184,7 @@ namespace Menoo.PrinterService.Business.Orders
             string title;
             if (!isCancelled) 
             {
-                if (order.IsTakeAway && !printQR)
-                {
-                    qrCode = GenerateOrderQR(order);
-                }
-                else if (printQR) 
+                if (order.IsTakeAway && printQR)
                 {
                     qrCode = GenerateOrderQR(order);
                 }
@@ -330,6 +327,26 @@ namespace Menoo.PrinterService.Business.Orders
             var line = CreateHtmlFromLines(order);
             await CreateOrderTicket(order, ticket, line, isOrderOk, isCancelled, printQR);
             await Utils.SaveTicketAsync(_db, ticket);
+        }
+
+        private List<PrintSettings> GetSectorByEvent(OrderV2 order) 
+        {
+            string printEvent = "";
+            string orderType = order.OrderType.ToUpper().Trim();
+            if (orderType == MESA)
+            {
+                printEvent = PrintEvents.NEW_TABLE_ORDER;
+            }
+            else if (orderType == TAKEAWAY)
+            {
+                printEvent = PrintEvents.NEW_TAKE_AWAY;
+            }
+            else if (orderType == RESERVA)
+            {
+                printEvent = PrintEvents.NEW_BOOKING;
+            }
+            Store storeData = Utils.GetStores(_db, order.Store.Id).GetAwaiter().GetResult();
+            return storeData.GetPrintSettings(printEvent);
         }
         #endregion
     }
