@@ -135,7 +135,7 @@ namespace Menoo.PrinterService.Business.Orders
                         if (sectors.Count > 0)
                         {
                             Utils.SetOrderPrintedAsync(_db, "orders", order.Id, "orderCreatedPrinted").GetAwaiter().GetResult();
-                            foreach (var sector in sectors.Distinct())
+                            foreach (var sector in sectors)
                             {
                                 if (sector.AllowPrinting)
                                 {
