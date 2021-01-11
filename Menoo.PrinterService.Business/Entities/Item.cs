@@ -23,7 +23,10 @@ namespace Menoo.PrinterService.Business.Entities
             foreach (var item in items)
             {
                 var sectorByItem = GetItemById(db, item.Id).GetAwaiter().GetResult();
-                sectorItems.Add(sectorByItem);
+                if (sectorByItem != null) 
+                {
+                    sectorItems.Add(sectorByItem);
+                }
             }
             return sectorItems;
         }
@@ -32,10 +35,15 @@ namespace Menoo.PrinterService.Business.Entities
 
         private static async Task<SectorItem> GetItemById(FirestoreDb db, string documentId) 
         {
+            SectorItem item = null;
             var resultQuery = await Utils.GetDocument(db, "items", documentId);
-            var document = resultQuery.ToDictionary().GetObject<SectorItem>();
-            document.ItemId = documentId;
-            return document;
+            var document = resultQuery.ToDictionary();
+            if (document.ContainsKey("sectors")) 
+            {
+                item = document.GetObject<SectorItem>();
+                item.ItemId = documentId;
+            }
+            return item;
         }
         #endregion
     }

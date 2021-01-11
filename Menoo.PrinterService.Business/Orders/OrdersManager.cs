@@ -37,6 +37,7 @@ namespace Menoo.PrinterService.Business.Orders
         public void Listen()
         {
             _db.Collection("orders")
+               .OrderByDescending("orderNumber")
                .Listen(OnCreated);
 
             _db.Collection("orders")
@@ -94,44 +95,52 @@ namespace Menoo.PrinterService.Business.Orders
         {
             try
             {
-                if (snapshot.Documents == null || snapshot.Documents.Count == 0)
+                var documents = snapshot.Documents.Where(f => f.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == DateTime.Now.ToString("dd/MM/yyyy")).OrderByDescending(f => f.CreateTime);
+                if (documents == null || documents.Count() == 0)
                 {
                     return;
                 }
-                var document = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
-                if (document == null) 
+                foreach (var documentReference in documents)
                 {
-                    return;
-                }
-                var order = document.GetOrderData();
-                if (!order.OnCreatedPrinted && !order.OnCancelledPrinted && order.Status.ToLower() != "cancelado")
-                {
-                    List<PrintSettings> sectors = new List<PrintSettings>();
-                    var sectorsByItems = SectorItemExtensions.GetPrintSector(order.Items, _db);
-                    if (sectorsByItems.Count > 0)
+                    var order = documentReference.GetOrderData();
+                    if (!order.OnCreatedPrinted && !order.OnCancelledPrinted && order.Status.ToLower() != "cancelado")
                     {
-                        sectors.AddRange(sectorsByItems.Select(s => s.Sectors).FirstOrDefault());
-                        if (order.OrderType.ToUpper().Trim() == TAKEAWAY) 
+                        List<PrintSettings> sectors = new List<PrintSettings>();
+                        var sectorsByItems = SectorItemExtensions.GetPrintSector(order.Items, _db);
+                        if (sectorsByItems.Count > 0)
                         {
-                            var sectorByEvents = GetSectorByEvent(order);
-                            if (sectorByEvents.Count > 0) 
+                            if (sectorsByItems.Select(s => s.Sectors).Count() > 0)
                             {
-                                sectors.AddRange(sectorByEvents);
+                                foreach (var sector in sectorsByItems.Select(s => s.Sectors).FirstOrDefault())
+                                {
+                                    if (!sectors.Any(f => sector.Name != f.Name))
+                                    {
+                                        sectors.Add(sector);
+                                    }
+                                }
+                            }
+                            if (order.OrderType.ToUpper().Trim() == TAKEAWAY)
+                            {
+                                var sectorByEvents = GetSectorByEvent(order);
+                                if (sectorByEvents.Count > 0)
+                                {
+                                    sectors.AddRange(sectorByEvents);
+                                }
                             }
                         }
-                    }
-                    else 
-                    {
-                        sectors.AddRange(GetSectorByEvent(order));
-                    }
-                    if (sectors.Count > 0)
-                    {
-                        Utils.SetOrderPrintedAsync(_db, "orders", order.Id, "orderCreatedPrinted").GetAwaiter().GetResult();
-                        foreach (var sector in sectors)
+                        else
                         {
-                            if (sector.AllowPrinting)
+                            sectors.AddRange(GetSectorByEvent(order));
+                        }
+                        if (sectors.Count > 0)
+                        {
+                            Utils.SetOrderPrintedAsync(_db, "orders", order.Id, "orderCreatedPrinted").GetAwaiter().GetResult();
+                            foreach (var sector in sectors.Distinct())
                             {
-                                SaveOrderAsync(order, sector.Copies, sector.Printer, false, sector.PrintQR).GetAwaiter().GetResult();
+                                if (sector.AllowPrinting)
+                                {
+                                    SaveOrderAsync(order, sector.Copies, sector.Printer, false, sector.PrintQR).GetAwaiter().GetResult();
+                                }
                             }
                         }
                     }
