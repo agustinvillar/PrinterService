@@ -77,7 +77,7 @@ namespace Menoo.PrinterService.Business.Entities
         public List<PrintSettings> GetPrintSettings(string printEvent) 
         {
             List<PrintSettings> printSettings = new List<PrintSettings>();
-            var queryResult = this.Sectors?.FindAll(f => f.PrintEvents.Contains(printEvent));
+            var queryResult = this.Sectors?.FindAll(f => f.PrintEvents.Contains(printEvent) && f.AllowPrinting);
             if (queryResult != null && queryResult.Count > 0) 
             {
                 printSettings.AddRange(queryResult);
