@@ -112,7 +112,8 @@ namespace Menoo.PrinterService.Business.Orders
                         {
                             foreach (var sector in sectorsByItems.Select(s => s.Sectors).FirstOrDefault())
                             {
-                                if (!sectors.Any(f => sector.Name != f.Name) && sector.AllowPrinting)
+                                bool isExists = sectors.Any(f => sector.Name == f.Name);
+                                if (!isExists && sector.AllowPrinting)
                                 {
                                     sectors.Add(sector);
                                 }
@@ -123,7 +124,14 @@ namespace Menoo.PrinterService.Business.Orders
                             var sectorByEvents = GetSectorByEvent(order);
                             if (sectorByEvents.Count > 0)
                             {
-                                sectors.AddRange(sectorByEvents);
+                                foreach (var sector in sectorByEvents)
+                                {
+                                    bool isExists = sectors.Any(f => sector.Name == f.Name);
+                                    if (!isExists && sector.AllowPrinting)
+                                    {
+                                        sectors.Add(sector);
+                                    }
+                                }
                             }
                         }
                     }
