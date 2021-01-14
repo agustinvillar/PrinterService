@@ -287,7 +287,7 @@ namespace Menoo.PrinterService.Business.Orders
                     builder.Append(line);
                 }
                 builder.Append(qrCode);
-                title = isCancelled ? "Takeaway cancelado" : "Nuevo TakeAway";
+                title = isCancelled ? "TakeAway cancelado" : "Nuevo TakeAway";
                 ticket.SetOrder(title, builder.ToString());
             }
             builder.Clear();
