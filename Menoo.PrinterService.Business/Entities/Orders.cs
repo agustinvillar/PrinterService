@@ -1,6 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Business.Core;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Business.Entities
@@ -33,6 +34,19 @@ namespace Menoo.PrinterService.Business.Entities
         {
             var document = snapshot.ToDictionary();
             var objectCasted = Utils.GetObject<OrderV2>(document);
+            string orderJson = JsonConvert.SerializeObject(objectCasted);
+            try
+            {
+                objectCasted.Items.ForEach(i => { 
+                    i.MultiplePromotions = orderJson.GetPromotions<List<CategoryPromotions>>();
+                });
+            }
+            catch (Exception e) 
+            {
+                objectCasted.Items.ForEach(i => {
+                    i.SinglePromotions = orderJson.GetPromotions<CategoryPromotions>();
+                });
+            }
             objectCasted.Id = snapshot.Id;
             return objectCasted;
         }

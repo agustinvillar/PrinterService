@@ -124,7 +124,7 @@ namespace Menoo.PrinterService.Business.Entities
 
         [FirestoreProperty("promotions")]
         [JsonProperty("promotions")]
-        public List<CategoryPromotions> Promotions { get; set; }
+        public object Promotions { get; set; }
 
         [FirestoreProperty("priceWithDiscountTA")]
         [JsonProperty("priceWithDiscountTA")]
@@ -177,6 +177,10 @@ namespace Menoo.PrinterService.Business.Entities
         [FirestoreProperty("softId")]
         [JsonProperty("softId")]
         public string SoftId { get; set; }
+
+        public List<CategoryPromotions> MultiplePromotions { get; set; }
+
+        public CategoryPromotions SinglePromotions { get; set; }
     }
 
     [FirestoreData]
@@ -205,5 +209,15 @@ namespace Menoo.PrinterService.Business.Entities
         [FirestoreProperty("name")]
         [JsonProperty("name")]
         public string Name { get; set; }
+    }
+
+    public static class ItemExtensions 
+    {
+        public static T GetPromotions<T>(this string json) where T : class
+        {
+            dynamic obj = JsonConvert.DeserializeObject(json);
+            var result = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(obj["promotions"]));
+            return result;
+        }
     }
 }
