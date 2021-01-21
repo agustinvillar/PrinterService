@@ -124,7 +124,7 @@ namespace Menoo.PrinterService.Business.Entities
 
         [FirestoreProperty("promotions")]
         [JsonProperty("promotions")]
-        public Promotions Promotions { get; set; }
+        public List<CategoryPromotions> Promotions { get; set; }
 
         [FirestoreProperty("priceWithDiscountTA")]
         [JsonProperty("priceWithDiscountTA")]
@@ -192,7 +192,7 @@ namespace Menoo.PrinterService.Business.Entities
     }
 
     [FirestoreData]
-    public class Promotions
+    public class CategoryPromotions
     {
         [FirestoreProperty("activated")]
         [JsonProperty("activated")]

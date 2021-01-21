@@ -48,7 +48,10 @@ namespace Menoo.PrinterService.Business.Core
         /// <returns>Objeto.</returns>
         public static T GetObject<T>(this object element) 
         {
-            var json = JsonConvert.SerializeObject(element, Newtonsoft.Json.Formatting.Indented);
+            var json = JsonConvert.SerializeObject(element, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
             var result = JsonConvert.DeserializeObject<T>(json);
             return result;
         }
