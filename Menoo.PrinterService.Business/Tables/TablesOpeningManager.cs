@@ -328,7 +328,8 @@ namespace Menoo.PrinterService.Business.Tables
                         Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                         Copies = sector.Copies,
                         PrinterName = sector.Printer,
-                        TableOpeningFamilyId = tableOpeningFamily.Id
+                        TableOpeningFamilyId = tableOpeningFamily.Id,
+                        PrintBefore = Utils.BeforeAt(tableOpeningFamily.OpenedAt, 10),
                     };
                     StringBuilder orderData = new StringBuilder();
                     if (tableOpeningFamily.TableOpenings.Count() > 0)
