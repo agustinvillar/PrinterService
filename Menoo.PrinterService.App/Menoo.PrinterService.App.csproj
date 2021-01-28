@@ -198,9 +198,9 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Menoo.PrinterService.Business\Menoo.PrinterService.Business.csproj">
+    <ProjectReference Include="..\Menoo.PrinterService.Business\Menoo.PrinterService.Core.csproj">
       <Project>{f43028f3-d34d-4666-853c-1e9ebbb7a120}</Project>
-      <Name>Menoo.PrinterService.Business</Name>
+      <Name>Menoo.PrinterService.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -9,7 +9,7 @@ using Menoo.PrinterService.Business.Tables;
 using System;
 using System.Configuration;
 
-namespace Menoo.PrinterService.Business.Core
+namespace Menoo.PrinterService.Business
 {
     /// <summary>Eventos al realizar cambios en alguna de los documentos en FireBase.</summary>
     public class Listeners

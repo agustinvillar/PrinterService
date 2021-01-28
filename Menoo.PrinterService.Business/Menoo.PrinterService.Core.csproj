@@ -111,16 +111,16 @@
     <Compile Include="Entities\Payment.cs" />
     <Compile Include="Entities\Item.cs" />
     <Compile Include="Entities\Orders.cs" />
-    <Compile Include="Core\Listeners.cs" />
+    <Compile Include="Listeners.cs" />
     <Compile Include="Orders\OrdersManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Entities\Store.cs" />
     <Compile Include="Entities\TableOpeningFamily.cs" />
     <Compile Include="Entities\Ticket.cs" />
     <Compile Include="Entities\User.cs" />
-    <Compile Include="Core\PrintSettings.cs" />
+    <Compile Include="Entities\PrintSettings.cs" />
     <Compile Include="Tables\TablesOpeningManager.cs" />
-    <Compile Include="Core\Utils.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
