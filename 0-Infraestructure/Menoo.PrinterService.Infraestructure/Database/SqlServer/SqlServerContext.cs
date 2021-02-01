@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,14 +11,24 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
     {
         public DbSet<Entities.TicketHistory> TicketHistory { get; set; }
 
-        public DbSet<Entities.TicketHistory> TicketHistorySettings { get; set; }
+        public DbSet<Entities.TicketHistorySettings> TicketHistorySettings { get; set; }
 
-        internal SqlServerContext() 
-            : base(GlobalConfig.ConfigurationManager.GetSetting("Microsoft.SQLServer.Print.ConnectionString")) 
+        static SqlServerContext()
+        {
+            System.Data.Entity.Database.SetInitializer<SqlServerContext>(null);
+        }
+
+        public SqlServerContext()
+            : base("Microsoft.SQLServer.Print.ConnectionString")
         {
         }
-        
-        internal SqlServerContext(DbConnection dbConnection) 
+
+        public SqlServerContext(string dbConnection)
+            : base(dbConnection)
+        {
+        }
+
+        public SqlServerContext(DbConnection dbConnection) 
             : base(dbConnection, true) 
         {
         }
@@ -25,6 +36,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("printer");
+            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Configurations.AddFromAssembly(typeof(SqlServerContext).Assembly);
         }
 

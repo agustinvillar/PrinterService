@@ -7,7 +7,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.Configurations
         public TicketHistoryTypeConfiguration()
         {
             HasKey(d => d.Id);
-            HasIndex(d => d.ExternalId).IsUnique();
 
             Property(d => d.Id).HasColumnOrder(0).IsRequired();
             Property(d => d.ExternalId).HasColumnOrder(1).IsRequired();

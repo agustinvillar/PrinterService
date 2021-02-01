@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.Entities
 {
-    //[Table("TicketHistory", Schema = "printer")]
     public class TicketHistory
     {
         public TicketHistory() 
