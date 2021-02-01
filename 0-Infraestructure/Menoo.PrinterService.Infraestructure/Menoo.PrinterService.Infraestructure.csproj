@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -36,6 +37,12 @@
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="Google.Api.CommonProtos, Version=1.7.0.0, Culture=neutral, PublicKeyToken=3ec5ea7f18953e47, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Google.Api.CommonProtos.1.7.0\lib\net45\Google.Api.CommonProtos.dll</HintPath>
     </Reference>
@@ -93,6 +100,7 @@
     <Reference Include="System.Collections.Immutable, Version=1.2.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Collections.Immutable.1.4.0\lib\netstandard2.0\System.Collections.Immutable.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.OracleClient" />
@@ -128,20 +136,25 @@
   <ItemGroup>
     <Compile Include="Boostrapper.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
-    <Compile Include="Database\Entities\Booking.cs" />
-    <Compile Include="Database\Entities\Item.cs" />
-    <Compile Include="Database\Entities\Orders.cs" />
-    <Compile Include="Database\Entities\Payment.cs" />
-    <Compile Include="Database\Entities\PrintSettings.cs" />
-    <Compile Include="Database\Entities\Store.cs" />
-    <Compile Include="Database\Entities\TableOpeningFamily.cs" />
-    <Compile Include="Database\Entities\Ticket.cs" />
-    <Compile Include="Database\Entities\User.cs" />
-    <Compile Include="Database\FirebaseContext.cs" />
-    <Compile Include="Database\FirebaseRepository.cs" />
+    <Compile Include="Database\Firebase\Entities\Booking.cs" />
+    <Compile Include="Database\Firebase\Entities\Item.cs" />
+    <Compile Include="Database\Firebase\Entities\Orders.cs" />
+    <Compile Include="Database\Firebase\Entities\Payment.cs" />
+    <Compile Include="Database\Firebase\Entities\PrintSettings.cs" />
+    <Compile Include="Database\Firebase\Entities\Store.cs" />
+    <Compile Include="Database\Firebase\Entities\TableOpeningFamily.cs" />
+    <Compile Include="Database\Firebase\Entities\Ticket.cs" />
+    <Compile Include="Database\Firebase\Entities\User.cs" />
+    <Compile Include="Database\Firebase\FirebaseContext.cs" />
+    <Compile Include="Database\Firebase\FirebaseRepository.cs" />
+    <Compile Include="Database\SqlServer\Configurations\TicketHistorySettingsTypeConfiguration.cs" />
+    <Compile Include="Database\SqlServer\Configurations\TicketHistoryTypeConfiguration.cs" />
+    <Compile Include="Database\SqlServer\Entities\TicketHistory.cs" />
+    <Compile Include="Database\SqlServer\Entities\TicketHistorySettings.cs" />
+    <Compile Include="Database\SqlServer\SqlServerContext.cs" />
     <Compile Include="Extensions\ItemExtensions.cs" />
     <Compile Include="Extensions\OrderExtensions.cs" />
-    <Compile Include="Extensions\SectorExtensions.cs" />
+    <Compile Include="Extensions\PrintSettingsExtensions.cs" />
     <Compile Include="Interfaces\IConfigurationManager.cs" />
     <Compile Include="Interfaces\IFirebaseRepository.cs" />
     <Compile Include="Interfaces\IDependencyResolver.cs" />
@@ -150,6 +163,7 @@
     <Compile Include="GlobalConfig.cs" />
     <Compile Include="OnStartUpAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repository\StoreRepository.cs" />
     <Compile Include="Start.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
@@ -165,5 +179,8 @@
       <ErrorText>Este proyecto hace referencia a los paquetes NuGet que faltan en este equipo. Use la restauración de paquetes NuGet para descargarlos. Para obtener más información, consulte http://go.microsoft.com/fwlink/?LinkID=322105. El archivo que falta es {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\Grpc.Core.1.22.1\build\net45\Grpc.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Grpc.Core.1.22.1\build\net45\Grpc.Core.targets'))" />
+    <Error Condition="!Exists('..\..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
   </Target>
+  <Import Project="..\..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
 </Project>

@@ -3,7 +3,7 @@ using System.Linq;
 using Google.Cloud.Firestore;
 using Newtonsoft.Json;
 
-namespace Menoo.PrinterService.Infraestructure.Entities
+namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
     [FirestoreData]
     public class Payment

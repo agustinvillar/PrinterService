@@ -2,9 +2,8 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
-namespace Menoo.PrinterService.Infraestructure.Database.Entities
+namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
     [FirestoreData]
     public class CategoryPromotions

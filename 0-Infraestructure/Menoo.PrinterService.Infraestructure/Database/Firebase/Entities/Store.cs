@@ -1,12 +1,8 @@
 ﻿using Google.Cloud.Firestore;
-using Menoo.PrinterService.Infraestructure.Core;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Menoo.PrinterService.Infraestructure.Entities
+namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
     public enum ProviderEnum
     {
@@ -61,28 +57,5 @@ namespace Menoo.PrinterService.Infraestructure.Entities
         [FirestoreProperty("logoImage")]
         [JsonProperty("logoImage")]
         public string LogoImage { get; set; }
-
-        public bool AllowPrint(string printEvent = "")
-        {
-            if (!string.IsNullOrEmpty(printEvent) && Sectors != null)
-            {
-                return this.Sectors != null && this.Sectors.Any(f => f.PrintEvents.Contains(printEvent) && f.AllowPrinting);
-            }
-            else
-            {
-                return AllowPrinting.GetValueOrDefault();
-            }
-        }
-
-        public List<PrintSettings> GetPrintSettings(string printEvent) 
-        {
-            List<PrintSettings> printSettings = new List<PrintSettings>();
-            var queryResult = this.Sectors?.FindAll(f => f.PrintEvents.Contains(printEvent) && f.AllowPrinting);
-            if (queryResult != null && queryResult.Count > 0) 
-            {
-                printSettings.AddRange(queryResult);
-            }
-            return printSettings;
-        }
     }
 }

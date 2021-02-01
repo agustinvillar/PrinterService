@@ -73,26 +73,6 @@ namespace Menoo.PrinterService.Infraestructure
             return result;
         }
 
-        public static async Task<List<Store>> GetStores(FirestoreDb db)
-        {
-            var stores = new List<Store>();
-            var snapshot = await db.Collection("stores").GetSnapshotAsync();
-            foreach (var item in snapshot.Documents)
-            {
-                var storeData = item.ToDictionary();
-                var storeObject = storeData.GetObject<Store>();
-                storeObject.Id = item.Id;
-                stores.Add(storeObject);
-            }
-            return stores;
-        }
-
-        public static async Task<Store> GetStores(FirestoreDb db, string storeId)
-        {
-            var stores = await GetStores(db);
-            return stores.SingleOrDefault(s => s != null && !string.IsNullOrEmpty(s.Id) && s.Id == storeId);
-        }
-
         public static string GetTicketTemplate(string fileTemplate)
         {
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", fileTemplate + ".html");

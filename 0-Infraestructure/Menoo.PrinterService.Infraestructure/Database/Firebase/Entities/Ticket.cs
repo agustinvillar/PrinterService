@@ -1,9 +1,8 @@
 ﻿using Google.Cloud.Firestore;
-using Menoo.PrinterService.Infraestructure.Core;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace Menoo.PrinterService.Infraestructure.Entities
+namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
     [FirestoreData]
     public class Ticket

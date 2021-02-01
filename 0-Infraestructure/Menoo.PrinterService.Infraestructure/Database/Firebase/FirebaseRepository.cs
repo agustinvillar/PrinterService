@@ -3,7 +3,7 @@ using Menoo.PrinterService.Infraestructure.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Menoo.PrinterService.Infraestructure.Database
+namespace Menoo.PrinterService.Infraestructure.Database.Firebase
 {
     public class FirebaseRepository<T> : IFirebaseRepository<T> where T : class
     {

@@ -4,7 +4,7 @@ using Google.Cloud.Firestore.V1;
 using Grpc.Auth;
 using Grpc.Core;
 
-namespace Menoo.PrinterService.Infraestructure.Database
+namespace Menoo.PrinterService.Infraestructure.Database.Firebase
 {
     public static class FirebaseContext
     {
