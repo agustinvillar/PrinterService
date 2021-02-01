@@ -17,7 +17,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.PrinterService.App", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.PrinterService.Infraestructure", "0-Infraestructure\Menoo.PrinterService.Infraestructure\Menoo.PrinterService.Infraestructure.csproj", "{ECDFF8B6-85B2-4E11-9286-0213ADC3494F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Orders", "1-Domain\Orders\Menoo.Printer.Orders.csproj", "{317B85A2-7D9E-4F51-8198-FB013D8DB738}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Listener.Orders", "1-Domain\Menoo.Printer.Listener.Orders\Menoo.Printer.Listener.Orders.csproj", "{317B85A2-7D9E-4F51-8198-FB013D8DB738}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Listener.Bookings", "1-Domain\Menoo.Printer.Listener.Bookings\Menoo.Printer.Listener.Bookings.csproj", "{CC9D2A8B-1F85-4997-9501-5354AB1F18E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Listener.Tables", "1-Domain\Menoo.Printer.Listener.Tables\Menoo.Printer.Listener.Tables.csproj", "{1739C69D-4D0F-4364-AF2D-3262CC721782}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +45,14 @@ Global
 		{317B85A2-7D9E-4F51-8198-FB013D8DB738}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{317B85A2-7D9E-4F51-8198-FB013D8DB738}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{317B85A2-7D9E-4F51-8198-FB013D8DB738}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC9D2A8B-1F85-4997-9501-5354AB1F18E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC9D2A8B-1F85-4997-9501-5354AB1F18E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC9D2A8B-1F85-4997-9501-5354AB1F18E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC9D2A8B-1F85-4997-9501-5354AB1F18E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1739C69D-4D0F-4364-AF2D-3262CC721782}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1739C69D-4D0F-4364-AF2D-3262CC721782}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1739C69D-4D0F-4364-AF2D-3262CC721782}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1739C69D-4D0F-4364-AF2D-3262CC721782}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +62,8 @@ Global
 		{9B836E2F-4074-438F-A729-37C88E4BFDA3} = {6903BA4F-F8A1-4CBA-BFF8-523DFAEA9B71}
 		{ECDFF8B6-85B2-4E11-9286-0213ADC3494F} = {78C833BA-B036-49C3-A189-FA14276E2AEB}
 		{317B85A2-7D9E-4F51-8198-FB013D8DB738} = {2271C37B-7A0D-4289-9B83-8412B9852293}
+		{CC9D2A8B-1F85-4997-9501-5354AB1F18E5} = {2271C37B-7A0D-4289-9B83-8412B9852293}
+		{1739C69D-4D0F-4364-AF2D-3262CC721782} = {2271C37B-7A0D-4289-9B83-8412B9852293}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28A3E29B-B789-4822-AA66-C3AFB6E515BA}
