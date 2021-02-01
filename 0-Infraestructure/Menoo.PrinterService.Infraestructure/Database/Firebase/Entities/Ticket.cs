@@ -7,17 +7,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
     [FirestoreData]
     public class Ticket
     {
-        public enum TicketTypeEnum
-        {
-            OPEN_TABLE,
-            CLOSE_TABLE,
-            ORDER,
-            NEW_BOOKING,
-            CANCELLED_BOOKING,
-            CANCELLED_ORDER,
-            PAYMENT_REQUEST
-        }
-
         [FirestoreProperty("copies")]
         [JsonProperty("copies")]
         public int Copies { get; set; }

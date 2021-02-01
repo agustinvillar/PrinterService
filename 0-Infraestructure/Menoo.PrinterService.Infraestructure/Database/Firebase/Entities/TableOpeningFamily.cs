@@ -1,22 +1,9 @@
 ﻿using Google.Cloud.Firestore;
+using Menoo.PrinterService.Infraestructure.Enums;
 using Newtonsoft.Json;
 
 namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
-    public enum PrintedEvent
-    {
-        OPENING,
-        CLOSING
-    }
-
-    public enum DiscountType
-    {
-        Surcharge = 0,
-        Discount = 1,
-        Normal = 2,
-        Iva = 3
-    }
-
     [FirestoreData]
     public class TableOpeningFamily
     {
@@ -204,9 +191,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
             [FirestoreProperty("Type")]
             [JsonProperty("Type")]
-            public DiscountType? Type { get; set; }
-
-
+            public DiscountTypeEnum? Type { get; set; }
         }
     }
 

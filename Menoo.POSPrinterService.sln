@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.PrinterService.App", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.PrinterService.Infraestructure", "0-Infraestructure\Menoo.PrinterService.Infraestructure\Menoo.PrinterService.Infraestructure.csproj", "{ECDFF8B6-85B2-4E11-9286-0213ADC3494F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Orders", "1-Domain\Orders\Menoo.Printer.Orders.csproj", "{317B85A2-7D9E-4F51-8198-FB013D8DB738}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{ECDFF8B6-85B2-4E11-9286-0213ADC3494F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECDFF8B6-85B2-4E11-9286-0213ADC3494F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECDFF8B6-85B2-4E11-9286-0213ADC3494F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{317B85A2-7D9E-4F51-8198-FB013D8DB738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{317B85A2-7D9E-4F51-8198-FB013D8DB738}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{317B85A2-7D9E-4F51-8198-FB013D8DB738}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{317B85A2-7D9E-4F51-8198-FB013D8DB738}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -43,6 +49,7 @@ Global
 		{A39FB555-8752-454F-8C78-F6B09810343C} = {418577DC-C8CA-40A9-8787-F5E8EE666D02}
 		{9B836E2F-4074-438F-A729-37C88E4BFDA3} = {6903BA4F-F8A1-4CBA-BFF8-523DFAEA9B71}
 		{ECDFF8B6-85B2-4E11-9286-0213ADC3494F} = {78C833BA-B036-49C3-A189-FA14276E2AEB}
+		{317B85A2-7D9E-4F51-8198-FB013D8DB738} = {2271C37B-7A0D-4289-9B83-8412B9852293}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28A3E29B-B789-4822-AA66-C3AFB6E515BA}

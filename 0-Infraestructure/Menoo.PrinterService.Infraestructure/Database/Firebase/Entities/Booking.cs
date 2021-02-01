@@ -6,12 +6,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
     [FirestoreData]
     public class Booking
     {
-        public enum PRINT_TYPE 
-        {
-            ACCEPTED, 
-            CANCELLED 
-        }
-
         [FirestoreProperty("bookingDate")]
         [JsonProperty("bookingDate")]
         public string BookingDate { get; set; }

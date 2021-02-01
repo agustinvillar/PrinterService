@@ -32,15 +32,15 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
 
         public virtual async Task<List<TEntity>> GetAllAsync<TEntity>(string collection)
         {
-            var stores = new List<TEntity>();
+            var entities = new List<TEntity>();
             var snapshot = await _db.Collection(collection).GetSnapshotAsync();
             foreach (var item in snapshot.Documents)
             {
-                var storeData = item.ToDictionary();
-                var storeObject = storeData.GetObject<TEntity>();
-                stores.Add(storeObject);
+                var data = item.ToDictionary();
+                var entityObject = data.GetObject<TEntity>();
+                entities.Add(entityObject);
             }
-            return stores;
+            return entities;
         }
 
         public virtual async Task<TEntity> GetById<TEntity>(string collection, string id)

@@ -2,6 +2,7 @@
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer;
 using Menoo.PrinterService.Infraestructure.Repository;
+using System.Diagnostics;
 
 namespace Menoo.PrinterService.Infraestructure
 {
@@ -11,6 +12,7 @@ namespace Menoo.PrinterService.Infraestructure
         public Start()
         {
             var dependencyResolver = GlobalConfig.DependencyResolver;
+            dependencyResolver.Register(ConfigureEventLog);
             dependencyResolver.Register(GetInstanceFirebase);
             dependencyResolver.Register(() => new SqlServerContext());
             dependencyResolver.Register(() => {
@@ -20,11 +22,23 @@ namespace Menoo.PrinterService.Infraestructure
             });
         }
 
+        static EventLog ConfigureEventLog()
+        {
+            string sourceName = GlobalConfig.ConfigurationManager.GetSetting("ServiceSourceName");
+            if (!EventLog.SourceExists(sourceName))
+            {
+                EventLog.CreateEventSource(sourceName, sourceName);
+            }
+            var generalWriter = new EventLog { Log = sourceName, Source = sourceName, EnableRaisingEvents = true };
+            return generalWriter;
+        }
+
         static FirestoreDb GetInstanceFirebase()
         {
             bool isDebug = bool.Parse(GlobalConfig.ConfigurationManager.GetSetting("isDebug"));
             var instance = FirebaseContext.GetInstance(isDebug);
             return instance;
         }
+
     }
 }

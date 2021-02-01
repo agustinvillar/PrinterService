@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Google.Cloud.Firestore;
+using Menoo.PrinterService.Infraestructure.Enums;
 using Newtonsoft.Json;
 
 namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
@@ -13,7 +14,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         public Discount[] Discounts { get; set; }
 
         public List<string> DiscountsToTicketTa => Discounts != null
-            ? Discounts.Where(d => d.DiscountType == Discount.DiscountTypeEnum.Discount)
+            ? Discounts.Where(d => d.DiscountType == DiscountTypeEnum.Discount)
                 .Select(d => $"{d.Name} -${d.Amount}").ToList()
             : new List<string>();
 
@@ -34,20 +35,12 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         public double TotalToPay { get; set; }
         
         public double TotalToPayTicket => TotalToPay +
-            Discounts?.Where(d => d.DiscountType == Discount.DiscountTypeEnum.Iva)
+            Discounts?.Where(d => d.DiscountType == DiscountTypeEnum.Iva)
                 .Sum(d => d.Amount) ?? TotalToPay;
 
         [FirestoreData]
         public class Discount
         {
-            public enum DiscountTypeEnum
-            {
-                Surcharge = 0,
-                Discount = 1,
-                Normal = 2,
-                Iva = 3
-            }
-
             [FirestoreProperty("amount")]
             [JsonProperty("amount")]
             public double Amount { get; set; }

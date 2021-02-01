@@ -1,16 +1,10 @@
 ﻿using Google.Cloud.Firestore;
+using Menoo.PrinterService.Infraestructure.Enums;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
-    public enum ProviderEnum
-    {
-        None = 0,
-        MercadoPago = 1,
-        Geopay = 2
-    }
-
     [FirestoreData]
     public class CategoryStore
     {
@@ -26,10 +20,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
     [FirestoreData]
     public class Store
     {
-        [FirestoreProperty("allowPrinting")]
-        [JsonProperty("allowPrinting")]
-        public bool? AllowPrinting { get; set; }
-
         [FirestoreProperty("categoryStore")]
         [JsonProperty("categoryStore")]
         public CategoryStore[] CategoryStore { get; set; }
