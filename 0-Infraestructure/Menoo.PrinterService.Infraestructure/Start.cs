@@ -1,6 +1,7 @@
 ﻿using Google.Cloud.Firestore;
-using Menoo.PrinterService.Infraestructure.Database;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer;
+using Menoo.PrinterService.Infraestructure.Repository;
 
 namespace Menoo.PrinterService.Infraestructure
 {
@@ -10,9 +11,13 @@ namespace Menoo.PrinterService.Infraestructure
         public Start()
         {
             var dependencyResolver = GlobalConfig.DependencyResolver;
-            bool isDebug = bool.Parse(GlobalConfig.ConfigurationManager.GetSetting("isDebug"));
-
             dependencyResolver.Register(GetInstanceFirebase);
+            dependencyResolver.Register(() => new SqlServerContext());
+            dependencyResolver.Register(() => {
+                var firebaseDb = GetInstanceFirebase();
+                var storeRepository = new StoreRepository(firebaseDb);
+                return storeRepository;
+            });
         }
 
         static FirestoreDb GetInstanceFirebase()

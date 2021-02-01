@@ -1,5 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Extensions;
+using Menoo.PrinterService.Infraestructure.Interfaces;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,17 @@ namespace Menoo.PrinterService.Infraestructure
             CultureInfo cultureInfo = Thread.CurrentThread.CurrentCulture;
             TextInfo textInfo = cultureInfo.TextInfo;
             return textInfo.ToTitleCase(text.ToLower());
+        }
+
+        public static EventLog ConfigureEventLog(IConfigurationManager config)
+        {
+            string sourceName = config.GetSetting("ServiceSourceName");
+            if (!EventLog.SourceExists(config.GetSetting("DefaultLog")))
+            {
+                EventLog.CreateEventSource(sourceName, sourceName);
+            }
+            var generalWriter = new EventLog { Log = sourceName, Source = sourceName, EnableRaisingEvents = true };
+            return generalWriter;
         }
 
         public static List<object> GetBootstrapClasses()

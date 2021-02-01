@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Menoo.PrinterService.Infraestructure;
+using System;
 using System.Diagnostics;
 using System.ServiceProcess;
 
@@ -29,15 +30,6 @@ namespace Menoo.PrinterService.Listener
         {
         }
 
-        private void ConfigureEventLog()
-        {
-            if (!EventLog.SourceExists(Settings.ServiceSourceName))
-            {
-                EventLog.CreateEventSource(Settings.ServiceSourceName, Settings.ServiceSourceName);
-            }
-            generalWriter = new EventLog { Log = Settings.ServiceSourceName, Source = Settings.ServiceSourceName, EnableRaisingEvents = true };
-        }
-
         private void InitializeService()
         {
             try
@@ -46,14 +38,14 @@ namespace Menoo.PrinterService.Listener
                 CanHandlePowerEvent = true;
                 CanPauseAndContinue = false;
                 CanShutdown = true;
-                ServiceName = Settings.ServiceName;
-                ConfigureEventLog();
+                ServiceName = GlobalConfig.ConfigurationManager.GetSetting("ServiceName");
+                generalWriter = Utils.ConfigureEventLog(GlobalConfig.ConfigurationManager);
             }
             catch (Exception ex)
             {
                 EventLog eventLog = new EventLog
                 {
-                    Source = Settings.DefaultLog
+                    Source = GlobalConfig.ConfigurationManager.GetSetting("DefaultLog")
                 };
                 eventLog.WriteEntry($"PrinterListener::InitializeService()" + Environment.NewLine + ex, EventLogEntryType.Error);
                 eventLog.Dispose();

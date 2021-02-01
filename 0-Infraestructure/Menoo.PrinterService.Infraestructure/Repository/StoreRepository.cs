@@ -10,7 +10,5 @@ namespace Menoo.PrinterService.Infraestructure.Repository
             : base (db)
         {
         }
-
-
     }
 }

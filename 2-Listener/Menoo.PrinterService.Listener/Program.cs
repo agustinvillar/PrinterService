@@ -1,4 +1,5 @@
-﻿using System.ServiceProcess;
+﻿using Menoo.PrinterService.Infraestructure;
+using System.ServiceProcess;
 
 namespace Menoo.PrinterService.Listener
 {
@@ -6,6 +7,7 @@ namespace Menoo.PrinterService.Listener
     {
         static void Main()
         {
+            Boostrapper.Bootstrap();
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[]
             {
