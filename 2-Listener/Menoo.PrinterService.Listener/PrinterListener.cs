@@ -1,8 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure;
-using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer;
-using Menoo.PrinterService.Infraestructure.Repository;
+using Menoo.PrinterService.Infraestructure.Interfaces;
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
@@ -15,28 +14,26 @@ namespace Menoo.PrinterService.Listener
 
         private readonly SqlServerContext _sqlServerContext;
 
-        private readonly StoreRepository _storeRepository;
-
         private readonly EventLog _generalWriter;
 
-        public PrinterListener(
-            FirestoreDb firestoreDb,
-            EventLog generalWriter,
-            SqlServerContext sqlServerDb,
-            StoreRepository storeRepository)
+        public PrinterListener()
         {
             InitializeService();
-            _firestoreDb = firestoreDb;
-            _sqlServerContext = sqlServerDb;
-            _storeRepository = storeRepository;
-            _generalWriter = generalWriter;
+            _firestoreDb = GlobalConfig.DependencyResolver.Resolve<FirestoreDb>();
+            _sqlServerContext = GlobalConfig.DependencyResolver.Resolve<SqlServerContext>();
+            _generalWriter = GlobalConfig.DependencyResolver.Resolve<EventLog>();
         }
 
         protected override void OnStart(string[] args)
         {
             _generalWriter.WriteEntry("PrinterListener::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             Debugger.Launch();
-            var result = _storeRepository.GetAllAsync<Store>(collection: "stores").GetAwaiter().GetResult();
+            var listeners = GlobalConfig.DependencyResolver.ResolveAll<IFirebaseListener>();
+            foreach (var listener in listeners)
+            {
+                _generalWriter.WriteEntry($"PrinterListener::OnStart(). Activando el listener de: {listener.ToString()}", EventLogEntryType.Information);
+                listener.Listen();
+            }
         }
 
         protected override void OnShutdown()

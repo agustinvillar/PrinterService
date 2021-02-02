@@ -157,11 +157,13 @@
     <Compile Include="Database\SqlServer\SqlServerContext.cs" />
     <Compile Include="Enums\BookingEnum.cs" />
     <Compile Include="Enums\DiscountTypeEnum.cs" />
+    <Compile Include="Enums\PrintStatus.cs" />
     <Compile Include="Enums\ProviderEnum.cs" />
     <Compile Include="Enums\TicketTypeEnum.cs" />
     <Compile Include="Extensions\ItemExtensions.cs" />
     <Compile Include="Extensions\OrderExtensions.cs" />
     <Compile Include="Extensions\PrintSettingsExtensions.cs" />
+    <Compile Include="HandlerAttribute.cs" />
     <Compile Include="Interfaces\IConfigurationManager.cs" />
     <Compile Include="Interfaces\IFirebaseListener.cs" />
     <Compile Include="Interfaces\IFirebaseRepository.cs" />
@@ -172,6 +174,10 @@
     <Compile Include="Migrations\202102010755352_PrinterDb.cs" />
     <Compile Include="Migrations\202102010755352_PrinterDb.designer.cs">
       <DependentUpon>202102010755352_PrinterDb.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202102012218314_TicketHistory_Field_Status.cs" />
+    <Compile Include="Migrations\202102012218314_TicketHistory_Field_Status.designer.cs">
+      <DependentUpon>202102012218314_TicketHistory_Field_Status.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OnStartUpAttribute.cs" />
@@ -187,6 +193,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202102010755352_PrinterDb.resx">
       <DependentUpon>202102010755352_PrinterDb.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202102012218314_TicketHistory_Field_Status.resx">
+      <DependentUpon>202102012218314_TicketHistory_Field_Status.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

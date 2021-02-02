@@ -1,5 +1,5 @@
 ﻿using Menoo.PrinterService.Infraestructure;
-using Menoo.PrinterService.Infraestructure.Interfaces;
+using System;
 
 namespace Menoo.Printer.Listener.Bookings
 {
@@ -9,7 +9,11 @@ namespace Menoo.Printer.Listener.Bookings
         public Start()
         {
             var dependencyResolver = GlobalConfig.DependencyResolver;
-            dependencyResolver.Register<IFirebaseListener, BookingListener>();
+            var listeners = Utils.DiscoverListeners(this.GetType().Assembly);
+            foreach (var tuple in listeners)
+            {
+                dependencyResolver.Register(tuple.Item1, tuple.Item2, Guid.NewGuid().ToString());
+            }
         }
     }
 }

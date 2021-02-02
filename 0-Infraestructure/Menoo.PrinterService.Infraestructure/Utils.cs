@@ -1,4 +1,5 @@
 ﻿using Menoo.PrinterService.Infraestructure.Extensions;
+using Menoo.PrinterService.Infraestructure.Interfaces;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,41 @@ namespace Menoo.PrinterService.Infraestructure
             return textInfo.ToTitleCase(text.ToLower());
         }
 
+        public static List<Tuple<Type, Type>> DiscoverListeners(Assembly assembly)
+        {
+            var listenerList = new List<Tuple<Type, Type>>();
+
+            Trace.Write("Discovering listeners: ");
+            var types = (from t in assembly.GetLoadableTypes()
+                         select t).ToList();
+
+            var handlers = (from t in types
+                            let attributes = t.GetCustomAttributes(typeof(HandlerAttribute), true)
+                            where attributes != null && attributes.Length > 0
+                            orderby (attributes[0] as HandlerAttribute).Order
+                            select t).ToList();
+
+            Trace.WriteLine("OK");
+
+            Trace.Write("Building listeners Table: ");
+            foreach (var item in handlers)
+            {
+                foreach (var itype in item.GetInterfaces())
+                {
+                    var iListenerType = typeof(IFirebaseListener);
+
+                    //if (itype.IsGenericType && itype.GetGenericTypeDefinition() == iListenerType)
+                    if (itype.Name == iListenerType.Name)
+                    {
+                        listenerList.Add(new Tuple<Type, Type>(itype, item));
+                    }
+                }
+            }
+            Trace.WriteLine("OK");
+
+            return listenerList;
+        }
+
         public static List<object> GetBootstrapClasses()
         {
             var bootstrapObjects = new List<object>();
@@ -51,6 +87,18 @@ namespace Menoo.PrinterService.Infraestructure
             }
 
             return bootstrapObjects;
+        }
+
+        public static List<Type> GetFirebaseListerners()
+        {
+            string typeWithNamespace = typeof(IFirebaseListener).Namespace;
+            var type = typeof(IFirebaseListener);
+            var listeners = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetLoadableTypes())
+                .Where(filter => type.IsAssignableFrom(filter))
+                .AsParallel()
+                .ToList();
+            return listeners.FindAll(filter => filter.FullName != typeWithNamespace);
         }
 
         public static List<Type> GetMenooTypes()

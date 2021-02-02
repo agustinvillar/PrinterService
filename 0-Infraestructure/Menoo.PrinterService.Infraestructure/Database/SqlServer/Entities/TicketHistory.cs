@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Menoo.PrinterService.Infraestructure.Enums;
+using System;
 using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.Entities
@@ -15,6 +16,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.Entities
         public string ExternalId { get; set; }
 
         public string PrintEvent { get; set; }
+
+        public PrintStatus Status { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 
