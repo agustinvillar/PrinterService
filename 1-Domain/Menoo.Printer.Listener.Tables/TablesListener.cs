@@ -27,7 +27,7 @@ namespace Menoo.Printer.Listener.Tables
 
         public void Listen()
         {
-            throw new System.NotImplementedException();
+
         }
 
         public override string ToString()

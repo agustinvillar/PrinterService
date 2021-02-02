@@ -1,7 +1,10 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer;
+using Menoo.PrinterService.Infraestructure.Interfaces;
+using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
+using Rebus.Activation;
 using System.Diagnostics;
 
 namespace Menoo.PrinterService.Infraestructure
@@ -20,11 +23,12 @@ namespace Menoo.PrinterService.Infraestructure
                 var storeRepository = new StoreRepository(firebaseDb);
                 return storeRepository;
             });
+            dependencyResolver.Register<IPublisherService, PublisherService>();
         }
 
         static EventLog ConfigureEventLog()
         {
-            string sourceName = GlobalConfig.ConfigurationManager.GetSetting("ServiceSourceName");
+            string sourceName = GlobalConfig.ConfigurationManager.GetSetting("serviceSourceName");
             if (!EventLog.SourceExists(sourceName))
             {
                 EventLog.CreateEventSource(sourceName, sourceName);
@@ -39,6 +43,5 @@ namespace Menoo.PrinterService.Infraestructure
             var instance = FirebaseContext.GetInstance(isDebug);
             return instance;
         }
-
     }
 }

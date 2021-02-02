@@ -28,7 +28,6 @@ namespace Menoo.Printer.Listener.Bookings
 
         public void Listen()
         {
-            throw new NotImplementedException();
         }
 
         public override string ToString()
