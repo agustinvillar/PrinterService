@@ -195,6 +195,7 @@
     <Compile Include="DI\UnityDependencyResolver.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="GlobalConfig.cs" />
+    <Compile Include="Interfaces\IQueueService.cs" />
     <Compile Include="Migrations\202102010755352_PrinterDb.cs" />
     <Compile Include="Migrations\202102010755352_PrinterDb.designer.cs">
       <DependentUpon>202102010755352_PrinterDb.cs</DependentUpon>
