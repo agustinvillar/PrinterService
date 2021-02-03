@@ -17,8 +17,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.Entities
 
         public string PrintEvent { get; set; }
 
-        public PrintStatus Status { get; set; }
-
         public DateTime? CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
