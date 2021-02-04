@@ -12,7 +12,7 @@
                 c => new
                     {
                         Id = c.String(nullable: false, maxLength: 128),
-                        ExternalId = c.String(nullable: false),
+                        ExternalId = c.String(nullable: true),
                         PrintEvent = c.String(nullable: false),
                         CreatedAt = c.DateTime(),
                         UpdatedAt = c.DateTime(),

@@ -19,14 +19,14 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
         }
 
         public SqlServerContext()
-            : base("Microsoft.SQLServer.Print.ConnectionString")
+            : base("name=Microsoft.SQLServer.Print.ConnectionString")
         {
         }
 
-        public SqlServerContext(string dbConnection)
-            : base(dbConnection)
-        {
-        }
+        //internal SqlServerContext(string dbConnection)
+        //    : base(dbConnection)
+        //{
+        //}
 
         public SqlServerContext(DbConnection dbConnection) 
             : base(dbConnection, true) 

@@ -8,6 +8,8 @@
 
         public static string NEW_TAKE_AWAY = "NEW_TAKE_AWAY";
 
+        public static string NEW_ORDER = "NEW_ORDER";
+
         public static string ORDER_CANCELLED = "ORDER_CANCELLED";
 
         public static string TABLE_CLOSED = "TABLE_CLOSED";

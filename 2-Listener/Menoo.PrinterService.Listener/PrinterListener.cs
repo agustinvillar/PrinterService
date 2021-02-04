@@ -10,17 +10,11 @@ namespace Menoo.PrinterService.Listener
 {
     public partial class PrinterListener : ServiceBase
     {
-        private readonly FirestoreDb _firestoreDb;
-
-        private readonly SqlServerContext _sqlServerContext;
-
         private readonly EventLog _generalWriter;
 
         public PrinterListener()
         {
             InitializeService();
-            _firestoreDb = GlobalConfig.DependencyResolver.Resolve<FirestoreDb>();
-            _sqlServerContext = GlobalConfig.DependencyResolver.Resolve<SqlServerContext>();
             _generalWriter = GlobalConfig.DependencyResolver.Resolve<EventLog>();
         }
 

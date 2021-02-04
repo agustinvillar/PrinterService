@@ -4,7 +4,6 @@ using Menoo.PrinterService.Infraestructure.Database.SqlServer;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
-using Rebus.Activation;
 using System.Diagnostics;
 
 namespace Menoo.PrinterService.Infraestructure
@@ -17,7 +16,6 @@ namespace Menoo.PrinterService.Infraestructure
             var dependencyResolver = GlobalConfig.DependencyResolver;
             dependencyResolver.Register(ConfigureEventLog);
             dependencyResolver.Register(GetInstanceFirebase);
-            dependencyResolver.Register(() => new SqlServerContext());
             dependencyResolver.Register(() => {
                 var firebaseDb = GetInstanceFirebase();
                 var storeRepository = new StoreRepository(firebaseDb);

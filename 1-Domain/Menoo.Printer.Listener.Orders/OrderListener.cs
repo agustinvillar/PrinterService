@@ -1,12 +1,18 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.Printer.Listener.Orders.Constants;
+using Menoo.Printer.Listener.Orders.ViewModels;
 using Menoo.PrinterService.Infraestructure;
+using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.Entities;
 using Menoo.PrinterService.Infraestructure.Interfaces;
+using Menoo.PrinterService.Infraestructure.Queues;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Menoo.Printer.Listener.Orders
 {
@@ -15,22 +21,18 @@ namespace Menoo.Printer.Listener.Orders
     {
         private readonly FirestoreDb _firestoreDb;
 
-        private readonly SqlServerContext _sqlServerContext;
+        private readonly EventLog _generalWriter;
 
         private readonly IPublisherService _publisherService;
-
-        private readonly EventLog _generalWriter;
 
         private string _today;
 
         public OrderListener(
             FirestoreDb firestoreDb,
-            SqlServerContext sqlServerContext,
             IPublisherService publisherService,
-            EventLog generalWriter) 
+            EventLog generalWriter)
         {
             _firestoreDb = firestoreDb;
-            _sqlServerContext = sqlServerContext;
             _publisherService = publisherService;
             _generalWriter = generalWriter;
         }
@@ -58,48 +60,179 @@ namespace Menoo.Printer.Listener.Orders
             return "Order.Listener";
         }
 
-        #region private methods
+        #region listeners
         private void OnCancelled(QuerySnapshot snapshot)
         {
-            _today = DateTime.Now.ToString("dd/MM/yyyy");
+            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
         }
 
         private void OnOrderCreated(QuerySnapshot snapshot)
         {
-            _today = DateTime.Now.ToString("dd/MM/yyyy");
+            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            /*try
+            {
+                if (snapshot.Documents.Count == 0)
+                {
+                    return;
+                }
+                var ticketsOrders = snapshot.Documents
+                                            .Where(filter => filter.Exists)
+                                            .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
+                                            .OrderByDescending(o => o.CreateTime)
+                                            .Select(s => s.Id)
+                                            .ToList();
+                var ticketsToPrint = GetNewOrdersToPrint(ticketsOrders);
+                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
+                {
+                    return;
+                }
+                foreach (var ticket in ticketsToPrint)
+                {
+                    var messageQueue = new PrintMessage
+                    {
+                        DocumentId = ticket,
+                        PrintEvent = PrintEvents.NEW_ORDER,
+                        TypeDocument = PrintTypes.ORDER
+                    };
+                    try
+                    {
+                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
+                        SetOrderToPrint(messageQueue);
+                        _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Envío de orden con id {ticket}, a la cola de impresión.", EventLogEntryType.Information);
+                    }
+                    catch (Exception e)
+                    {
+                        _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Ha ocurrido un error al capturar nuevas órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+            }*/
         }
 
         private void OnTakeAwayCreated(QuerySnapshot snapshot)
         {
-            _today = DateTime.Now.ToString("dd/MM/yyyy");
-            if (snapshot.Documents.Count == 0)
+            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            try
             {
-                return;
+                if (snapshot.Documents.Count == 0)
+                {
+                    return;
+                }
+                var ticketsTakeAway = snapshot.Documents
+                                            .Where(filter => filter.Exists)
+                                            .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
+                                            .OrderByDescending(o => o.CreateTime)
+                                            .Select(s => s.Id)
+                                            .ToList();
+                var ticketsToPrint = GetNewOrdersToPrint(ticketsTakeAway);
+                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
+                {
+                    return;
+                }
+                foreach (var ticket in ticketsToPrint)
+                {
+                    var messageQueue = new PrintMessage
+                    {
+                        DocumentId = ticket,
+                        PrintEvent = PrintEvents.NEW_TAKE_AWAY,
+                        TypeDocument = PrintTypes.ORDER,
+                        SubTypeDocument = SubOrderPrintTypes.ORDER_TA
+                    };
+                    try
+                    {
+                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
+                        SetOrderToPrint(messageQueue);
+                        _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). Envío de orden TA con id {ticket}, a la cola de impresión.", EventLogEntryType.Information);
+                    }
+                    catch (Exception e)
+                    {
+                        _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). No se envió la orden TA [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                    }
+                }
             }
-            var ticketsTakeAway = snapshot.Documents
-                                        .Where(filter => filter.Exists)
-                                        .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today);
-            //var ticketsTakeAway = snapshot.Documents
-            //                            .Where(filter => filter.Exists)
-            //                            .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-            //                            .OrderByDescending(o => o.CreateTime)
-            //                            .Select(s => s.Id)
-            //                            .ToList();
-            //var ticketsToPrint = GetNewTakeAwayToPrint(ticketsTakeAway);
+            catch (Exception e)
+            {
+                _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). Ha ocurrido un error al capturar nuevos TA. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+            }
         }
+        #endregion
 
-        private List<string> GetNewTakeAwayToPrint(List<string> documentIds) 
+        #region private methods
+        private List<string> GetNewOrdersToPrint(List<string> documentIds)
         {
-            //var ticketsToPrint = new List<string>();
-            var printedTicketIds = _sqlServerContext.TicketHistorySettings
-                                        .Where(f => f.Name == OrderProperties.IS_NEW_PRINTED)
-                                        .Where(f => bool.Parse(f.Value))
-                                        .Select(s => s.TicketHistory.Id)
-                                        .ToList();
+            var printedTicketIds = GetTicketsPrintedAsync().GetAwaiter().GetResult()
+                                        .Where(f => f.IsCreatedPrinted == "true")
+                                        .Where(f => f.IsCancelledPrinted == "false")
+                                        .Select(s => s.DocumentId).ToList();
+
             var ticketsToPrint = from c in documentIds
                                  where !printedTicketIds.Contains(c)
                                  select c;
             return ticketsToPrint.ToList();
+        }
+
+        private async Task<List<TicketHistoryViewModel>> GetTicketsPrintedAsync()
+        {
+            List<TicketHistoryViewModel> ticketsPrinted = null;
+            using (var sqlServerContext = new SqlServerContext())
+            {
+                ticketsPrinted = await sqlServerContext.TicketHistorySettings.GroupBy(g => g.TicketHistoryId).Select(s => new TicketHistoryViewModel
+                {
+                    DocumentId = s.Key,
+                    IsCancelledPrinted = s.FirstOrDefault(f => f.Name == OrderProperties.IS_CANCELLED_PRINTED).Value,
+                    IsCreatedPrinted = s.FirstOrDefault(f => f.Name == OrderProperties.IS_NEW_PRINTED).Value
+                }).ToListAsync();
+            }
+            return ticketsPrinted;
+        }
+
+        private void SetOrderToPrint(PrintMessage message, bool isNew = true, bool isCancelled = false)
+        {
+            if (isNew)
+            {
+                var historyDetails = new List<TicketHistorySettings>()
+                {
+                    new TicketHistorySettings{
+                        TicketHistoryId = message.DocumentId,
+                        Name = OrderProperties.IS_NEW_PRINTED,
+                        Value = "true",
+                        Id = Guid.NewGuid()
+                    },
+                    new TicketHistorySettings{
+                        TicketHistoryId = message.DocumentId,
+                        Name = OrderProperties.IS_CANCELLED_PRINTED,
+                        Value = "false",
+                        Id = Guid.NewGuid()
+                    }
+                };
+
+                var history = new TicketHistory
+                {
+                    Id = message.DocumentId,
+                    PrintEvent = message.PrintEvent,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    ExternalId = string.Empty
+                };
+                using (var sqlServerContext = new SqlServerContext())
+                {
+                    sqlServerContext.TicketHistory.Add(history);
+                    sqlServerContext.TicketHistorySettings.AddRange(historyDetails);
+                    sqlServerContext.SaveChanges();
+                }
+            }
+            if (isCancelled) 
+            {
+                using (var sqlServerContext = new SqlServerContext())
+                {
+                    var ticketCreated = sqlServerContext.TicketHistorySettings.FirstOrDefault(f => f.TicketHistoryId == message.DocumentId && f.Name == OrderProperties.IS_CANCELLED_PRINTED);
+                    ticketCreated.Value = "true";
+                    sqlServerContext.SaveChanges();
+                }
+            }
         }
         #endregion
     }
