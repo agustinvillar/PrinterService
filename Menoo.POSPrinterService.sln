@@ -13,8 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3-Builder", "3-Builder", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.PrinterService.Listener", "2-Listener\Menoo.PrinterService.Listener\Menoo.PrinterService.Listener.csproj", "{A39FB555-8752-454F-8C78-F6B09810343C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.PrinterService.App", "3-Builder\Menoo.PrinterService.App\Menoo.PrinterService.App.csproj", "{9B836E2F-4074-438F-A729-37C88E4BFDA3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.PrinterService.Infraestructure", "0-Infraestructure\Menoo.PrinterService.Infraestructure\Menoo.PrinterService.Infraestructure.csproj", "{ECDFF8B6-85B2-4E11-9286-0213ADC3494F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Listener.Orders", "1-Domain\Menoo.Printer.Listener.Orders\Menoo.Printer.Listener.Orders.csproj", "{317B85A2-7D9E-4F51-8198-FB013D8DB738}"
@@ -29,7 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Builders", "Builders", "{30
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.PrinterService.Builder", "3-Builder\Menoo.PrinterService.Builder\Menoo.PrinterService.Builder.csproj", "{A67B916B-A30A-4B71-B42D-8E09A4D00D89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Builder.Orders", "1-Domain\ClassLibrary1\Menoo.Printer.Builder.Orders.csproj", "{46EBC8AA-99EE-458D-A004-7F5E9BF6C608}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Builder.Orders", "1-Domain\Menoo.Printer.Builder.Order\Menoo.Printer.Builder.Orders.csproj", "{46EBC8AA-99EE-458D-A004-7F5E9BF6C608}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,10 +39,6 @@ Global
 		{A39FB555-8752-454F-8C78-F6B09810343C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A39FB555-8752-454F-8C78-F6B09810343C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A39FB555-8752-454F-8C78-F6B09810343C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B836E2F-4074-438F-A729-37C88E4BFDA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B836E2F-4074-438F-A729-37C88E4BFDA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B836E2F-4074-438F-A729-37C88E4BFDA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B836E2F-4074-438F-A729-37C88E4BFDA3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ECDFF8B6-85B2-4E11-9286-0213ADC3494F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ECDFF8B6-85B2-4E11-9286-0213ADC3494F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECDFF8B6-85B2-4E11-9286-0213ADC3494F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -75,7 +69,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A39FB555-8752-454F-8C78-F6B09810343C} = {418577DC-C8CA-40A9-8787-F5E8EE666D02}
-		{9B836E2F-4074-438F-A729-37C88E4BFDA3} = {6903BA4F-F8A1-4CBA-BFF8-523DFAEA9B71}
 		{ECDFF8B6-85B2-4E11-9286-0213ADC3494F} = {78C833BA-B036-49C3-A189-FA14276E2AEB}
 		{317B85A2-7D9E-4F51-8198-FB013D8DB738} = {9A24700E-87C8-4B27-AEB9-863DC77A0A8B}
 		{CC9D2A8B-1F85-4997-9501-5354AB1F18E5} = {9A24700E-87C8-4B27-AEB9-863DC77A0A8B}
