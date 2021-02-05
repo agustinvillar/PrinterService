@@ -6,7 +6,14 @@ namespace Menoo.PrinterService.Infraestructure.Configuration
     {
         public string GetSetting(string name)
         {
-            return System.Configuration.ConfigurationManager.AppSettings.Get(name);
+            try
+            {
+                return System.Configuration.ConfigurationManager.AppSettings.Get(name);
+            }
+            catch 
+            {
+                return string.Empty;
+            }
         }
     }
 }

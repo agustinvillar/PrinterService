@@ -14,8 +14,16 @@ namespace Menoo.PrinterService.Infraestructure
         public Start()
         {
             var dependencyResolver = GlobalConfig.DependencyResolver;
-            dependencyResolver.Register(ConfigureListenerEventLog, "listener");
-            dependencyResolver.Register(ConfigureBuilderEventLog, "builder");
+            string listenerLog = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerSourceName");
+            string builderLog = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderSourceName");
+            if (!string.IsNullOrEmpty(listenerLog)) 
+            {
+                dependencyResolver.Register(ConfigureListenerEventLog, "listener");
+            }
+            if (!string.IsNullOrEmpty(builderLog)) 
+            {
+                dependencyResolver.Register(ConfigureBuilderEventLog, "builder");
+            }
             dependencyResolver.Register(GetInstanceFirebase);
             dependencyResolver.Register(() => {
                 var firebaseDb = GetInstanceFirebase();

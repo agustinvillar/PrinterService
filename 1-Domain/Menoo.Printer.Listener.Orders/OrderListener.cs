@@ -29,12 +29,11 @@ namespace Menoo.Printer.Listener.Orders
 
         public OrderListener(
             FirestoreDb firestoreDb,
-            IPublisherService publisherService,
-            EventLog generalWriter)
+            IPublisherService publisherService
         {
             _firestoreDb = firestoreDb;
             _publisherService = publisherService;
-            _generalWriter = generalWriter;
+            _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
         }
 
         public void Listen()
