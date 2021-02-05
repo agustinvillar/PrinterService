@@ -37,9 +37,10 @@ namespace Menoo.PrinterService.Infraestructure.Queues
 
         public async Task PublishAsync(PrintMessage data, Dictionary<string, string> extras = null)
         {
+            string type = !string.IsNullOrEmpty(data.SubTypeDocument) ? $"{data.TypeDocument}-{data.SubTypeDocument}" : $"{data.TypeDocument}";
             _logger.WriteEntry(
                 $"PublisherService::PublishAsync(). Event: {data.PrintEvent}{Environment.NewLine}" +
-                $" Type: {data.TypeDocument}-{data.SubTypeDocument}{Environment.NewLine}" +
+                $" Type: {type}{Environment.NewLine}" +
                 $"FirebaseId: {data.DocumentId}{Environment.NewLine}", EventLogEntryType.Information);
             //await _adapter.Bus.Publish(data, extras);
         }

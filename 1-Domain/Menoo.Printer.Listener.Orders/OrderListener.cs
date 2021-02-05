@@ -64,12 +64,53 @@ namespace Menoo.Printer.Listener.Orders
         private void OnCancelled(QuerySnapshot snapshot)
         {
             _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            try
+            {
+                if (snapshot.Documents.Count == 0)
+                {
+                    return;
+                }
+                var ticketsOrders = snapshot.Documents
+                                            .Where(filter => filter.Exists)
+                                            .Where(filter => filter.UpdateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
+                                            .OrderByDescending(o => o.UpdateTime)
+                                            .Select(s => s.Id)
+                                            .ToList();
+                var ticketsToPrint = GetOrdersToPrint(ticketsOrders, false, true);
+                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
+                {
+                    return;
+                }
+                foreach (var ticket in ticketsToPrint)
+                {
+                    var messageQueue = new PrintMessage
+                    {
+                        DocumentId = ticket,
+                        PrintEvent = PrintEvents.ORDER_CANCELLED,
+                        TypeDocument = PrintTypes.ORDER
+                    };
+                    try
+                    {
+                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
+                        SetOrderAsPrinted(messageQueue, false, true);
+                        _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Envío de orden con id {ticket}, a la cola de impresión.", EventLogEntryType.Information);
+                    }
+                    catch (Exception e)
+                    {
+                        _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Ha ocurrido un error al capturar nuevas órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+            }
         }
 
         private void OnOrderCreated(QuerySnapshot snapshot)
         {
             _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
-            /*try
+            try
             {
                 if (snapshot.Documents.Count == 0)
                 {
@@ -81,7 +122,7 @@ namespace Menoo.Printer.Listener.Orders
                                             .OrderByDescending(o => o.CreateTime)
                                             .Select(s => s.Id)
                                             .ToList();
-                var ticketsToPrint = GetNewOrdersToPrint(ticketsOrders);
+                var ticketsToPrint = GetOrdersToPrint(ticketsOrders, true, false);
                 if (ticketsToPrint == null || ticketsToPrint.Count == 0)
                 {
                     return;
@@ -97,7 +138,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderToPrint(messageQueue);
+                        SetOrderAsPrinted(messageQueue);
                         _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Envío de orden con id {ticket}, a la cola de impresión.", EventLogEntryType.Information);
                     }
                     catch (Exception e)
@@ -109,7 +150,7 @@ namespace Menoo.Printer.Listener.Orders
             catch (Exception e)
             {
                 _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Ha ocurrido un error al capturar nuevas órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
-            }*/
+            }
         }
 
         private void OnTakeAwayCreated(QuerySnapshot snapshot)
@@ -127,7 +168,7 @@ namespace Menoo.Printer.Listener.Orders
                                             .OrderByDescending(o => o.CreateTime)
                                             .Select(s => s.Id)
                                             .ToList();
-                var ticketsToPrint = GetNewOrdersToPrint(ticketsTakeAway);
+                var ticketsToPrint = GetOrdersToPrint(ticketsTakeAway, true, false);
                 if (ticketsToPrint == null || ticketsToPrint.Count == 0)
                 {
                     return;
@@ -144,7 +185,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderToPrint(messageQueue);
+                        SetOrderAsPrinted(messageQueue);
                         _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). Envío de orden TA con id {ticket}, a la cola de impresión.", EventLogEntryType.Information);
                     }
                     catch (Exception e)
@@ -161,17 +202,32 @@ namespace Menoo.Printer.Listener.Orders
         #endregion
 
         #region private methods
-        private List<string> GetNewOrdersToPrint(List<string> documentIds)
+        private List<string> GetOrdersToPrint(List<string> documentIds, bool isCreated, bool isCancelled)
         {
-            var printedTicketIds = GetTicketsPrintedAsync().GetAwaiter().GetResult()
-                                        .Where(f => f.IsCreatedPrinted == "true")
-                                        .Where(f => f.IsCancelledPrinted == "false")
-                                        .Select(s => s.DocumentId).ToList();
-
-            var ticketsToPrint = from c in documentIds
-                                 where !printedTicketIds.Contains(c)
-                                 select c;
-            return ticketsToPrint.ToList();
+            var ticketsToPrint = new List<string>();
+            var printedTickets = GetTicketsPrintedAsync()
+                            .GetAwaiter()
+                            .GetResult()
+                            .Where(f => f.IsCreatedPrinted == "true")
+                            .Where(f => f.IsCancelledPrinted == "false");
+            if (isCreated)
+            {
+                var printedTicketIds = printedTickets.Select(s => s.DocumentId).ToList();
+                ticketsToPrint.AddRange((from c in documentIds
+                                     where !printedTicketIds.Contains(c)
+                                     select c));
+            }
+            else if (isCancelled) 
+            {
+                foreach (var ticket in printedTickets)
+                {
+                    if (bool.Parse(ticket.IsCreatedPrinted) && documentIds.Contains(ticket.DocumentId))
+                    {
+                        ticketsToPrint.Add(ticket.DocumentId);
+                    }
+                }
+            }
+            return ticketsToPrint;
         }
 
         private async Task<List<TicketHistoryViewModel>> GetTicketsPrintedAsync()
@@ -189,7 +245,7 @@ namespace Menoo.Printer.Listener.Orders
             return ticketsPrinted;
         }
 
-        private void SetOrderToPrint(PrintMessage message, bool isNew = true, bool isCancelled = false)
+        private void SetOrderAsPrinted(PrintMessage message, bool isNew = true, bool isCancelled = false)
         {
             if (isNew)
             {
