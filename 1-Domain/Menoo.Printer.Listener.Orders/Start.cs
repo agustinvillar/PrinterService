@@ -1,9 +1,5 @@
-﻿using Google.Cloud.Firestore;
-using Menoo.PrinterService.Infraestructure;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer;
-using Menoo.PrinterService.Infraestructure.Interfaces;
+﻿using Menoo.PrinterService.Infraestructure;
 using System;
-using System.Diagnostics;
 
 namespace Menoo.Printer.Listener.Orders
 {

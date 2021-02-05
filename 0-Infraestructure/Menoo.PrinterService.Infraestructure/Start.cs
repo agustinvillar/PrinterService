@@ -14,19 +14,36 @@ namespace Menoo.PrinterService.Infraestructure
         public Start()
         {
             var dependencyResolver = GlobalConfig.DependencyResolver;
-            dependencyResolver.Register(ConfigureEventLog);
+            dependencyResolver.Register(ConfigureListenerEventLog, "listener");
+            dependencyResolver.Register(ConfigureBuilderEventLog, "builder");
             dependencyResolver.Register(GetInstanceFirebase);
             dependencyResolver.Register(() => {
                 var firebaseDb = GetInstanceFirebase();
                 var storeRepository = new StoreRepository(firebaseDb);
                 return storeRepository;
             });
+            dependencyResolver.Register(() => {
+                var firebaseDb = GetInstanceFirebase();
+                var ticketRepository = new TicketRepository(firebaseDb);
+                return ticketRepository;
+            });
             dependencyResolver.Register<IPublisherService, PublisherService>();
         }
 
-        static EventLog ConfigureEventLog()
+        static EventLog ConfigureListenerEventLog()
         {
-            string sourceName = GlobalConfig.ConfigurationManager.GetSetting("serviceSourceName");
+            string sourceName = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerSourceName");
+            if (!EventLog.SourceExists(sourceName))
+            {
+                EventLog.CreateEventSource(sourceName, sourceName);
+            }
+            var generalWriter = new EventLog { Log = sourceName, Source = sourceName, EnableRaisingEvents = true };
+            return generalWriter;
+        }
+
+        static EventLog ConfigureBuilderEventLog()
+        {
+            string sourceName = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderSourceName");
             if (!EventLog.SourceExists(sourceName))
             {
                 EventLog.CreateEventSource(sourceName, sourceName);

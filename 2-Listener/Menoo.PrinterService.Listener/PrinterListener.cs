@@ -15,12 +15,13 @@ namespace Menoo.PrinterService.Listener
         public PrinterListener()
         {
             InitializeService();
-            _generalWriter = GlobalConfig.DependencyResolver.Resolve<EventLog>();
+            _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
         }
 
         protected override void OnStart(string[] args)
         {
             _generalWriter.WriteEntry("PrinterListener::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
+            Debugger.Launch();
             var listeners = GlobalConfig.DependencyResolver.ResolveAll<IFirebaseListener>();
             foreach (var listener in listeners)
             {
@@ -48,13 +49,13 @@ namespace Menoo.PrinterService.Listener
                 CanHandlePowerEvent = true;
                 CanPauseAndContinue = false;
                 CanShutdown = true;
-                ServiceName = GlobalConfig.ConfigurationManager.GetSetting("ServiceName");
+                ServiceName = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerName");
             }
             catch (Exception ex)
             {
                 EventLog eventLog = new EventLog
                 {
-                    Source = GlobalConfig.ConfigurationManager.GetSetting("DefaultLog")
+                    Source = GlobalConfig.ConfigurationManager.GetSetting("defaultLog")
                 };
                 eventLog.WriteEntry($"PrinterListener::InitializeService()" + Environment.NewLine + ex, EventLogEntryType.Error);
                 eventLog.Dispose();

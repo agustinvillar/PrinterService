@@ -42,6 +42,14 @@ namespace Menoo.PrinterService.Infraestructure.DI
             }));
         }
 
+        public void Register<TImplementation>(Func<TImplementation> constructor, string name) 
+        {
+            _unityContainer.RegisterType<TImplementation>(name, new InjectionFactory(c =>
+            {
+                return constructor();
+            }));
+        }
+
         public void Register(Type type1, Type type2, string name)
         {
             _unityContainer.RegisterType(type1, type2, name);

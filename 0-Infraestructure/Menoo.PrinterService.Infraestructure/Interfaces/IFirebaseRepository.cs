@@ -5,16 +5,16 @@ namespace Menoo.PrinterService.Infraestructure.Interfaces
 {
     public interface IFirebaseRepository<T> where T : class
     {
-        Task AddPropertyAsync(string collection, string id, string fieldName, string value);
+        Task AddPropertyAsync(string id, string fieldName, string value, string collection);
 
-        Task DeleteAsync(string collection, string id);
+        Task DeleteAsync(string id, string collection);
 
-        Task<bool> ExistsByIdAsync(string collection, string id);
+        Task<bool> ExistsByIdAsync(string id, string collection);
 
         Task<List<TEntity>> GetAllAsync<TEntity>(string collection);
 
-        Task<TEntity> GetById<TEntity>(string collection, string id);
+        Task<TEntity> GetById<TEntity>(string id, string collection);
 
-        Task SaveAsync<TEntity>(string collection, TEntity item);
+        Task SaveAsync<TEntity>(TEntity item, string collection);
     }
 }

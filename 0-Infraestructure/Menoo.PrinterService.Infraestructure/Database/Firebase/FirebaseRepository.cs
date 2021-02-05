@@ -14,17 +14,17 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
             _db = db;
         }
 
-        public async Task AddPropertyAsync(string collection, string id, string fieldName, string value)
+        public async Task AddPropertyAsync(string id, string fieldName, string value, string collection)
         {
             await _db.Collection(collection).Document(id).UpdateAsync(fieldName, true);
         }
 
-        public async Task DeleteAsync(string collection, string id)
+        public virtual async Task DeleteAsync(string id, string collection)
         {
             await _db.Collection(collection).Document(id).DeleteAsync();
         }
 
-        public async Task<bool> ExistsByIdAsync(string collection, string id)
+        public virtual async Task<bool> ExistsByIdAsync(string id, string collection)
         {
             var result = await _db.Collection(collection).Document(id).GetSnapshotAsync();
             return result != null && result.Exists;
@@ -43,7 +43,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
             return entities;
         }
 
-        public virtual async Task<TEntity> GetById<TEntity>(string collection, string id)
+        public virtual async Task<TEntity> GetById<TEntity>(string id, string collection)
         {
             var result = await _db.Collection(collection).Document(id).GetSnapshotAsync();
             if (result.Exists) 
@@ -53,7 +53,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
             return default;
         }
 
-        public async Task SaveAsync<TEntity>(string collection, TEntity item)
+        public virtual async Task SaveAsync<TEntity>(TEntity item, string collection)
         {
             await _db.Collection(collection).AddAsync(item);
         }
