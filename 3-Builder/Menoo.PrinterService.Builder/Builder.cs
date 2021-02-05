@@ -1,4 +1,5 @@
 ﻿using Menoo.PrinterService.Infraestructure;
+using Menoo.PrinterService.Infraestructure.Interfaces;
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
@@ -17,6 +18,14 @@ namespace Menoo.PrinterService.Builder
 
         protected override void OnStart(string[] args)
         {
+            _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
+            Debugger.Launch();
+            var builders = GlobalConfig.DependencyResolver.ResolveAll<ITicketBuilder>();
+            foreach (var builder in builders)
+            {
+                _generalWriter.WriteEntry($"Builder::OnStart(). Activando el builder de: {builder.ToString()}", EventLogEntryType.Information);
+                builder.Build();
+            }
         }
 
         protected override void OnShutdown()

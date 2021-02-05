@@ -66,11 +66,11 @@ namespace Menoo.Printer.Builder.Orders
             _generalWriter = generalWriter;
         }
 
-        public void Build(PrintMessage message)
+        public void Build()
         {
-            _adapter.Handle<PrintMessage>(async job =>
+            _adapter.Handle<PrintMessage>(async message =>
             {
-                await RecieveAsync(job);
+                await RecieveAsync(message);
             });
 
             Configure.With(_adapter)
@@ -93,8 +93,18 @@ namespace Menoo.Printer.Builder.Orders
 
         public async Task RecieveAsync(PrintMessage data, Dictionary<string, string> extras = null)
         {
-
+            string type = !string.IsNullOrEmpty(data.SubTypeDocument) ? $"{data.TypeDocument}-{data.SubTypeDocument}" : $"{data.TypeDocument}";
+            _generalWriter.WriteEntry(
+                $"OrderBuilder::RecieveAsync(). Nuevo ticket de impresión recibido. {Environment.NewLine}" +
+                $"Evento: {data.PrintEvent}{Environment.NewLine}" +
+                $"Tipo: {type}{Environment.NewLine}" +
+                $"FirebaseId: {data.DocumentId}{Environment.NewLine}", EventLogEntryType.Information);
             await Task.Delay(_queueDelay);
+        }
+
+        public override string ToString()
+        {
+            return "Order.Builder";
         }
 
         #region private methods

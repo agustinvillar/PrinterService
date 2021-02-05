@@ -39,8 +39,9 @@ namespace Menoo.PrinterService.Infraestructure.Queues
         {
             string type = !string.IsNullOrEmpty(data.SubTypeDocument) ? $"{data.TypeDocument}-{data.SubTypeDocument}" : $"{data.TypeDocument}";
             _logger.WriteEntry(
-                $"PublisherService::PublishAsync(). Event: {data.PrintEvent}{Environment.NewLine}" +
-                $" Type: {type}{Environment.NewLine}" +
+                $"PublisherService::PublishAsync(). Enviado mensaje a la cola printer {Environment.NewLine}" +
+                $"Evento: {data.PrintEvent}{Environment.NewLine}" +
+                $"Tipo: {type}{Environment.NewLine}" +
                 $"FirebaseId: {data.DocumentId}{Environment.NewLine}", EventLogEntryType.Information);
             //await _adapter.Bus.Publish(data, extras);
         }

@@ -4,6 +4,6 @@ namespace Menoo.PrinterService.Infraestructure.Interfaces
 {
     public interface ITicketBuilder
     {
-        void Build(PrintMessage message);
+        void Build();
     }
 }
