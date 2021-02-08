@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Menoo.Printer.Listener.Orders
@@ -25,15 +26,18 @@ namespace Menoo.Printer.Listener.Orders
 
         private readonly IPublisherService _publisherService;
 
+        private readonly int _delayTask;
+
         private string _today;
 
         public OrderListener(
             FirestoreDb firestoreDb,
-            IPublisherService publisherService
+            IPublisherService publisherService)
         {
             _firestoreDb = firestoreDb;
             _publisherService = publisherService;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
+            _delayTask = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("listenerDelay"));
         }
 
         public void Listen()
@@ -63,7 +67,7 @@ namespace Menoo.Printer.Listener.Orders
         private void OnCancelled(QuerySnapshot snapshot)
         {
             _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
-            try
+            /*try
             {
                 if (snapshot.Documents.Count == 0)
                 {
@@ -98,18 +102,22 @@ namespace Menoo.Printer.Listener.Orders
                     {
                         _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
                     }
+                    finally
+                    {
+                        Thread.Sleep(_delayTask);
+                    }
                 }
             }
             catch (Exception e)
             {
                 _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Ha ocurrido un error al capturar nuevas órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
-            }
+            }*/
         }
 
         private void OnOrderCreated(QuerySnapshot snapshot)
         {
             _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
-            try
+            /*try
             {
                 if (snapshot.Documents.Count == 0)
                 {
@@ -144,12 +152,16 @@ namespace Menoo.Printer.Listener.Orders
                     {
                         _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
                     }
+                    finally
+                    {
+                        Thread.Sleep(_delayTask);
+                    }
                 }
             }
             catch (Exception e)
             {
                 _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Ha ocurrido un error al capturar nuevas órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
-            }
+            }*/
         }
 
         private void OnTakeAwayCreated(QuerySnapshot snapshot)
@@ -185,11 +197,14 @@ namespace Menoo.Printer.Listener.Orders
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
                         SetOrderAsPrinted(messageQueue);
-                        _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). Envío de orden TA con id {ticket}, a la cola de impresión.", EventLogEntryType.Information);
                     }
                     catch (Exception e)
                     {
                         _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). No se envió la orden TA [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(_delayTask);
                     }
                 }
             }

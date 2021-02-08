@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Menoo.Printer.Builder.Orders.Repository
 {
-    public class PaymentRepository : FirebaseRepository<Payment>
+    public sealed class PaymentRepository : FirebaseRepository<Payment>
     {
         private readonly FirestoreDb _firebaseDb;
 

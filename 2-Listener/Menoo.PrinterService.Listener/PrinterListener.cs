@@ -1,6 +1,4 @@
-﻿using Google.Cloud.Firestore;
-using Menoo.PrinterService.Infraestructure;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer;
+﻿using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using System;
 using System.Diagnostics;
@@ -21,7 +19,6 @@ namespace Menoo.PrinterService.Listener
         protected override void OnStart(string[] args)
         {
             _generalWriter.WriteEntry("PrinterListener::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
-            Debugger.Launch();
             var listeners = GlobalConfig.DependencyResolver.ResolveAll<IFirebaseListener>();
             foreach (var listener in listeners)
             {

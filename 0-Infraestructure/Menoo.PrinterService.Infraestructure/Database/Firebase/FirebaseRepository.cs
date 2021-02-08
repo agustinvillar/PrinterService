@@ -48,7 +48,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
             var result = await _db.Collection(collection).Document(id).GetSnapshotAsync();
             if (result.Exists) 
             {
-                return result.GetObject<TEntity>();
+                var data = result.ToDictionary();
+                return data.GetObject<TEntity>();
             }
             return default;
         }

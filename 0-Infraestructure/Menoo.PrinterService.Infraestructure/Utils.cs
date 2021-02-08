@@ -54,9 +54,8 @@ namespace Menoo.PrinterService.Infraestructure
                 foreach (var itype in item.GetInterfaces())
                 {
                     var iListenerType = typeof(IFirebaseListener);
-
-                    //if (itype.IsGenericType && itype.GetGenericTypeDefinition() == iListenerType)
-                    if (itype.Name == iListenerType.Name)
+                    var iBuilderType = typeof(ITicketBuilder);
+                    if (itype.Name == iListenerType.Name || itype == iBuilderType)
                     {
                         listenerList.Add(new Tuple<Type, Type>(itype, item));
                     }

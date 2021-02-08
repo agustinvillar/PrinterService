@@ -191,8 +191,6 @@
     <Compile Include="Enums\PrintStatus.cs" />
     <Compile Include="Enums\ProviderEnum.cs" />
     <Compile Include="Enums\TicketTypeEnum.cs" />
-    <Compile Include="Extensions\ItemExtensions.cs" />
-    <Compile Include="Extensions\OrderExtensions.cs" />
     <Compile Include="Extensions\PrintSettingsExtensions.cs" />
     <Compile Include="HandlerAttribute.cs" />
     <Compile Include="Interfaces\IConfigurationManager.cs" />

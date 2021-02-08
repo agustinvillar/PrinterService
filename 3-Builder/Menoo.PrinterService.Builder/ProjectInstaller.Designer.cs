@@ -1,4 +1,6 @@
 ﻿
+using System.Diagnostics;
+
 namespace Menoo.PrinterService.Builder
 {
     partial class ProjectInstaller
@@ -25,20 +27,27 @@ namespace Menoo.PrinterService.Builder
             this.serviceProcessInstallerInstance = new System.ServiceProcess.ServiceProcessInstaller();
             this.serviceInstallerInstance = new System.ServiceProcess.ServiceInstaller();
 
+            this.serviceInstallerInstance.Installers.Clear();
+
             this.serviceProcessInstallerInstance.Account = System.ServiceProcess.ServiceAccount.LocalSystem;
             this.serviceProcessInstallerInstance.Password = null;
             this.serviceProcessInstallerInstance.Username = null;
 
             this.serviceInstallerInstance.DelayedAutoStart = true;
-            this.serviceInstallerInstance.Description = @"Menoo.Printer.Builder es un servicio para construir el ticket de impresión.";
-            this.serviceInstallerInstance.DisplayName = @"Menoo.Printer.Builder";
-            this.serviceInstallerInstance.ServiceName = @"Menoo.Printer.Builder";
+            this.serviceInstallerInstance.Description = @"Menoo Printer Builder es un servicio para construir el ticket de impresión.";
+            this.serviceInstallerInstance.DisplayName = @"Menoo Printer Builder";
+            this.serviceInstallerInstance.ServiceName = @"MenooPrinterBuilder";
             this.serviceInstallerInstance.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
+
+            EventLogInstaller logInstaller = new EventLogInstaller();
+            logInstaller.Source = @"MenooPrinterBuilder";
+            logInstaller.Log = "MenooBuilderLog";
 
             this.Installers.AddRange(new System.Configuration.Install.Installer[]
             {
                 this.serviceProcessInstallerInstance,
-                this.serviceInstallerInstance
+                this.serviceInstallerInstance,
+                logInstaller
             });
         }
 

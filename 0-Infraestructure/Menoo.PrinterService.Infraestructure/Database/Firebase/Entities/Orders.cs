@@ -110,7 +110,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         public string GuestComment { get; set; }
 
         public virtual string Id { get; set; }
-        public virtual bool IsTakeAway => OrderType.ToUpper() == "TAKEAWAY";
 
         [FirestoreProperty("items")]
         [JsonProperty("items")]

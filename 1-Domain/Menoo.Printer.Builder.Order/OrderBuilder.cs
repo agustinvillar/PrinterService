@@ -1,5 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.Printer.Builder.Orders.Constants;
+using Menoo.Printer.Builder.Orders.Extensions;
 using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
@@ -28,19 +29,23 @@ namespace Menoo.Printer.Builder.Orders
     {
         private readonly BuiltinHandlerActivator _adapter;
 
-        private readonly BookingRepository _bookingRepository;
-
         private readonly FirestoreDb _firestoreDb;
 
         private readonly EventLog _generalWriter;
-
-        private readonly PaymentRepository _paymentRepository;
 
         private readonly string _queueConnectionString;
 
         private readonly int _queueDelay;
 
         private readonly string _queueName;
+
+        private readonly BookingRepository _bookingRepository;
+
+        private readonly PaymentRepository _paymentRepository;
+
+        private readonly OrderRepository _orderRepository;
+
+        private readonly ItemRepository _itemRepository;
 
         private readonly StoreRepository _storeRepository;
 
@@ -52,18 +57,21 @@ namespace Menoo.Printer.Builder.Orders
             TicketRepository ticketRepository,
             PaymentRepository paymentRepository,
             BookingRepository bookingRepository,
-            EventLog generalWriter)
+            OrderRepository orderRepository,
+            ItemRepository itemRepository)
         {
             _firestoreDb = firestoreDb;
             _storeRepository = storeRepository;
             _ticketRepository = ticketRepository;
             _paymentRepository = paymentRepository;
             _bookingRepository = bookingRepository;
+            _orderRepository = orderRepository;
+            _itemRepository = itemRepository;
             _queueName = GlobalConfig.ConfigurationManager.GetSetting("queueName");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
             _adapter = new BuiltinHandlerActivator();
-            _generalWriter = generalWriter;
+            _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
         public void Build()
@@ -99,6 +107,31 @@ namespace Menoo.Printer.Builder.Orders
                 $"Evento: {data.PrintEvent}{Environment.NewLine}" +
                 $"Tipo: {type}{Environment.NewLine}" +
                 $"FirebaseId: {data.DocumentId}{Environment.NewLine}", EventLogEntryType.Information);
+            if (data.TypeDocument != PrintTypes.ORDER)
+            {
+                return;
+            }
+            try
+            {
+                var orderDTO = await _orderRepository.GetOrderById(data.DocumentId);
+                if (data.PrintEvent != PrintEvents.NEW_ORDER)
+                {
+                    BuildOrderCreated(orderDTO, data.SubTypeDocument);
+                }
+                else if (data.PrintEvent != PrintEvents.ORDER_CANCELLED)
+                {
+                    BuildOrderCancelled(orderDTO);
+                }
+            }
+            catch (Exception e) 
+            {
+                _generalWriter.WriteEntry(
+                    $"OrderBuilder::RecieveAsync(). NO se imprimió el ticket de impresión recibido. {Environment.NewLine}" +
+                    $"Evento: {data.PrintEvent}{Environment.NewLine}" +
+                    $"Tipo: {type}{Environment.NewLine}" +
+                    $"FirebaseId: {data.DocumentId}{Environment.NewLine}." +
+                    $"Excepción: {e.ToString()}", EventLogEntryType.Error);
+            }
             await Task.Delay(_queueDelay);
         }
 
@@ -108,7 +141,59 @@ namespace Menoo.Printer.Builder.Orders
         }
 
         #region private methods
-        private static string CreateHtmlFromLines(OrderV2 order)
+        private void BuildOrderCreated(OrderV2 order, string orderType)
+        {
+            List<PrintSettings> sectors = new List<PrintSettings>();
+            var sectorsByItems = ItemExtensions.GetPrintSector(order.Items, _itemRepository);
+            bool isTakeAway = !string.IsNullOrEmpty(orderType) && orderType.Contains("TakeAway");
+            if (sectorsByItems.Count > 0)
+            {
+                if (sectorsByItems.Select(s => s.Sectors).Count() > 0)
+                {
+                    foreach (var sector in sectorsByItems.Select(s => s.Sectors).FirstOrDefault())
+                    {
+                        bool isExists = sectors.Any(f => sector.Name == f.Name);
+                        if (!isExists && sector.AllowPrinting)
+                        {
+                            sectors.Add(sector);
+                        }
+                    }
+                }
+                if (isTakeAway)
+                {
+                    var sectorByEvents = GetSectorByEvent(order.Store.Id, PrintEvents.NEW_ORDER);
+                    if (sectorByEvents.Count > 0)
+                    {
+                        foreach (var sector in sectorByEvents)
+                        {
+                            bool isExists = sectors.Any(f => sector.Name == f.Name);
+                            if (!isExists && sector.AllowPrinting)
+                            {
+                                sectors.Add(sector);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                sectors.AddRange(GetSectorByEvent(order.Store.Id, PrintEvents.NEW_ORDER));
+            }
+            if (sectors.Count > 0)
+            {
+                foreach (var sector in sectors.OrderBy(o => o.Name))
+                {
+                    SaveOrderAsync(order, sector.Name, sector.Copies, sector.Printer, false, isTakeAway, sector.PrintQR).GetAwaiter().GetResult();
+                }
+            }
+        }
+
+        private void BuildOrderCancelled(OrderV2 order)
+        {
+
+        }
+
+        private string CreateHtmlFromLines(OrderV2 order)
         {
             var lines = new List<string>();
             if (order.Items == null)
@@ -135,22 +220,14 @@ namespace Menoo.Printer.Builder.Orders
             return items;
         }
 
-        private static bool IsTakeAway(OrderV2 order, bool orderOk)
-        {
-            return orderOk && order.IsTakeAway;
-        }
-
-        private async Task CreateOrderTicket(OrderV2 order, Ticket ticket, string line, bool isOrderOk, bool isCancelled = false, bool printQR = false)
+        private async Task CreateOrderTicket(OrderV2 order, Ticket ticket, string line, bool isOrderOk, bool isCancelled = false, bool isTakeAway = false, bool printQR = false)
         {
             StringBuilder builder = new StringBuilder();
             string qrCode = "";
             string title;
-            if (!isCancelled)
+            if (isTakeAway && printQR)
             {
-                if (order.IsTakeAway && printQR)
-                {
-                    qrCode = GenerateOrderQR(order);
-                }
+                qrCode = GenerateOrderQR(order);
             }
             if (isOrderOk && order.OrderType.ToUpper().Trim() == OrderTypes.MESA)
             {
@@ -199,7 +276,7 @@ namespace Menoo.Printer.Builder.Orders
                 title = isCancelled ? "Orden de reserva" : "Nueva orden de reserva";
                 ticket.SetOrder(title, builder.ToString());
             }
-            else if (isOrderOk && order.OrderType.ToUpper().Trim() == OrderTypes.TAKEAWAY)
+            else if (isOrderOk && isTakeAway)
             {
                 var payment = await _paymentRepository.GetPayment(order.TableOpeningId, OrderTypes.TAKEAWAY);
                 builder.Append(@"<table class=""top"">");
@@ -261,27 +338,13 @@ namespace Menoo.Printer.Builder.Orders
             return htmlPictureTag;
         }
 
-        private List<PrintSettings> GetSectorByEvent(OrderV2 order)
+        private List<PrintSettings> GetSectorByEvent(string storeId, string @event)
         {
-            string printEvent = "";
-            string orderType = order.OrderType.ToUpper().Trim();
-            if (orderType == OrderTypes.MESA)
-            {
-                printEvent = PrintEvents.NEW_TABLE_ORDER;
-            }
-            else if (orderType == OrderTypes.TAKEAWAY)
-            {
-                printEvent = PrintEvents.NEW_TAKE_AWAY;
-            }
-            else if (orderType == OrderTypes.RESERVA)
-            {
-                printEvent = PrintEvents.NEW_BOOKING;
-            }
-            var storeData = _storeRepository.GetById<Store>("stores", order.Store.Id).GetAwaiter().GetResult();
-            return storeData.GetPrintSettings(printEvent);
+            var storeData = _storeRepository.GetById<Store>(storeId, "stores").GetAwaiter().GetResult();
+            return storeData.GetPrintSettings(@event);
         }
 
-        private async Task SaveOrderAsync(OrderV2 order, int copies, string printerName, bool isCancelled, bool printQR)
+        private async Task SaveOrderAsync(OrderV2 order, string sectorName, int copies, string printerName, bool isCancelled, bool isTakeAway, bool printQR)
         {
             var ticket = new Ticket
             {
@@ -293,17 +356,15 @@ namespace Menoo.Printer.Builder.Orders
                 Copies = copies
             };
             bool isOrderOk = order?.OrderType != null;
-            if (IsTakeAway(order, isOrderOk))
-            {
-                ticket.PrintBefore = Utils.BeforeAt(order.OrderDate, -5);
-            }
-            else
-            {
-                ticket.PrintBefore = Utils.BeforeAt(order.OrderDate, 30);
-            }
+            ticket.PrintBefore = isTakeAway ? Utils.BeforeAt(order.OrderDate, -5) : Utils.BeforeAt(order.OrderDate, 30);
             var line = CreateHtmlFromLines(order);
-            await CreateOrderTicket(order, ticket, line, isOrderOk, isCancelled, printQR);
-            await _ticketRepository.SaveAsync<Ticket>(ticket);
+            await CreateOrderTicket(order, ticket, line, isOrderOk, isCancelled, isOrderOk, printQR);
+            _generalWriter.WriteEntry($"OrderBuilder::SaveOrderAsync() Enviando a imprimir la orden con la siguiente información. {Environment.NewLine} Detalles: {Environment.NewLine}" +
+                $"Nombre de la impresora: {printerName}." +
+                $"Sector de impresión: {sectorName}" +
+                $"Restaurante: {ticket.StoreName}" + 
+                $"Número de orden: {order.OrderNumber}");
+            await _ticketRepository.SaveAsync(ticket);
         }
         #endregion
     }

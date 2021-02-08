@@ -18,9 +18,9 @@ namespace Menoo.PrinterService.Infraestructure.Queues
 
         private readonly EventLog _logger;
 
-        public PublisherService(EventLog logger)
+        public PublisherService()
         {
-            _logger = logger;
+            _logger = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
             _queueName = GlobalConfig.ConfigurationManager.GetSetting("queueName");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _adapter = new BuiltinHandlerActivator();
@@ -38,12 +38,12 @@ namespace Menoo.PrinterService.Infraestructure.Queues
         public async Task PublishAsync(PrintMessage data, Dictionary<string, string> extras = null)
         {
             string type = !string.IsNullOrEmpty(data.SubTypeDocument) ? $"{data.TypeDocument}-{data.SubTypeDocument}" : $"{data.TypeDocument}";
+            await _adapter.Bus.Publish(data, extras);
             _logger.WriteEntry(
-                $"PublisherService::PublishAsync(). Enviado mensaje a la cola printer {Environment.NewLine}" +
-                $"Evento: {data.PrintEvent}{Environment.NewLine}" +
-                $"Tipo: {type}{Environment.NewLine}" +
-                $"FirebaseId: {data.DocumentId}{Environment.NewLine}", EventLogEntryType.Information);
-            //await _adapter.Bus.Publish(data, extras);
+                            $"PublisherService::PublishAsync(). Enviado mensaje a la cola printer {Environment.NewLine}" +
+                            $"Evento: {data.PrintEvent}{Environment.NewLine}" +
+                            $"Tipo: {type}{Environment.NewLine}" +
+                            $"FirebaseId: {data.DocumentId}{Environment.NewLine}", EventLogEntryType.Information);
         }
 
         private void Configure()

@@ -1,6 +1,5 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
@@ -14,15 +13,21 @@ namespace Menoo.PrinterService.Infraestructure
         public Start()
         {
             var dependencyResolver = GlobalConfig.DependencyResolver;
-            string listenerLog = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerSourceName");
-            string builderLog = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderSourceName");
+            string listenerLog = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerName");
+            string builderLog = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderName");
             if (!string.IsNullOrEmpty(listenerLog)) 
             {
-                dependencyResolver.Register(ConfigureListenerEventLog, "listener");
+                dependencyResolver.Register(() => {
+                    var log = ConfigureListenerEventLog();
+                    return log;
+                }, "listener");
             }
-            if (!string.IsNullOrEmpty(builderLog)) 
+            if (!string.IsNullOrEmpty(builderLog))
             {
-                dependencyResolver.Register(ConfigureBuilderEventLog, "builder");
+                dependencyResolver.Register(() => {
+                    var log = ConfigureBuilderEventLog();
+                    return log;
+                }, "builder");
             }
             dependencyResolver.Register(GetInstanceFirebase);
             dependencyResolver.Register(() => {
@@ -40,23 +45,26 @@ namespace Menoo.PrinterService.Infraestructure
 
         static EventLog ConfigureListenerEventLog()
         {
-            string sourceName = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerSourceName");
-            if (!EventLog.SourceExists(sourceName))
-            {
-                EventLog.CreateEventSource(sourceName, sourceName);
-            }
-            var generalWriter = new EventLog { Log = sourceName, Source = sourceName, EnableRaisingEvents = true };
+            string sourceListenerName = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerName");
+            string logListenerName = GlobalConfig.ConfigurationManager.GetSetting("eventListenerLog");
+            //if (!EventLog.SourceExists(sourceListenerName))
+            //{
+            //    EventLog.CreateEventSource(sourceListenerName, logListenerName);
+            //}
+            //logListenerName = EventLog.LogNameFromSourceName(sourceListenerName, ".");
+            var generalWriter = new EventLog { Log = logListenerName, Source = sourceListenerName, EnableRaisingEvents = true };
             return generalWriter;
         }
 
         static EventLog ConfigureBuilderEventLog()
         {
-            string sourceName = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderSourceName");
-            if (!EventLog.SourceExists(sourceName))
-            {
-                EventLog.CreateEventSource(sourceName, sourceName);
-            }
-            var generalWriter = new EventLog { Log = sourceName, Source = sourceName, EnableRaisingEvents = true };
+            string sourceBuilderName = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderName");
+            string logBuilderName = GlobalConfig.ConfigurationManager.GetSetting("eventBuilderLog");
+            //if (!EventLog.SourceExists(sourceBuilderName))
+            //{
+            //    EventLog.CreateEventSource(sourceBuilderName, logBuilderName);
+            //}
+            var generalWriter = new EventLog { Log = logBuilderName, Source = sourceBuilderName, EnableRaisingEvents = true };
             return generalWriter;
         }
 

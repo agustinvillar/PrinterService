@@ -65,7 +65,11 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("total")]
         [JsonProperty("total")]
         public double Total { get; set; }
-        
+
+        [FirestoreProperty("sectors")]
+        [JsonProperty("sectors")]
+        public List<PrintSettings> Sectors { get; set; }
+
         [FirestoreData]
         public class ItemOption
         {
