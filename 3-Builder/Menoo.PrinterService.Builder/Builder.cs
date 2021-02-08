@@ -19,7 +19,6 @@ namespace Menoo.PrinterService.Builder
         protected override void OnStart(string[] args)
         {
             _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
-            Debugger.Launch();
             var builders = GlobalConfig.DependencyResolver.ResolveAll<ITicketBuilder>();
             foreach (var builder in builders)
             {

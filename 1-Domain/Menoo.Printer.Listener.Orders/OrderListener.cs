@@ -67,7 +67,7 @@ namespace Menoo.Printer.Listener.Orders
         private void OnCancelled(QuerySnapshot snapshot)
         {
             _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
-            /*try
+            try
             {
                 if (snapshot.Documents.Count == 0)
                 {
@@ -96,7 +96,6 @@ namespace Menoo.Printer.Listener.Orders
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
                         SetOrderAsPrinted(messageQueue, false, true);
-                        _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Envío de orden con id {ticket}, a la cola de impresión.", EventLogEntryType.Information);
                     }
                     catch (Exception e)
                     {
@@ -111,13 +110,13 @@ namespace Menoo.Printer.Listener.Orders
             catch (Exception e)
             {
                 _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Ha ocurrido un error al capturar nuevas órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
-            }*/
+            }
         }
 
         private void OnOrderCreated(QuerySnapshot snapshot)
         {
             _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
-            /*try
+            try
             {
                 if (snapshot.Documents.Count == 0)
                 {
@@ -146,7 +145,6 @@ namespace Menoo.Printer.Listener.Orders
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
                         SetOrderAsPrinted(messageQueue);
-                        _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Envío de orden con id {ticket}, a la cola de impresión.", EventLogEntryType.Information);
                     }
                     catch (Exception e)
                     {
@@ -161,7 +159,7 @@ namespace Menoo.Printer.Listener.Orders
             catch (Exception e)
             {
                 _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Ha ocurrido un error al capturar nuevas órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
-            }*/
+            }
         }
 
         private void OnTakeAwayCreated(QuerySnapshot snapshot)

@@ -17,7 +17,7 @@ namespace Menoo.Printer.Builder.Orders.Repository
 
         public async Task<SectorItem> GetSectorItemById(string documentId) 
         {
-            SectorItem item = new SectorItem();
+            SectorItem item = null;
             var resultQuery = await GetById<ItemOrder>(documentId, "items");
             if (resultQuery != null && resultQuery.Sectors != null && resultQuery.Sectors.Count > 0)
             {
