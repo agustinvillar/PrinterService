@@ -9,5 +9,7 @@
         public string TypeDocument { get; set; }
 
         public string SubTypeDocument { get; set; }
+
+        public string Builder { get; set; }
     }
 }

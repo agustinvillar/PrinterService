@@ -119,14 +119,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("madeAt")]
         public string MadeAt { get; set; }
 
-        [FirestoreProperty("orderCancelledPrinted")]
-        [JsonProperty("orderCancelledPrinted")]
-        public virtual bool OnCancelledPrinted { get; set; }
-
-        [FirestoreProperty("orderCreatedPrinted")]
-        [JsonProperty("orderCreatedPrinted")]
-        public virtual bool OnCreatedPrinted { get; set; }
-
         [FirestoreProperty("orderDate")]
         [JsonProperty("orderDate")]
         public string OrderDate { get; set; }

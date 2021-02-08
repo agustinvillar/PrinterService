@@ -12,8 +12,6 @@ using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
 using Newtonsoft.Json;
 using QRCoder;
-using Rebus.Activation;
-using Rebus.Config;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,21 +23,13 @@ using System.Threading.Tasks;
 namespace Menoo.Printer.Builder.Orders
 {
     [Handler]
-    public class OrderBuilder : ITicketBuilder, ISubscriptionService, IDisposable
+    public class OrderBuilder : ITicketBuilder
     {
-        private readonly BuiltinHandlerActivator _adapter;
-
         private readonly FirestoreDb _firestoreDb;
 
         private readonly EventLog _generalWriter;
 
-        private readonly string _queueConnectionString;
-
-        private readonly int _queueDelay;
-
         private readonly int _ticketTAPaymentDelay;
-
-        private readonly string _queueName;
 
         private readonly BookingRepository _bookingRepository;
 
@@ -69,76 +59,30 @@ namespace Menoo.Printer.Builder.Orders
             _bookingRepository = bookingRepository;
             _orderRepository = orderRepository;
             _itemRepository = itemRepository;
-            _adapter = new BuiltinHandlerActivator();
-            _queueName = GlobalConfig.ConfigurationManager.GetSetting("queueName");
-            _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
-            _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
             _ticketTAPaymentDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("ticketTAPaymentDelay"));
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
-        public void Build()
+        public async Task BuildAsync(PrintMessage data)
         {
-            _adapter.Handle<PrintMessage>(async message =>
-            {
-                await RecieveAsync(message);
-            });
-            Configure.With(_adapter)
-                .Logging(l => l.Serilog())
-                .Transport(t => t.UseRabbitMq(_queueConnectionString, _queueName))
-                .Options(o => o.SetMaxParallelism(1))
-                .Options(o => o.SetNumberOfWorkers(1))
-                .Start();
-            _adapter.Bus.Subscribe<PrintMessage>().GetAwaiter().GetResult();
-        }
-
-        public void Dispose()
-        {
-            if (_adapter != null)
-            {
-                _adapter.Dispose();
-            }
-        }
-
-        public async Task RecieveAsync(PrintMessage data, Dictionary<string, string> extras = null)
-        {
-            string type = !string.IsNullOrEmpty(data.SubTypeDocument) ? $"{data.TypeDocument}-{data.SubTypeDocument}" : $"{data.TypeDocument}";
-            _generalWriter.WriteEntry(
-                $"OrderBuilder::RecieveAsync(). Nuevo ticket de impresión recibido. {Environment.NewLine}" +
-                $"Evento: {data.PrintEvent}{Environment.NewLine}" +
-                $"Tipo: {type}{Environment.NewLine}" +
-                $"FirebaseId: {data.DocumentId}{Environment.NewLine}", EventLogEntryType.Information);
-            if (data.TypeDocument != PrintTypes.ORDER)
+            if (data.Builder != PrintBuilder.ORDER_BUILDER)
             {
                 return;
             }
-            try
+            var orderDTO = await _orderRepository.GetOrderById(data.DocumentId);
+            if (data.PrintEvent == PrintEvents.NEW_ORDER || data.PrintEvent == PrintEvents.NEW_TAKE_AWAY)
             {
-                var orderDTO = await _orderRepository.GetOrderById(data.DocumentId);
-                if (data.PrintEvent == PrintEvents.NEW_ORDER || data.PrintEvent == PrintEvents.NEW_TAKE_AWAY)
-                {
-                    BuildOrderCreated(orderDTO, data.SubTypeDocument);
-                }
-                else if (data.PrintEvent == PrintEvents.ORDER_CANCELLED)
-                {
-                    BuildOrderCancelled(orderDTO);
-                }
+                BuildOrderCreated(orderDTO, data.SubTypeDocument);
             }
-            catch (Exception e) 
+            else if (data.PrintEvent == PrintEvents.ORDER_CANCELLED)
             {
-                _generalWriter.WriteEntry(
-                    $"OrderBuilder::RecieveAsync(). NO se imprimió el ticket de impresión recibido. {Environment.NewLine}" +
-                    $"Evento: {data.PrintEvent}{Environment.NewLine}" +
-                    $"Tipo: {type}{Environment.NewLine}" +
-                    $"FirebaseId: {data.DocumentId}{Environment.NewLine}" +
-                    $"Excepción: {e.ToString()}", EventLogEntryType.Error);
+                BuildOrderCancelled(orderDTO);
             }
-            await Task.Delay(_queueDelay);
         }
 
         public override string ToString()
         {
-            return "Order.Builder";
+            return PrintBuilder.ORDER_BUILDER;
         }
 
         #region private methods

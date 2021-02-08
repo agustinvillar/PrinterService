@@ -138,6 +138,10 @@
       <Project>{ecdff8b6-85b2-4e11-9286-0213adc3494f}</Project>
       <Name>Menoo.PrinterService.Infraestructure</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\1-Domain\Menoo.Printer.Listener.Bookings\Menoo.Printer.Listener.Bookings.csproj">
+      <Project>{cc9d2a8b-1f85-4997-9501-5354ab1f18e5}</Project>
+      <Name>Menoo.Printer.Listener.Bookings</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\1-Domain\Menoo.Printer.Listener.Orders\Menoo.Printer.Listener.Orders.csproj">
       <Project>{317b85a2-7d9e-4f51-8198-fb013d8db738}</Project>
       <Name>Menoo.Printer.Listener.Orders</Name>

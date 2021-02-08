@@ -1,6 +1,6 @@
-﻿namespace Menoo.Printer.Listener.Orders.Constants
+﻿namespace Menoo.PrinterService.Infraestructure.Constants
 {
-    public static class OrderProperties
+    public static class PrintProperties
     {
         public const string IS_NEW_PRINTED = "isNew";
 

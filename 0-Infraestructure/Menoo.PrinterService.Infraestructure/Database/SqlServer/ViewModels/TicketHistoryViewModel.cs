@@ -1,4 +1,4 @@
-﻿namespace Menoo.Printer.Listener.Orders.ViewModels
+﻿namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.ViewModels
 {
     public sealed class TicketHistoryViewModel
     {

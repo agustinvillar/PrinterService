@@ -1,9 +1,10 @@
 ﻿using Menoo.PrinterService.Infraestructure.Queues;
+using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Infraestructure.Interfaces
 {
     public interface ITicketBuilder
     {
-        void Build();
+        Task BuildAsync(PrintMessage data);
     }
 }

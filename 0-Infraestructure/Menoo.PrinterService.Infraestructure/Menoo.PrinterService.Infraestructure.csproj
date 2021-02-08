@@ -166,7 +166,9 @@
   <ItemGroup>
     <Compile Include="Boostrapper.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
+    <Compile Include="Constants\PrintBiulder.cs" />
     <Compile Include="Constants\PrintEvents.cs" />
+    <Compile Include="Constants\PrintProperties.cs" />
     <Compile Include="Constants\PrintTypes.cs" />
     <Compile Include="Database\Firebase\Entities\Booking.cs" />
     <Compile Include="Database\Firebase\Entities\Item.cs" />
@@ -217,6 +219,7 @@
     <Compile Include="Repository\TicketRepository.cs" />
     <Compile Include="Start.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="Database\SqlServer\ViewModels\TicketHistoryViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -228,7 +231,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Templates\Ticket_Booking.html" />
     <Content Include="Templates\Ticket_Table_Closing.html" />
     <Content Include="Templates\Ticket_Table_Opening.html" />
   </ItemGroup>

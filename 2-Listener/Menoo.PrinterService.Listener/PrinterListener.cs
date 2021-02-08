@@ -1,8 +1,11 @@
 ﻿using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Interfaces;
+using Menoo.PrinterService.Infraestructure.Queues;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.ServiceProcess;
+using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Listener
 {

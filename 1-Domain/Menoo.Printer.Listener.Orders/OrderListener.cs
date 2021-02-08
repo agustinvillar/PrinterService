@@ -1,15 +1,11 @@
 ﻿using Google.Cloud.Firestore;
-using Menoo.Printer.Listener.Orders.Constants;
-using Menoo.Printer.Listener.Orders.ViewModels;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.Entities;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -95,11 +91,11 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsPrinted(messageQueue, false, true);
+                        SetOrderAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
-                        _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                        _generalWriter.WriteEntry($"OrderListener::OnCancelled(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
                     }
                     finally
                     {
@@ -109,7 +105,7 @@ namespace Menoo.Printer.Listener.Orders
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Ha ocurrido un error al capturar nuevas órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"OrderListener::OnCancelled(). Ha ocurrido un error al cancelar órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
             }
         }
 
@@ -144,7 +140,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsPrinted(messageQueue);
+                        SetOrderAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -194,7 +190,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsPrinted(messageQueue);
+                        SetOrderAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -214,92 +210,21 @@ namespace Menoo.Printer.Listener.Orders
         #endregion
 
         #region private methods
-        private List<string> GetOrdersToPrint(List<string> documentIds, bool isCreated, bool isCancelled)
+        private List<string> GetOrdersToPrint(List<string> documentIds, bool isCreated, bool isCancelled) 
         {
-            var ticketsToPrint = new List<string>();
-            var printedTickets = GetTicketsPrintedAsync()
-                            .GetAwaiter()
-                            .GetResult()
-                            .Where(f => f.IsCreatedPrinted == "true")
-                            .Where(f => f.IsCancelledPrinted == "false");
-            if (isCreated)
+            List<string> ticketsToPrint = null;
+            using (var sqlServerContext = new SqlServerContext())
             {
-                var printedTicketIds = printedTickets.Select(s => s.DocumentId).ToList();
-                ticketsToPrint.AddRange((from c in documentIds
-                                     where !printedTicketIds.Contains(c)
-                                     select c));
-            }
-            else if (isCancelled) 
-            {
-                foreach (var ticket in printedTickets)
-                {
-                    if (bool.Parse(ticket.IsCreatedPrinted) && documentIds.Contains(ticket.DocumentId))
-                    {
-                        ticketsToPrint.Add(ticket.DocumentId);
-                    }
-                }
+                ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);
             }
             return ticketsToPrint;
         }
 
-        private async Task<List<TicketHistoryViewModel>> GetTicketsPrintedAsync()
+        private async Task SetOrderAsPrintedAsync(PrintMessage message, bool isNew = true, bool isCancelled = false)
         {
-            List<TicketHistoryViewModel> ticketsPrinted = null;
             using (var sqlServerContext = new SqlServerContext())
             {
-                ticketsPrinted = await sqlServerContext.TicketHistorySettings.GroupBy(g => g.TicketHistoryId).Select(s => new TicketHistoryViewModel
-                {
-                    DocumentId = s.Key,
-                    IsCancelledPrinted = s.FirstOrDefault(f => f.Name == OrderProperties.IS_CANCELLED_PRINTED).Value,
-                    IsCreatedPrinted = s.FirstOrDefault(f => f.Name == OrderProperties.IS_NEW_PRINTED).Value
-                }).ToListAsync();
-            }
-            return ticketsPrinted;
-        }
-
-        private void SetOrderAsPrinted(PrintMessage message, bool isNew = true, bool isCancelled = false)
-        {
-            if (isNew)
-            {
-                var historyDetails = new List<TicketHistorySettings>()
-                {
-                    new TicketHistorySettings{
-                        TicketHistoryId = message.DocumentId,
-                        Name = OrderProperties.IS_NEW_PRINTED,
-                        Value = "true",
-                        Id = Guid.NewGuid()
-                    },
-                    new TicketHistorySettings{
-                        TicketHistoryId = message.DocumentId,
-                        Name = OrderProperties.IS_CANCELLED_PRINTED,
-                        Value = "false",
-                        Id = Guid.NewGuid()
-                    }
-                };
-
-                var history = new TicketHistory
-                {
-                    Id = message.DocumentId,
-                    PrintEvent = message.PrintEvent,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
-                    ExternalId = string.Empty
-                };
-                using (var sqlServerContext = new SqlServerContext())
-                {
-                    sqlServerContext.TicketHistory.Add(history);
-                    sqlServerContext.TicketHistorySettings.AddRange(historyDetails);
-                    sqlServerContext.SaveChanges();
-                }
-            }
-            if (isCancelled) 
-            {
-                using (var sqlServerContext = new SqlServerContext())
-                {
-                    var ticketCreated = sqlServerContext.TicketHistorySettings.FirstOrDefault(f => f.TicketHistoryId == message.DocumentId && f.Name == OrderProperties.IS_CANCELLED_PRINTED);
-                    ticketCreated.Value = "true";
-                    sqlServerContext.SaveChanges();
-                }
+                await sqlServerContext.SetPrintedAsync(message, isNew, isCancelled);
             }
         }
         #endregion
