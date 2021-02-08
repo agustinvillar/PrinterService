@@ -67,10 +67,10 @@ namespace Menoo.Printer.Builder.Orders
             _bookingRepository = bookingRepository;
             _orderRepository = orderRepository;
             _itemRepository = itemRepository;
+            _adapter = new BuiltinHandlerActivator();
             _queueName = GlobalConfig.ConfigurationManager.GetSetting("queueName");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
-            _adapter = new BuiltinHandlerActivator();
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
@@ -80,14 +80,12 @@ namespace Menoo.Printer.Builder.Orders
             {
                 await RecieveAsync(message);
             });
-
             Configure.With(_adapter)
                 .Logging(l => l.Serilog())
                 .Transport(t => t.UseRabbitMq(_queueConnectionString, _queueName))
                 .Options(o => o.SetMaxParallelism(1))
                 .Options(o => o.SetNumberOfWorkers(1))
                 .Start();
-
             _adapter.Bus.Subscribe<PrintMessage>().GetAwaiter().GetResult();
         }
 
@@ -380,12 +378,13 @@ namespace Menoo.Printer.Builder.Orders
             ticket.PrintBefore = isTakeAway ? Utils.BeforeAt(order.OrderDate, 5) : Utils.BeforeAt(order.OrderDate, 10);
             var line = CreateHtmlFromLines(order);
             await CreateOrderTicket(order, ticket, line, isOrderOk, isCancelled, isTakeAway, printQR);
-            _generalWriter.WriteEntry($"OrderBuilder::SaveOrderAsync(). Enviando a imprimir la orden con la siguiente información. {Environment.NewLine}.Detalles: {Environment.NewLine}" +
+            _generalWriter.WriteEntry($"OrderBuilder::SaveOrderAsync(). Enviando a imprimir la orden con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
                 $"Nombre de la impresora: {printerName}{Environment.NewLine}" +
                 $"Sector de impresión: {sectorName}{Environment.NewLine}" +
                 $"Restaurante: {ticket.StoreName}{Environment.NewLine}" + 
-                $"Número de orden: {order.OrderNumber}{Environment.NewLine}"+
-                $"Estado de la orden: {order.Status}");
+                $"Número de orden: {order.OrderNumber}{Environment.NewLine}" +
+                $"Tipo de orden: {order.OrderType.ToUpper().Trim()}" +
+                $"Estado de la orden: {order.Status.ToUpper()}");
             await _ticketRepository.SaveAsync(ticket);
         }
         #endregion
