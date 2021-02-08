@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Infraestructure.Repository
 {
-    public class BookingRepository : FirebaseRepository<Booking>
+    public sealed class UserRepository : FirebaseRepository<User>
     {
-        public BookingRepository(FirestoreDb firebaseDb)
+        public UserRepository(FirestoreDb firebaseDb)
             : base(firebaseDb)
         {
         }
 
-        public override Task<TEntity> GetById<TEntity>(string id, string collection = "bookings")
+        public override Task<TEntity> GetById<TEntity>(string id, string collection = "customers")
         {
             return base.GetById<TEntity>(id, collection);
         }

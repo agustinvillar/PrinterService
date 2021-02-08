@@ -217,6 +217,7 @@
     <Compile Include="Repository\BookingRepository.cs" />
     <Compile Include="Repository\StoreRepository.cs" />
     <Compile Include="Repository\TicketRepository.cs" />
+    <Compile Include="Repository\UserRepository.cs" />
     <Compile Include="Start.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Database\SqlServer\ViewModels\TicketHistoryViewModel.cs" />
