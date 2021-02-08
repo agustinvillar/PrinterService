@@ -37,6 +37,8 @@ namespace Menoo.Printer.Builder.Orders
 
         private readonly int _queueDelay;
 
+        private readonly int _ticketTAPaymentDelay;
+
         private readonly string _queueName;
 
         private readonly BookingRepository _bookingRepository;
@@ -71,6 +73,7 @@ namespace Menoo.Printer.Builder.Orders
             _queueName = GlobalConfig.ConfigurationManager.GetSetting("queueName");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
+            _ticketTAPaymentDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("ticketTAPaymentDelay"));
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
@@ -297,6 +300,9 @@ namespace Menoo.Printer.Builder.Orders
             }
             else if (isOrderOk && isTakeAway)
             {
+                _generalWriter.WriteEntry($"OrderBuilder::CreateOrderTicket(). Pago TA, filtro de búsqueda en payments: taOpening.id", EventLogEntryType.Warning);
+                _generalWriter.WriteEntry($"OrderBuilder::CreateOrderTicket(). Pago TA, objeto de orden: {Environment.NewLine} {JsonConvert.SerializeObject(order, Formatting.Indented)}", EventLogEntryType.Warning);
+                await Task.Delay(_ticketTAPaymentDelay);
                 var payment = await _paymentRepository.GetPayment(order.TableOpeningId, OrderTypes.TAKEAWAY);
                 builder.Append(@"<table class=""top"">");
                 builder.Append("<tr>");
@@ -331,6 +337,7 @@ namespace Menoo.Printer.Builder.Orders
                 }
                 else
                 {
+                    _generalWriter.WriteEntry($"OrderBuilder::CreateOrderTicket(). Detalles del pago: {Environment.NewLine} {JsonConvert.SerializeObject(payment, Formatting.Indented)}", EventLogEntryType.Warning);
                     builder.Append(line);
                 }
                 builder.Append(qrCode);
@@ -365,6 +372,7 @@ namespace Menoo.Printer.Builder.Orders
 
         private async Task SaveOrderAsync(OrderV2 order, string sectorName, int copies, string printerName, bool isCancelled, bool isTakeAway, bool printQR)
         {
+            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             var ticket = new Ticket
             {
                 StoreId = order.Store.Id,
@@ -375,15 +383,17 @@ namespace Menoo.Printer.Builder.Orders
                 Copies = copies
             };
             bool isOrderOk = order?.OrderType != null;
-            ticket.PrintBefore = isTakeAway ? Utils.BeforeAt(order.OrderDate, 5) : Utils.BeforeAt(order.OrderDate, 10);
+            //ticket.PrintBefore = isTakeAway ? Utils.BeforeAt(order.OrderDate, 30) : Utils.BeforeAt(order.OrderDate, 60);
+            ticket.PrintBefore = isTakeAway ? Utils.BeforeAt(now, 30) : Utils.BeforeAt(now, 60);
             var line = CreateHtmlFromLines(order);
             await CreateOrderTicket(order, ticket, line, isOrderOk, isCancelled, isTakeAway, printQR);
             _generalWriter.WriteEntry($"OrderBuilder::SaveOrderAsync(). Enviando a imprimir la orden con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
                 $"Nombre de la impresora: {printerName}{Environment.NewLine}" +
                 $"Sector de impresión: {sectorName}{Environment.NewLine}" +
+                $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
                 $"Restaurante: {ticket.StoreName}{Environment.NewLine}" + 
                 $"Número de orden: {order.OrderNumber}{Environment.NewLine}" +
-                $"Tipo de orden: {order.OrderType.ToUpper().Trim()}" +
+                $"Tipo de orden: {order.OrderType.ToUpper().Trim()}{Environment.NewLine}" +
                 $"Estado de la orden: {order.Status.ToUpper()}");
             await _ticketRepository.SaveAsync(ticket);
         }
