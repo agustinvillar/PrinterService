@@ -85,6 +85,10 @@ namespace Menoo.PrinterService.Builder
 
         protected override void OnStop()
         {
+            if (_adapter != null)
+            {
+                _adapter.Dispose();
+            }
             _generalWriter.WriteEntry("Builder::OnStop(). Deteniendo servicio.", EventLogEntryType.Warning);
         }
 

@@ -110,7 +110,7 @@ namespace Menoo.PrinterService.Infraestructure
 
         public static T GetObject<T>(this object element)
         {
-            var json = JsonConvert.SerializeObject(element, Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings
+            var json = JsonConvert.SerializeObject(element, Formatting.Indented, new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore
             });

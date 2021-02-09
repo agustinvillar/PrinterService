@@ -26,12 +26,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("id")]
         public string Id { get; set; }
 
-        [FirestoreProperty("printedAccepted")]
-        [JsonProperty("printedAccepted")]
-        public bool PrintedAccepted { get; set; }
-
-        [FirestoreProperty("printedCancelled")]
-        [JsonProperty("printedCancelled")]
         public bool PrintedCancelled { get; set; }
 
         [FirestoreProperty("store")]
