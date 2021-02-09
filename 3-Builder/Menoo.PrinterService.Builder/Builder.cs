@@ -38,9 +38,9 @@ namespace Menoo.PrinterService.Builder
             var builders = GlobalConfig.DependencyResolver.ResolveAll<ITicketBuilder>();
             foreach (var builder in builders)
             {
-                _generalWriter.WriteEntry($"Builder::OnStart(). Activando el builder de: {builder.ToString()}", EventLogEntryType.Information);
                 if (builder.ToString() == data.Builder) 
                 {
+                    _generalWriter.WriteEntry($"Builder::RecieveAsync(). Activando el builder de: {builder.ToString()}", EventLogEntryType.Information);
                     string type = !string.IsNullOrEmpty(data.SubTypeDocument) ? $"{data.TypeDocument}-{data.SubTypeDocument}" : $"{data.TypeDocument}";
                     _generalWriter.WriteEntry(
                         $"{builder.ToString()}::BuildAsync(). Nuevo ticket de impresión recibido. {Environment.NewLine}" +
@@ -68,6 +68,7 @@ namespace Menoo.PrinterService.Builder
 
         protected override void OnStart(string[] args)
         {
+            Debugger.Launch();
             _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             ConfigureWorker();
         }

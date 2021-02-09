@@ -131,6 +131,7 @@
   <ItemGroup>
     <Compile Include="BookingBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Start.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\0-Infraestructure\Menoo.PrinterService.Infraestructure\Menoo.PrinterService.Infraestructure.csproj">

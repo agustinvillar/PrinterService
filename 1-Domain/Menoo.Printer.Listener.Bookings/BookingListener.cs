@@ -41,12 +41,12 @@ namespace Menoo.Printer.Listener.Bookings
             //Aceptada
             _firestoreDb.Collection("bookings")
                        .WhereEqualTo("bookingState", "aceptada")
-                       .OrderByDescending("createdAt")
+                       //.OrderByDescending("updatedAt")
                        .Listen(OnAcepted);
             //Cancelada
             _firestoreDb.Collection("bookings")
                        .WhereEqualTo("bookingState", "cancelada")
-                       .OrderByDescending("updatedAt")
+                       //.OrderByDescending("updatedAt")
                        .Listen(OnCancelled);
         }
 
@@ -82,7 +82,8 @@ namespace Menoo.Printer.Listener.Bookings
                     {
                         DocumentId = ticket,
                         PrintEvent = PrintEvents.NEW_BOOKING,
-                        TypeDocument = PrintTypes.BOOKING
+                        TypeDocument = PrintTypes.BOOKING,
+                        Builder = PrintBuilder.BOOKING_BUILDER
                     };
                     try
                     {
@@ -131,7 +132,8 @@ namespace Menoo.Printer.Listener.Bookings
                     {
                         DocumentId = ticket,
                         PrintEvent = PrintEvents.CANCELED_BOOKING,
-                        TypeDocument = PrintTypes.BOOKING
+                        TypeDocument = PrintTypes.BOOKING,
+                        Builder = PrintBuilder.BOOKING_BUILDER
                     };
                     try
                     {

@@ -86,7 +86,8 @@ namespace Menoo.Printer.Listener.Orders
                     {
                         DocumentId = ticket,
                         PrintEvent = PrintEvents.ORDER_CANCELLED,
-                        TypeDocument = PrintTypes.ORDER
+                        TypeDocument = PrintTypes.ORDER,
+                        Builder = PrintBuilder.ORDER_BUILDER
                     };
                     try
                     {
@@ -135,7 +136,8 @@ namespace Menoo.Printer.Listener.Orders
                     {
                         DocumentId = ticket,
                         PrintEvent = PrintEvents.NEW_ORDER,
-                        TypeDocument = PrintTypes.ORDER
+                        TypeDocument = PrintTypes.ORDER,
+                        Builder = PrintBuilder.ORDER_BUILDER
                     };
                     try
                     {
@@ -185,7 +187,8 @@ namespace Menoo.Printer.Listener.Orders
                         DocumentId = ticket,
                         PrintEvent = PrintEvents.NEW_TAKE_AWAY,
                         TypeDocument = PrintTypes.ORDER,
-                        SubTypeDocument = SubOrderPrintTypes.ORDER_TA
+                        SubTypeDocument = SubOrderPrintTypes.ORDER_TA,
+                        Builder = PrintBuilder.ORDER_BUILDER
                     };
                     try
                     {

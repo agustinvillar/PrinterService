@@ -2,7 +2,6 @@
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
-using Menoo.PrinterService.Infraestructure.Enums;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
@@ -12,7 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Menoo.Printer.Builder.Orders
+namespace Menoo.Printer.Builder.BookingBuilder
 {
     [Handler]
     public class BookingBuilder : ITicketBuilder
@@ -35,12 +34,14 @@ namespace Menoo.Printer.Builder.Orders
             FirestoreDb firestoreDb,
             StoreRepository storeRepository,
             TicketRepository ticketRepository,
-            BookingRepository bookingRepository)
+            BookingRepository bookingRepository,
+            UserRepository userRepository)
         {
             _firestoreDb = firestoreDb;
             _storeRepository = storeRepository;
             _ticketRepository = ticketRepository;
             _bookingRepository = bookingRepository;
+            _userRepository = userRepository;
             _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
@@ -58,8 +59,9 @@ namespace Menoo.Printer.Builder.Orders
 
         private async Task SaveTicketBooking(Booking booking, User user, string printEvent)
         {
+            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             var store = await _storeRepository.GetById<Store>(booking.Store.Id, "stores");
-            var sectors = store.GetPrintSettings(printEvent);
+            var sectors = store.GetPrintSettings(PrintEvents.NEW_BOOKING);
             if (sectors.Count > 0)
             {
                 foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
@@ -76,8 +78,8 @@ namespace Menoo.Printer.Builder.Orders
 
                     var ticket = new Ticket
                     {
-                        TicketType = TicketTypeEnum.NEW_BOOKING.ToString(),
-                        PrintBefore = Utils.BeforeAt(booking.BookingDate, -10),
+                        TicketType = printEvent,
+                        PrintBefore = Utils.BeforeAt(now, 10),
                         StoreId = booking.Store.Id,
                         Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                         Copies = sector.Copies,
@@ -104,17 +106,5 @@ namespace Menoo.Printer.Builder.Orders
         {
             return PrintBuilder.BOOKING_BUILDER;
         }
-
-        #region private methods
-        private void BuildBookingCancelled(Booking bookingDTO)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void BuildBookingCreated(Booking bookingDTO)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
     }
 }

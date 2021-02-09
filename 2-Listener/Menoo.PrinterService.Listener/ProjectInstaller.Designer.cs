@@ -29,7 +29,7 @@ namespace Menoo.PrinterService.Listener
             this.serviceProcessInstallerInstance.Username = null;
 
             this.serviceInstallerInstance.DelayedAutoStart = true;
-            this.serviceInstallerInstance.Description = @"Menoo.Printer.Listener es un servicio para capturar y encolar enventos de impresión procedentes de Firebase.";
+            this.serviceInstallerInstance.Description = @"Menoo Printer Listener es un servicio para capturar y encolar enventos de impresión procedentes de Firebase.";
             this.serviceInstallerInstance.DisplayName = @"Menoo Printer Listener";
             this.serviceInstallerInstance.ServiceName = @"MenooPrinterListener";
             this.serviceInstallerInstance.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
