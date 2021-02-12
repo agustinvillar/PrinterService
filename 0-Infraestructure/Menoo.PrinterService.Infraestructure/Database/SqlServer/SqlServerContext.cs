@@ -112,6 +112,10 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
         {
             if (isNew)
             {
+                if (!TicketHistory.Any(f => f.Id == message.DocumentId)) 
+                {
+                    return;
+                }
                 var historyDetails = new List<TicketHistorySettings>()
                 {
                     new TicketHistorySettings{
