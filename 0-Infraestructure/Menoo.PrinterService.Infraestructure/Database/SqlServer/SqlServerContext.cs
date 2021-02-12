@@ -112,7 +112,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
         {
             if (isNew)
             {
-                if (!TicketHistory.Any(f => f.Id == message.DocumentId)) 
+                if (TicketHistory.Any(f => f.Id == message.DocumentId)) 
                 {
                     return;
                 }

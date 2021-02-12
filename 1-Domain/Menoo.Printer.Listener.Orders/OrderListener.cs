@@ -92,7 +92,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
+                        SetOrderAsPrintedAsync(messageQueue, false, true).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
