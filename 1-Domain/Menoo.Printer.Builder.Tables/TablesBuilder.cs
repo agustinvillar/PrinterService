@@ -43,6 +43,10 @@ namespace Menoo.Printer.Builder.Tables
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
+        public override string ToString()
+        {
+            return PrintBuilder.TABLE_BUILDER;
+        }
         public async Task BuildAsync(PrintMessage data)
         {
             if (data.Builder != PrintBuilder.TABLE_BUILDER)
