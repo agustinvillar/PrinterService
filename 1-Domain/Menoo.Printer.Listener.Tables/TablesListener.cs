@@ -40,7 +40,7 @@ namespace Menoo.Printer.Listener.Tables
         {
             _firestoreDb.Collection("tableOpeningFamily")
                   .OrderByDescending("openedAtNumber")
-                  .Limit(1)
+                  //.Limit(1)
                   .Listen(OnOpenFamily);
 
             _firestoreDb.Collection("tableOpeningFamily")
