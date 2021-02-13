@@ -40,7 +40,7 @@ namespace Menoo.Printer.Listener.Tables
         {
             _firestoreDb.Collection("tableOpeningFamily")
                   .OrderByDescending("openedAtNumber")
-                  //.Limit(1)
+                  .Limit(1)
                   .Listen(OnOpenFamily);
 
             _firestoreDb.Collection("tableOpeningFamily")
@@ -113,12 +113,9 @@ namespace Menoo.Printer.Listener.Tables
                 {
                     return;
                 }
-                var ticketTables = snapshot.Documents
-                                            .Where(filter => filter.Exists)
-                                            .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                            .OrderByDescending(o => o.CreateTime)
-                                            .Select(s => s.Id)
-                                            .ToList();
+                string currentId = snapshot.Documents.SingleOrDefault().Id;
+                var ticketTables = new List<string> { snapshot.Documents.SingleOrDefault().Id };
+
                 var ticketsToPrint = GetTablesToPrint(ticketTables, true, false);
                 if (ticketsToPrint == null || ticketsToPrint.Count == 0)
                 {
