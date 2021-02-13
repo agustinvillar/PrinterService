@@ -20,8 +20,6 @@ namespace Menoo.Printer.Builder.BookingBuilder
 
         private readonly EventLog _generalWriter;
 
-        private readonly int _queueDelay;
-
         private readonly UserRepository _userRepository;
 
         private readonly BookingRepository _bookingRepository;
@@ -42,7 +40,6 @@ namespace Menoo.Printer.Builder.BookingBuilder
             _ticketRepository = ticketRepository;
             _bookingRepository = bookingRepository;
             _userRepository = userRepository;
-            _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 

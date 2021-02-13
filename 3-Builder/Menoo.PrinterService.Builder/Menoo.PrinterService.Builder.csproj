@@ -179,6 +179,10 @@
       <Project>{46ebc8aa-99ee-458d-a004-7f5e9bf6c608}</Project>
       <Name>Menoo.Printer.Builder.Orders</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\1-Domain\Menoo.Printer.Builder.Tables\Menoo.Printer.Builder.Tables.csproj">
+      <Project>{b088c46b-3b17-440a-98b6-5fe6b6c4ddb2}</Project>
+      <Name>Menoo.Printer.Builder.Tables</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

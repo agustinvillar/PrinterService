@@ -44,14 +44,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("storeId")]
         public string StoreId { get; set; }
 
-        [FirestoreProperty("openPrinted")]
-        [JsonProperty("openPrinted")]
-        public bool OpenPrinted { get; set; }
-
-        [FirestoreProperty("closedPrinted")]
-        [JsonProperty("closedPrinted")]
-        public bool ClosedPrinted { get; set; }
-
         [FirestoreProperty("totalToPayWithSurcharge")]
         [JsonProperty("totalToPayWithSurcharge")]
         public double? TotalToPayWithSurcharge { get; set; }
