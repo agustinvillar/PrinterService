@@ -112,7 +112,7 @@ namespace Menoo.Printer.Builder.Tables
                     {
                         foreach (var to in tableOpeningFamilyDTO.TableOpenings)
                         {
-                            orderData.Append($"<p>{to.UserName}</p>");
+                            orderData.Append($"<p><b>{to.UserName}</b></p>");
                             foreach (var order in to.Orders)
                             {
                                 foreach (var item in order.Items)
