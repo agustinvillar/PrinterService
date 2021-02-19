@@ -7,7 +7,7 @@ namespace Menoo.PrinterService.Listener
     {
         static void Main()
         {
-            Boostrapper.Bootstrap();
+            Bootstrapper.Bootstrap();
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[]
             {

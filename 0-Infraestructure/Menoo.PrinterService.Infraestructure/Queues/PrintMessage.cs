@@ -11,5 +11,7 @@
         public string SubTypeDocument { get; set; }
 
         public string Builder { get; set; }
+
+        public string ExtraData { get; set; }
     }
 }

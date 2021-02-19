@@ -6,7 +6,7 @@ namespace Menoo.PrinterService.Infraestructure
 {
     public static class GlobalConfig
     {
-        public static IDependencyResolver DependencyResolver = new UnityDependencyResolver(Boostrapper.UnityContainer);
+        public static IDependencyResolver DependencyResolver = new UnityDependencyResolver(Bootstrapper.UnityContainer);
 
         public static IConfigurationManager ConfigurationManager = new DefaultConfigurationManager();
     }

@@ -164,7 +164,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Boostrapper.cs" />
+    <Compile Include="Bootstrapper.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Constants\PrintBiulder.cs" />
     <Compile Include="Constants\PrintEvents.cs" />

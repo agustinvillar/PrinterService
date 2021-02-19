@@ -62,33 +62,13 @@ namespace Menoo.Printer.Builder.Tables
             {
                 await BuildCloseTableOpeningFamilyAsync(tableOpeningFamilyDTO);
             }
-        }
-
-        #region private methods
-        private async Task BuildOpenTableOpeningFamilyAsync(TableOpeningFamily tableOpeningFamilyDTO)
-        {
-            var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
-            var sectors = store.GetPrintSettings(PrintEvents.TABLE_OPENED);
-            if (sectors.Count > 0)
+            else if (data.PrintEvent == PrintEvents.REQUEST_PAYMENT) 
             {
-                foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
-                {
-                    var ticket = new Ticket
-                    {
-                        TicketType = TicketTypeEnum.OPEN_TABLE.ToString(),
-                        PrintBefore = Utils.BeforeAt(tableOpeningFamilyDTO.OpenedAt, 10),
-                        StoreId = tableOpeningFamilyDTO.StoreId,
-                        StoreName = store.Name,
-                        Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
-                        Copies = sector.Copies,
-                        PrinterName = sector.Printer
-                    };
-                    ticket.SetTableOpening("Apertura de mesa", tableOpeningFamilyDTO.TableNumberToShow, tableOpeningFamilyDTO.OpenedAt);
-                    await _ticketRepository.SaveAsync(ticket);
-                }
+                await BuildRequestPaymentAsync(tableOpeningFamilyDTO, data.SubTypeDocument);
             }
         }
 
+        #region private methods
         private async Task BuildCloseTableOpeningFamilyAsync(TableOpeningFamily tableOpeningFamilyDTO)
         {
             var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
@@ -191,6 +171,131 @@ namespace Menoo.Printer.Builder.Tables
                     ticket.SetTableClosing(SetTitleForCloseTable(tableOpeningFamilyDTO), tableOpeningFamilyDTO.TableNumberToShow, tableOpeningFamilyDTO.ClosedAt, total.ToString(), orderData.ToString());
                     await _ticketRepository.SaveAsync(ticket);
                 }
+            }
+        }
+
+        private async Task BuildOpenTableOpeningFamilyAsync(TableOpeningFamily tableOpeningFamilyDTO)
+        {
+            var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
+            var sectors = store.GetPrintSettings(PrintEvents.TABLE_OPENED);
+            if (sectors.Count > 0)
+            {
+                foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
+                {
+                    var ticket = new Ticket
+                    {
+                        TicketType = TicketTypeEnum.OPEN_TABLE.ToString(),
+                        PrintBefore = Utils.BeforeAt(tableOpeningFamilyDTO.OpenedAt, 10),
+                        StoreId = tableOpeningFamilyDTO.StoreId,
+                        StoreName = store.Name,
+                        Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                        Copies = sector.Copies,
+                        PrinterName = sector.Printer
+                    };
+                    ticket.SetTableOpening("Apertura de mesa", tableOpeningFamilyDTO.TableNumberToShow, tableOpeningFamilyDTO.OpenedAt);
+                    await _ticketRepository.SaveAsync(ticket);
+                }
+            }
+        }
+
+        private async Task BuildRequestPaymentAsync(TableOpeningFamily tableOpeningFamilyDTO, string typeRequest)
+        {
+            var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
+            var sectors = store.GetPrintSettings(PrintEvents.REQUEST_PAYMENT);
+            if (sectors.Count > 0)
+            {
+                foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
+                {
+                    await SaveRequestPayment(tableOpeningFamilyDTO, typeRequest, store, sector);
+                }
+            }
+        }
+
+        private async Task SaveRequestPayment(TableOpeningFamily tableOpeningFamilyDTO, string typeRequest, Store store, PrintSettings sector)
+        {
+            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+            string title = string.Empty;
+            if (typeRequest == SubOrderPrintTypes.REQUEST_PAYMENT_POS)
+            {
+                title = "Solicitud de pago POS";
+            }
+            else if (typeRequest == SubOrderPrintTypes.REQUEST_PAYMENT_CASH)
+            {
+                title = "Solicitud de pago efectivo";
+            }
+            var ticket = new Ticket
+            {
+                TicketType = TicketTypeEnum.PAYMENT_REQUEST.ToString(),
+                PrintBefore = Utils.BeforeAt(now, 10),
+                StoreId = tableOpeningFamilyDTO.StoreId,
+                StoreName = store.Name,
+                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                Copies = sector.Copies,
+                PrinterName = sector.Printer
+            };
+
+            StringBuilder orderData = new StringBuilder();
+            if (tableOpeningFamilyDTO.TableOpenings.Count() > 0)
+            {
+                foreach (var to in tableOpeningFamilyDTO.TableOpenings)
+                {
+                    orderData.Append($"<p>Cliente: {to.UserName}</p>");
+                    foreach (var order in to.Orders)
+                    {
+                        foreach (var item in order.Items)
+                        {
+                            var quantityLabel = item.Quantity > 1 ? "unidades" : "unidad";
+                            orderData.Append($"<p>{Utils.GetTime(order.MadeAt)} {item.Name} x {item.Quantity} {quantityLabel} ${item.PriceToTicket}</p>");
+                            if (item.Options != null)
+                            {
+                                foreach (var option in item.Options)
+                                {
+                                    if (option != null)
+                                    {
+                                        orderData.Append($"<p>{option.Name} {option.Price}</p>");
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0)
+                    {
+                        orderData.Append($"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>");
+                    }
+
+                    if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0)
+                    {
+                        orderData.Append($"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>");
+                    }
+
+                    if (to.Tip != null && to.Tip > 0)
+                    {
+                        orderData.Append($"<p>Propina: ${to.Tip}</p>");
+                    }
+
+                    if (to.Surcharge != null && to.Surcharge > 0)
+                    {
+                        orderData.Append($"<p>Adicional por servicio: ${to.Surcharge}</p>");
+                    }
+
+                    if (to.Discounts != null && to.Discounts.Length > 0)
+                    {
+                        var discounts = to.Discounts.Where(discount => discount.Type != DiscountTypeEnum.Iva);
+                        foreach (var detail in discounts)
+                        {
+                            orderData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
+                        }
+                    }
+
+                    if (to.PagoPorTodos || to.PagoPorElMismo)
+                    {
+                        orderData.Append($"<p>Subtotal: ${to.TotalToTicket(store)}</p>");
+                    }
+                }
+                double total = tableOpeningFamilyDTO.TotalToTicket(store);
+                ticket.SetRequestPayment(title, tableOpeningFamilyDTO.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy HH:mm"), total.ToString(), orderData.ToString());
+                await _ticketRepository.SaveAsync(ticket);
             }
         }
 

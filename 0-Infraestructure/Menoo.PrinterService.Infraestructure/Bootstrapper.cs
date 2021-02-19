@@ -2,7 +2,7 @@
 
 namespace Menoo.PrinterService.Infraestructure
 {
-    public static class Boostrapper
+    public static class Bootstrapper
     {
         public static IUnityContainer UnityContainer = new UnityContainer();
 

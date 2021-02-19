@@ -51,9 +51,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
             var ticketsToPrint = new List<string>();
             var printedTickets = GetTicketsPrintedAsync()
                             .GetAwaiter()
-                            .GetResult()
-                            .Where(f => f.IsCreatedPrinted == "true")
-                            .Where(f => f.IsCancelledPrinted == "false");
+                            .GetResult();
             if (isCreated)
             {
                 var printedTicketIds = printedTickets.Select(s => s.DocumentId).ToList();
@@ -65,7 +63,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
             {
                 foreach (var ticket in printedTickets)
                 {
-                    if (bool.Parse(ticket.IsCreatedPrinted) && documentIds.Contains(ticket.DocumentId))
+                    if (bool.Parse(ticket.IsCreatedPrinted) && !bool.Parse(ticket.IsCancelledPrinted) && documentIds.Contains(ticket.DocumentId))
                     {
                         ticketsToPrint.Add(ticket.DocumentId);
                     }
