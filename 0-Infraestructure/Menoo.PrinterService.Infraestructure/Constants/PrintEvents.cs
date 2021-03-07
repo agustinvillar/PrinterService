@@ -19,5 +19,7 @@
         public static string CANCELED_BOOKING = "CANCELED_BOOKING";
 
         public static string REQUEST_PAYMENT = "REQUEST_PAYMENT";
+
+        public static string REPRINT_ORDER = "REPRINT_ORDER";
     }
 }

@@ -188,6 +188,7 @@
     <Compile Include="Database\SqlServer\Entities\TicketHistory.cs" />
     <Compile Include="Database\SqlServer\Entities\TicketHistorySettings.cs" />
     <Compile Include="Database\SqlServer\SqlServerContext.cs" />
+    <Compile Include="Database\SqlServer\ViewModels\TicketRePrinterViewModel.cs" />
     <Compile Include="Enums\BookingEnum.cs" />
     <Compile Include="Enums\DiscountTypeEnum.cs" />
     <Compile Include="Enums\PrintStatus.cs" />

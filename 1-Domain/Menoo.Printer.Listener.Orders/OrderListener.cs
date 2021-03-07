@@ -52,6 +52,10 @@ namespace Menoo.Printer.Listener.Orders
             _firestoreDb.Collection("orders")
                 .WhereEqualTo("status", "cancelado")
                 .Listen(OnCancelled);
+
+            //Reimpresión de orden
+            _firestoreDb.Collection("rePrint")
+                .Listen(RePrintOrder);
         }
 
         public override string ToString()
@@ -210,6 +214,57 @@ namespace Menoo.Printer.Listener.Orders
                 _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). Ha ocurrido un error al capturar nuevos TA. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
             }
         }
+
+        private void RePrintOrder(QuerySnapshot snapshot)
+        {
+            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            try
+            {
+                if (snapshot.Documents.Count == 0)
+                {
+                    return;
+                }
+                var tickets = snapshot.Documents
+                                            .Where(filter => filter.Exists)
+                                            .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
+                                            .OrderByDescending(o => o.CreateTime)
+                                            .Select(s => s.Id)
+                                            .ToList();
+                var ticketsToPrint = GetOrdersReToPrint(tickets);
+                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
+                {
+                    return;
+                }
+                foreach (var ticket in ticketsToPrint)
+                {
+                    var messageQueue = new PrintMessage
+                    {
+                        DocumentId = ticket,
+                        PrintEvent = PrintEvents.REPRINT_ORDER,
+                        TypeDocument = PrintTypes.ORDER,
+                        SubTypeDocument = string.Empty,
+                        Builder = PrintBuilder.ORDER_BUILDER
+                    };
+                    try
+                    {
+                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
+                        SetOrderAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
+                    }
+                    catch (Exception e)
+                    {
+                        _generalWriter.WriteEntry($"OrderListener::RePrintOrder(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(_delayTask);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). Ha ocurrido un error al capturar nuevos TA. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+            }
+        }
         #endregion
 
         #region private methods
@@ -221,6 +276,16 @@ namespace Menoo.Printer.Listener.Orders
                 ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);
             }
             return ticketsToPrint;
+        }
+
+        private List<string> GetOrdersReToPrint(List<string> documentIds)
+        {
+            List<string> ticketsToRePrint = null;
+            using (var sqlServerContext = new SqlServerContext())
+            {
+                ticketsToRePrint = sqlServerContext.GetItemsToRePrint(documentIds);
+            }
+            return ticketsToRePrint;
         }
 
         private async Task SetOrderAsPrintedAsync(PrintMessage message, bool isNew = true, bool isCancelled = false)

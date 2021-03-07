@@ -78,6 +78,10 @@ namespace Menoo.Printer.Builder.Orders
             {
                 BuildOrderCancelled(orderDTO);
             }
+            else if (data.PrintEvent == PrintEvents.REPRINT_ORDER) 
+            {
+                BuildOrderToReprint(orderDTO);
+            }
         }
 
         public override string ToString()
@@ -159,6 +163,11 @@ namespace Menoo.Printer.Builder.Orders
             }
         }
 
+        private void BuildOrderToReprint(OrderV2 orderDTO)
+        {
+            BuildOrderCreated(orderDTO, orderDTO.OrderType);
+        }
+
         private string CreateHtmlFromLines(OrderV2 order)
         {
             var lines = new List<string>();
@@ -189,7 +198,7 @@ namespace Menoo.Printer.Builder.Orders
         private async Task CreateOrderTicket(OrderV2 order, Ticket ticket, string line, bool isOrderOk, bool isCancelled = false, bool isTakeAway = false, bool printQR = false)
         {
             StringBuilder builder = new StringBuilder();
-            string qrCode = "";
+            string qrCode = string.Empty;
             string title;
             if (isTakeAway && printQR && !isCancelled)
             {
@@ -277,7 +286,7 @@ namespace Menoo.Printer.Builder.Orders
                         builder.Append($"<p>Pedido <b>CANCELADO</b>.</p>");
                     }
                     builder.Append($"<p>--------------------------------------------------</p>");
-                    builder.Append(@"<div class=""center""><b>TOTAL: $" + payment.TotalToPayTicket + "</b></div>");
+                    builder.Append(@"<div class=""center""><b>TOTAL: $" + payment.TotalToPayTicket + "</b><br/><br/><br/><br/></div>");
                 }
                 else
                 {

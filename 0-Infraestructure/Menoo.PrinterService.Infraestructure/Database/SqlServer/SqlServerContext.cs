@@ -72,6 +72,19 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
             return ticketsToPrint;
         }
 
+        public List<string> GetItemsToRePrint(List<string> documentIds) 
+        {
+            var ticketsToRePrint = new List<string>();
+            var printedTickets = GetTicketsPrintedAsync()
+                            .GetAwaiter()
+                            .GetResult();
+            var printedTicketIds = printedTickets.Select(s => s.DocumentId).ToList();
+            ticketsToRePrint.AddRange((from c in documentIds
+                                     where !printedTicketIds.Contains(c)
+                                     select c));
+            return ticketsToRePrint;
+        }
+
         public override int SaveChanges()
         {
             try
@@ -160,6 +173,16 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
                 DocumentId = s.Key,
                 IsCancelledPrinted = s.FirstOrDefault(f => f.Name == PrintProperties.IS_CANCELLED_PRINTED).Value,
                 IsCreatedPrinted = s.FirstOrDefault(f => f.Name == PrintProperties.IS_NEW_PRINTED).Value
+            }).ToListAsync();
+            return ticketsPrinted;
+        }
+
+        private async Task<List<TicketRePrinterViewModel>> GetTicketsRePrintedAsync()
+        {
+            List<TicketRePrinterViewModel> ticketsPrinted = await this.TicketHistorySettings.GroupBy(g => g.TicketHistoryId).Select(s => new TicketRePrinterViewModel
+            {
+                DocumentId = s.Key,
+                IsRePrinted = s.FirstOrDefault(f => f.Name == PrintProperties.IS_REPRINTED).Value
             }).ToListAsync();
             return ticketsPrinted;
         }
