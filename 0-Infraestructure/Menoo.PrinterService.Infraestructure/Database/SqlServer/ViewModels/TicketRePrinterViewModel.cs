@@ -1,6 +1,6 @@
 ﻿namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.ViewModels
 {
-    public struct TicketRePrinterViewModel
+    public class TicketRePrinterViewModel
     {
         public string DocumentId { get; set; }
 
