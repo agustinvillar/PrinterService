@@ -52,7 +52,7 @@ namespace Menoo.Printer.Listener.Orders
             _firestoreDb.Collection("orders")
                 .WhereEqualTo("status", "cancelado")
                 .Listen(OnCancelled);
-
+            
             //Reimpresión de orden
             _firestoreDb.Collection("rePrint")
                 .Listen(RePrintOrder);
@@ -254,7 +254,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsRePrintedAsync(messageQueue).GetAwaiter().GetResult();
+                        SetOrderAsRePrintedAsync(messageQueue, ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -302,11 +302,11 @@ namespace Menoo.Printer.Listener.Orders
             }
         }
 
-        private async Task SetOrderAsRePrintedAsync(PrintMessage message)
+        private async Task SetOrderAsRePrintedAsync(PrintMessage message, string documentId)
         {
             using (var sqlServerContext = new SqlServerContext())
             {
-                await sqlServerContext.SetRePrintedAsync(message);
+                await sqlServerContext.SetRePrintedAsync(message, documentId);
             }
         }
         #endregion
