@@ -75,7 +75,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
         public List<string> GetItemsToRePrint(List<string> documentIds) 
         {
             var ticketsToRePrint = new List<string>();
-            var printedTickets = GetTicketsPrintedAsync()
+            var printedTickets = GetTicketsRePrintedAsync()
                             .GetAwaiter()
                             .GetResult();
             var printedTicketIds = printedTickets.Select(s => s.DocumentId).ToList();
