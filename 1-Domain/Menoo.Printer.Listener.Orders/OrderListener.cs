@@ -38,7 +38,6 @@ namespace Menoo.Printer.Listener.Orders
 
         public void Listen()
         {
-            /*
             //Nuevo TA creado.
             _firestoreDb.Collection("orders")
                .WhereEqualTo("status", "pendiente")
@@ -53,7 +52,6 @@ namespace Menoo.Printer.Listener.Orders
             _firestoreDb.Collection("orders")
                 .WhereEqualTo("status", "cancelado")
                 .Listen(OnCancelled);
-            */
 
             //Reimpresión de orden
             _firestoreDb.Collection("rePrint")
@@ -256,7 +254,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
+                        SetOrderAsRePrintedAsync(messageQueue).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -301,6 +299,14 @@ namespace Menoo.Printer.Listener.Orders
             using (var sqlServerContext = new SqlServerContext())
             {
                 await sqlServerContext.SetPrintedAsync(message, isNew, isCancelled);
+            }
+        }
+
+        private async Task SetOrderAsRePrintedAsync(PrintMessage message)
+        {
+            using (var sqlServerContext = new SqlServerContext())
+            {
+                await sqlServerContext.SetRePrintedAsync(message);
             }
         }
         #endregion

@@ -165,6 +165,35 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
             }
         }
 
+        public async Task SetRePrintedAsync(PrintMessage message)
+        {
+            if (TicketHistory.Any(f => f.Id == message.DocumentId))
+            {
+                return;
+            }
+            var historyDetails = new List<TicketHistorySettings>()
+                {
+                    new TicketHistorySettings{
+                        TicketHistoryId = message.DocumentId,
+                        Name = PrintProperties.IS_REPRINTED,
+                        Value = "true",
+                        Id = Guid.NewGuid()
+                    }
+                };
+
+            var history = new TicketHistory
+            {
+                Id = message.DocumentId,
+                PrintEvent = message.PrintEvent,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                ExternalId = string.Empty
+            };
+            this.TicketHistory.Add(history);
+            this.TicketHistorySettings.AddRange(historyDetails);
+            await this.SaveChangesAsync();
+        }
+
         #region private methods
         private async Task<List<TicketHistoryViewModel>> GetTicketsPrintedAsync()
         {
