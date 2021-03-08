@@ -38,6 +38,7 @@ namespace Menoo.Printer.Listener.Orders
 
         public void Listen()
         {
+            /*
             //Nuevo TA creado.
             _firestoreDb.Collection("orders")
                .WhereEqualTo("status", "pendiente")
@@ -52,6 +53,7 @@ namespace Menoo.Printer.Listener.Orders
             _firestoreDb.Collection("orders")
                 .WhereEqualTo("status", "cancelado")
                 .Listen(OnCancelled);
+            */
 
             //Reimpresión de orden
             _firestoreDb.Collection("rePrint")
@@ -237,9 +239,15 @@ namespace Menoo.Printer.Listener.Orders
                 }
                 foreach (var ticket in ticketsToPrint)
                 {
+                    var documentReference = snapshot.Documents.FirstOrDefault(f => f.Id == ticket && f.Exists);
+                    if (documentReference == null) 
+                    {
+                        continue;
+                    }
+                    documentReference.ToDictionary().TryGetValue("orderId", out object orderId);
                     var messageQueue = new PrintMessage
                     {
-                        DocumentId = ticket,
+                        DocumentId = orderId.ToString(),
                         PrintEvent = PrintEvents.REPRINT_ORDER,
                         TypeDocument = PrintTypes.ORDER,
                         SubTypeDocument = string.Empty,
