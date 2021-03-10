@@ -1,6 +1,7 @@
 ﻿using Menoo.PrinterService.Infraestructure.Interfaces;
 using Rebus.Activation;
 using Rebus.Config;
+using Rebus.Routing.TypeBased;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,6 +52,7 @@ namespace Menoo.PrinterService.Infraestructure.Queues
             Rebus.Config.Configure.With(_adapter)
                 .Logging(l => l.Serilog())
                 .Transport(t => t.UseRabbitMqAsOneWayClient(_queueConnectionString))
+                .Routing(r => r.TypeBased().Map<PrintMessage>(_queueName))
                 .Start();
         }
     }

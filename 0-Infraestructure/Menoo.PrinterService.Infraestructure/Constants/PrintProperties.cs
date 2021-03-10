@@ -7,5 +7,7 @@
         public const string IS_CANCELLED_PRINTED = "isCancelled";
 
         public const string IS_REQUEST_PAYMENT = "isRequestedPayment";
+
+        public const string IS_REPRINTED = "isReprinted";
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Menoo.Printer.Listener.Tables
 {
-    public sealed class TicketRequestPayment : TicketHistoryViewModel
+    public class TicketRequestPayment : TicketHistoryViewModel
     {
         public string IsRequestPaymentPrinted { get; set; }
     }
