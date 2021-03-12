@@ -63,6 +63,10 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
             {
                 foreach (var ticket in printedTickets)
                 {
+                    if (string.IsNullOrEmpty(ticket.IsCreatedPrinted) && string.IsNullOrEmpty(ticket.IsCancelledPrinted)) 
+                    {
+                        continue;
+                    }
                     if (bool.Parse(ticket.IsCreatedPrinted) && !bool.Parse(ticket.IsCancelledPrinted) && documentIds.Contains(ticket.DocumentId))
                     {
                         ticketsToPrint.Add(ticket.DocumentId);
