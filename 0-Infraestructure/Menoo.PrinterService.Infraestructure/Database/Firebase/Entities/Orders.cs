@@ -162,5 +162,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("userName")]
         [JsonProperty("userName")]
         public string UserName { get; set; }
+
+        [FirestoreProperty("isMarket")]
+        [JsonProperty("isMarket")]
+        public bool IsMarket { get; set; }
     }
 }
