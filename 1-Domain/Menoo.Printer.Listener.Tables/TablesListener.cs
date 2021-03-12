@@ -241,6 +241,10 @@ namespace Menoo.Printer.Listener.Tables
                 {
                     isExistsProperty = bool.Parse(ticket.IsRequestPaymentPrinted);
                 }
+                if (string.IsNullOrEmpty(ticket.IsCreatedPrinted) && string.IsNullOrEmpty(ticket.IsCancelledPrinted)) 
+                {
+                    continue;
+                }
                 bool isNotPrinted = bool.Parse(ticket.IsCreatedPrinted) && !bool.Parse(ticket.IsCancelledPrinted) && !isExistsProperty && documentIds.Contains(ticket.DocumentId);
                 var result = snapshot.Documents.FirstOrDefault(s => s.Id == ticket.DocumentId);
                 if (result == null) 
