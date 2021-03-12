@@ -201,7 +201,7 @@ namespace Menoo.Printer.Builder.Orders
             string qrCode = string.Empty;
             string title = string.Empty;
             string guestComments = string.Empty;
-            bool isGuestComments = string.IsNullOrEmpty(order.GuestComment) && order.IsMarket;
+            bool isGuestComments = !string.IsNullOrEmpty(order.GuestComment) && order.IsMarket;
             if (isTakeAway && printQR && !isCancelled)
             {
                 qrCode = GenerateOrderQR(order);
