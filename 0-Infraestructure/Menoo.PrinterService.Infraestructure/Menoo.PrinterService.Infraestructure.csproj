@@ -190,7 +190,7 @@
     <Compile Include="Database\SqlServer\MainSchema\Entities\ContractBase.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\ContractPeriod.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\ContractType.cs" />
-    <Compile Include="Database\SqlServer\MainSchema\DbContexto.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\MenooContext.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\Incremental.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\Invoice.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\InvoviceItem.cs" />
@@ -206,7 +206,7 @@
     <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistoryTypeConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Entities\TicketHistory.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Entities\TicketHistorySettings.cs" />
-    <Compile Include="Database\SqlServer\PrinterSchema\SqlServerContext.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\PrinterContext.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\ViewModels\TicketRePrinterViewModel.cs" />
     <Compile Include="Enums\BookingEnum.cs" />
     <Compile Include="Enums\DiscountTypeEnum.cs" />
