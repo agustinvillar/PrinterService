@@ -1,6 +1,6 @@
 ﻿using Menoo.PrinterService.Infraestructure.Constants;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.Entities;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.ViewModels;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.ViewModels;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
 using System.Collections.Generic;
@@ -11,21 +11,21 @@ using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
+namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 {
-    public class SqlServerContext : DbContext
+    public class PrinterContext : DbContext
     {
         public DbSet<Entities.TicketHistory> TicketHistory { get; set; }
 
         public DbSet<Entities.TicketHistorySettings> TicketHistorySettings { get; set; }
 
-        static SqlServerContext()
+        static PrinterContext()
         {
-            System.Data.Entity.Database.SetInitializer<SqlServerContext>(null);
+            System.Data.Entity.Database.SetInitializer<PrinterContext>(null);
         }
 
-        public SqlServerContext()
-            : base("name=Microsoft.SQLServer.Print.ConnectionString")
+        public PrinterContext()
+            : base("name=Microsoft.SQLServer.Menoo.ConnectionString")
         {
         }
 
@@ -34,7 +34,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
         //{
         //}
 
-        public SqlServerContext(DbConnection dbConnection) 
+        public PrinterContext(DbConnection dbConnection) 
             : base(dbConnection, true) 
         {
         }
@@ -43,7 +43,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
         {
             modelBuilder.HasDefaultSchema("printer");
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
-            modelBuilder.Configurations.AddFromAssembly(typeof(SqlServerContext).Assembly);
+            modelBuilder.Configurations.AddFromAssembly(typeof(PrinterContext).Assembly);
         }
 
         public List<string> GetItemsToPrint(List<string> documentIds, bool isCreated, bool isCancelled)

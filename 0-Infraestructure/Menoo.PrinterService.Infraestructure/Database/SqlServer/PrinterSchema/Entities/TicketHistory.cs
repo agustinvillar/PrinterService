@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.Entities
+namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities
 {
     public class TicketHistory
     {

@@ -1,6 +1,6 @@
 ﻿using System.Data.Entity;
 
-namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
+namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 {
     public class ModelConfiguration : DbConfiguration
     {

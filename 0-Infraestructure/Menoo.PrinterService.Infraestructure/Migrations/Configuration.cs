@@ -5,7 +5,7 @@
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<Menoo.PrinterService.Infraestructure.Database.SqlServer.SqlServerContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.PrinterContext>
     {
         public Configuration()
         {
@@ -13,7 +13,7 @@
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(Menoo.PrinterService.Infraestructure.Database.SqlServer.SqlServerContext context)
+        protected override void Seed(Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.PrinterContext context)
         {
             //  This method will be called after migrating to the latest version.
 

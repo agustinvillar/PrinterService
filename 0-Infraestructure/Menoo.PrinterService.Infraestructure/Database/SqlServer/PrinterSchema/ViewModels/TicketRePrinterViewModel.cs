@@ -1,4 +1,4 @@
-﻿namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.ViewModels
+﻿namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.ViewModels
 {
     public class TicketRePrinterViewModel
     {

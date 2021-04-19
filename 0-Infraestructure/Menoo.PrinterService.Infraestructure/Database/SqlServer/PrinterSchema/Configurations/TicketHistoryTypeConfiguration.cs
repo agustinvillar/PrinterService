@@ -1,6 +1,6 @@
 ﻿using System.Data.Entity.ModelConfiguration;
 
-namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.Configurations
+namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Configurations
 {
     public class TicketHistoryTypeConfiguration : EntityTypeConfiguration<Entities.TicketHistory>
     {

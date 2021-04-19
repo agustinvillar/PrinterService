@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Menoo.PrinterService.Infraestructure.Database.SqlServer
+namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 {
     public class MyHistoryContext : HistoryContext
     {

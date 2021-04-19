@@ -5,6 +5,7 @@ using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
 using Menoo.PrinterService.Infraestructure.Enums;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
@@ -33,8 +34,6 @@ namespace Menoo.Printer.Builder.Orders
 
         private readonly BookingRepository _bookingRepository;
 
-        private readonly PaymentRepository _paymentRepository;
-
         private readonly OrderRepository _orderRepository;
 
         private readonly ItemRepository _itemRepository;
@@ -43,19 +42,20 @@ namespace Menoo.Printer.Builder.Orders
 
         private readonly TicketRepository _ticketRepository;
 
+        private readonly MenooContext _menooContext;
+
         public OrderBuilder(
             FirestoreDb firestoreDb,
             StoreRepository storeRepository,
             TicketRepository ticketRepository,
-            PaymentRepository paymentRepository,
             BookingRepository bookingRepository,
             OrderRepository orderRepository,
             ItemRepository itemRepository)
         {
             _firestoreDb = firestoreDb;
+            _menooContext = new MenooContext();
             _storeRepository = storeRepository;
             _ticketRepository = ticketRepository;
-            _paymentRepository = paymentRepository;
             _bookingRepository = bookingRepository;
             _orderRepository = orderRepository;
             _itemRepository = itemRepository;
@@ -199,13 +199,12 @@ namespace Menoo.Printer.Builder.Orders
         {
             StringBuilder builder = new StringBuilder();
             string qrCode = string.Empty;
-            string title = string.Empty;
-            string guestComments = string.Empty;
             bool isGuestComments = !string.IsNullOrEmpty(order.GuestComment) && order.IsMarket;
             if (isTakeAway && printQR && !isCancelled)
             {
                 qrCode = GenerateOrderQR(order);
             }
+            string title;
             if (isOrderOk && order.OrderType.ToUpper().Trim() == OrderTypes.MESA)
             {
                 builder.Append(@"<table class=""top"">");
@@ -255,10 +254,7 @@ namespace Menoo.Printer.Builder.Orders
             }
             else if (isOrderOk && isTakeAway)
             {
-                _generalWriter.WriteEntry($"OrderBuilder::CreateOrderTicket(). Pago TA, filtro de búsqueda en payments: taOpening.id", EventLogEntryType.Warning);
-                _generalWriter.WriteEntry($"OrderBuilder::CreateOrderTicket(). Pago TA, objeto de orden: {Environment.NewLine} {JsonConvert.SerializeObject(order, Formatting.Indented)}", EventLogEntryType.Warning);
-                await Task.Delay(_ticketTAPaymentDelay);
-                var payment = await _paymentRepository.GetPayment(order.TableOpeningId, OrderTypes.TAKEAWAY);
+                var payment = _menooContext.Payments.FirstOrDefault(f => f.EntityId == order.Id);
                 builder.Append(@"<table class=""top"">");
                 builder.Append("<tr>");
                 builder.Append("<td>Cliente: </td>");
@@ -280,9 +276,16 @@ namespace Menoo.Printer.Builder.Orders
                 builder.Append("</table>");
                 if (payment != null)
                 {
+                    var paymentRenglon = payment.Renglones.FirstOrDefault(f => f.Type == PrinterService.Infraestructure.Database.SqlServer.MainSchema.Entities.PaymentRenglon.PaymentRenglonType.DISCOUNT);
                     builder.Append(line);
                     builder.Append($"<p>Método de Pago: {payment.PaymentMethod}</p>");
                     builder.Append($"<p>--------------------------------------------------</p>");
+                    if (paymentRenglon != null) 
+                    {
+                        builder.Append($"<p>{paymentRenglon.Description}</p>");
+                        builder.Append($"<p>--------------------------------------------------</p>");
+                    }
+
                     if (!isCancelled)
                     {
                         builder.Append($"<p>Recuerde <b>ACEPTAR</b> el pedido.</p>");
@@ -293,7 +296,7 @@ namespace Menoo.Printer.Builder.Orders
                         builder.Append($"<p>Pedido <b>CANCELADO</b>.</p>");
                     }
                     builder.Append($"<p>--------------------------------------------------</p>");
-                    builder.Append(@"<div class=""center""><b>TOTAL: $" + payment.TotalToPayTicket + "</b><br/><br/><br/><br/></div>");
+                    builder.Append(@"<div class=""center""><b>TOTAL: $" + payment.TransactionAmount + "</b><br/><br/><br/><br/></div>");
                 }
                 else
                 {

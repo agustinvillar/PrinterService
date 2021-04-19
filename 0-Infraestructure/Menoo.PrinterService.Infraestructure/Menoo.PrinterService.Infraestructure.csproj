@@ -37,6 +37,9 @@
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DataAnnotationsExtensions, Version=5.0.1.27, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DataAnnotationsExtensions.5.0.1.27\lib\NETFramework40\DataAnnotationsExtensions.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -181,14 +184,30 @@
     <Compile Include="Database\Firebase\Entities\User.cs" />
     <Compile Include="Database\Firebase\FirebaseContext.cs" />
     <Compile Include="Database\Firebase\FirebaseRepository.cs" />
-    <Compile Include="Database\SqlServer\CustomModelHistoryConfiguration.cs" />
-    <Compile Include="Database\SqlServer\MyHistoryContext.cs" />
-    <Compile Include="Database\SqlServer\Configurations\TicketHistorySettingsTypeConfiguration.cs" />
-    <Compile Include="Database\SqlServer\Configurations\TicketHistoryTypeConfiguration.cs" />
-    <Compile Include="Database\SqlServer\Entities\TicketHistory.cs" />
-    <Compile Include="Database\SqlServer\Entities\TicketHistorySettings.cs" />
-    <Compile Include="Database\SqlServer\SqlServerContext.cs" />
-    <Compile Include="Database\SqlServer\ViewModels\TicketRePrinterViewModel.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\AccountState.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\CardIssuer.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\Contract.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\ContractBase.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\ContractPeriod.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\ContractType.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\DbContexto.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\Incremental.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\Invoice.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\InvoviceItem.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\Log.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\Payment.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\PaymentRenglon.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\Refund.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\SmsVerification.cs" />
+    <Compile Include="Database\SqlServer\MainSchema\Entities\Store.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\CustomModelHistoryConfiguration.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\MyHistoryContext.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistorySettingsTypeConfiguration.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistoryTypeConfiguration.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Entities\TicketHistory.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Entities\TicketHistorySettings.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\SqlServerContext.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\ViewModels\TicketRePrinterViewModel.cs" />
     <Compile Include="Enums\BookingEnum.cs" />
     <Compile Include="Enums\DiscountTypeEnum.cs" />
     <Compile Include="Enums\PrintStatus.cs" />
@@ -221,7 +240,7 @@
     <Compile Include="Repository\UserRepository.cs" />
     <Compile Include="Start.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="Database\SqlServer\ViewModels\TicketHistoryViewModel.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\ViewModels\TicketHistoryViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
