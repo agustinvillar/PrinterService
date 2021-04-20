@@ -1,4 +1,4 @@
-﻿using Menoo.PrinterService.Infraestructure.Database.SqlServer.ViewModels;
+﻿using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.ViewModels;
 
 namespace Menoo.Printer.Listener.Tables
 {

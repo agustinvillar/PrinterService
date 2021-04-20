@@ -1,7 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
@@ -161,7 +161,7 @@ namespace Menoo.Printer.Listener.Bookings
         private List<string> GetBookingsToPrint(List<string> documentIds, bool isCreated, bool isCancelled)
         {
             List<string> ticketsToPrint = null;
-            using (var sqlServerContext = new SqlServerContext())
+            using (var sqlServerContext = new PrinterContext())
             {
                 ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);
             }
@@ -170,7 +170,7 @@ namespace Menoo.Printer.Listener.Bookings
 
         private async Task SetBookingAsPrintedAsync(PrintMessage message, bool isNew = true, bool isCancelled = false)
         {
-            using (var sqlServerContext = new SqlServerContext())
+            using (var sqlServerContext = new PrinterContext())
             {
                 await sqlServerContext.SetPrintedAsync(message, isNew, isCancelled);
             }

@@ -2,9 +2,8 @@
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.Entities;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.ViewModels;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
@@ -224,7 +223,7 @@ namespace Menoo.Printer.Listener.Tables
         {
             List<PrintMessage> ticketsToPrint = new List<PrintMessage>();
             List<TicketRequestPayment> ticketsPrinted = null;
-            using (var sqlServerContext = new SqlServerContext())
+            using (var sqlServerContext = new PrinterContext())
             {
                 ticketsPrinted = sqlServerContext.TicketHistorySettings.GroupBy(g => g.TicketHistoryId).Select(s => new TicketRequestPayment
                 {
@@ -280,7 +279,7 @@ namespace Menoo.Printer.Listener.Tables
         private List<string> GetTablesToPrint(List<string> documentIds, bool isCreated, bool isCancelled)
         {
             List<string> ticketsToPrint = null;
-            using (var sqlServerContext = new SqlServerContext())
+            using (var sqlServerContext = new PrinterContext())
             {
                 ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);
             }
@@ -289,7 +288,7 @@ namespace Menoo.Printer.Listener.Tables
 
         private async Task SetTablesAsPrintedAsync(PrintMessage message, bool isNew = true, bool isCancelled = false, bool isRequestPayment = false)
         {
-            using (var sqlServerContext = new SqlServerContext())
+            using (var sqlServerContext = new PrinterContext())
             {
                 if (isNew)
                 {

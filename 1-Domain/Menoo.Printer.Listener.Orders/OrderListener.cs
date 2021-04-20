@@ -2,6 +2,7 @@
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
@@ -277,7 +278,7 @@ namespace Menoo.Printer.Listener.Orders
         private List<string> GetOrdersToPrint(List<string> documentIds, bool isCreated, bool isCancelled) 
         {
             List<string> ticketsToPrint = null;
-            using (var sqlServerContext = new SqlServerContext())
+            using (var sqlServerContext = new PrinterContext())
             {
                 ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);
             }
@@ -287,7 +288,7 @@ namespace Menoo.Printer.Listener.Orders
         private List<string> GetOrdersReToPrint(List<string> documentIds)
         {
             List<string> ticketsToRePrint = null;
-            using (var sqlServerContext = new SqlServerContext())
+            using (var sqlServerContext = new PrinterContext())
             {
                 ticketsToRePrint = sqlServerContext.GetItemsToRePrint(documentIds);
             }
@@ -296,7 +297,7 @@ namespace Menoo.Printer.Listener.Orders
 
         private async Task SetOrderAsPrintedAsync(PrintMessage message, bool isNew = true, bool isCancelled = false)
         {
-            using (var sqlServerContext = new SqlServerContext())
+            using (var sqlServerContext = new PrinterContext())
             {
                 await sqlServerContext.SetPrintedAsync(message, isNew, isCancelled);
             }
@@ -304,7 +305,7 @@ namespace Menoo.Printer.Listener.Orders
 
         private async Task SetOrderAsRePrintedAsync(PrintMessage message, string documentId)
         {
-            using (var sqlServerContext = new SqlServerContext())
+            using (var sqlServerContext = new PrinterContext())
             {
                 await sqlServerContext.SetRePrintedAsync(message, documentId);
             }
