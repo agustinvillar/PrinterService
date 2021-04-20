@@ -275,20 +275,18 @@ namespace Menoo.Printer.Builder.Orders
                     builder.Append($"<td>{order.GuestComment}</td>");
                     builder.Append("</tr>");
                 }
-
                 builder.Append("</table>");
                 if (payment != null)
                 {
                     var paymentRenglon = payment.Renglones.FirstOrDefault(f => f.Type == PrinterService.Infraestructure.Database.SqlServer.MainSchema.Entities.PaymentRenglon.PaymentRenglonType.DISCOUNT);
                     builder.Append(line);
-                    builder.Append($"<p>Método de Pago: {payment.PaymentMethod}</p>");
+                    builder.Append($"<p>Método de Pago: {payment.CardBrand}-{payment.PaymentMethod}</p>");
                     builder.Append($"<p>--------------------------------------------------</p>");
                     if (paymentRenglon != null) 
                     {
                         builder.Append($"<p>{paymentRenglon.Description}</p>");
                         builder.Append($"<p>--------------------------------------------------</p>");
                     }
-
                     if (!isCancelled)
                     {
                         builder.Append($"<p>Recuerde <b>ACEPTAR</b> el pedido.</p>");
