@@ -267,12 +267,15 @@ namespace Menoo.Printer.Builder.Orders
                 builder.Append("<tr>");
                 builder.Append("<td>Número de orden: </td>");
                 builder.Append($"<td>{order.OrderNumber}</td>");
+                builder.Append("</tr>");
                 if (isGuestComments)
                 {
+                    builder.Append("<tr>");
                     builder.Append("<td>NOTA: </td>");
                     builder.Append($"<td>{order.GuestComment}</td>");
+                    builder.Append("</tr>");
                 }
-                builder.Append("</tr>");
+
                 builder.Append("</table>");
                 if (payment != null)
                 {
