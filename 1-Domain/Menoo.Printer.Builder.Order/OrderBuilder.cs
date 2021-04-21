@@ -299,11 +299,7 @@ namespace Menoo.Printer.Builder.Orders
                     builder.Append($"<p>--------------------------------------------------</p>");
                     builder.Append(@"<div class=""center""><b>TOTAL: $" + payment.TransactionAmount + "</b><br/><br/><br/><br/></div>");
                 }
-                else
-                {
-                    _generalWriter.WriteEntry($"OrderBuilder::CreateOrderTicket(). Detalles del pago: {Environment.NewLine} {JsonConvert.SerializeObject(payment, Formatting.Indented)}", EventLogEntryType.Warning);
-                    builder.Append(line);
-                }
+                builder.Append(line);
                 builder.Append(qrCode);
                 title = isCancelled ? "TakeAway cancelado" : "Nuevo TakeAway";
                 ticket.SetOrder(title, builder.ToString());
