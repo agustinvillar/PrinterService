@@ -243,25 +243,30 @@ namespace Menoo.Printer.Builder.Tables
                 PrinterName = sector.Printer
             };
 
-            StringBuilder orderData = new StringBuilder();
+            StringBuilder orderViewData = new StringBuilder();
             if (tableOpeningFamilyDTO.TableOpenings.Count() > 0)
             {
                 foreach (var to in tableOpeningFamilyDTO.TableOpenings)
                 {
-                    orderData.Append($"<p>Cliente: {to.UserName}</p>");
+                    orderViewData.Append($"<p>Cliente: {to.UserName}</p>");
                     foreach (var order in to.Orders)
                     {
+                        var orderData = await _orderRepository.GetById<OrderV2>(order.Id, "orders");
+                        if (orderData.Status.ToLower() == "cancelada")
+                        {
+                            continue;
+                        }
                         foreach (var item in order.Items)
                         {
                             var quantityLabel = item.Quantity > 1 ? "unidades" : "unidad";
-                            orderData.Append($"<p>{Utils.GetTime(order.MadeAt)} {item.Name} x {item.Quantity} {quantityLabel} ${item.PriceToTicket}</p>");
+                            orderViewData.Append($"<p>{Utils.GetTime(order.MadeAt)} {item.Name} x {item.Quantity} {quantityLabel} ${item.PriceToTicket}</p>");
                             if (item.Options != null)
                             {
                                 foreach (var option in item.Options)
                                 {
                                     if (option != null)
                                     {
-                                        orderData.Append($"<p>{option.Name} {option.Price}</p>");
+                                        orderViewData.Append($"<p>{option.Name} {option.Price}</p>");
                                     }
 
                                 }
@@ -270,22 +275,22 @@ namespace Menoo.Printer.Builder.Tables
                     }
                     if (to.CutleryPriceTotal != null && to.CutleryPriceTotal > 0)
                     {
-                        orderData.Append($"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>");
+                        orderViewData.Append($"<p>Cubiertos x{to.CulteryPriceQuantity}: ${to.CutleryPriceTotal}</p>");
                     }
 
                     if (to.ArtisticCutleryTotal != null && to.ArtisticCutleryTotal > 0)
                     {
-                        orderData.Append($"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>");
+                        orderViewData.Append($"<p>Cubierto Artistico x{to.ArtisticCutleryQuantity}: ${to.ArtisticCutleryTotal}</p>");
                     }
 
                     if (to.Tip != null && to.Tip > 0)
                     {
-                        orderData.Append($"<p>Propina: ${to.Tip}</p>");
+                        orderViewData.Append($"<p>Propina: ${to.Tip}</p>");
                     }
 
                     if (to.Surcharge != null && to.Surcharge > 0)
                     {
-                        orderData.Append($"<p>Adicional por servicio: ${to.Surcharge}</p>");
+                        orderViewData.Append($"<p>Adicional por servicio: ${to.Surcharge}</p>");
                     }
 
                     if (to.Discounts != null && to.Discounts.Length > 0)
@@ -293,13 +298,13 @@ namespace Menoo.Printer.Builder.Tables
                         var discounts = to.Discounts.Where(discount => discount.Type != DiscountTypeEnum.Iva);
                         foreach (var detail in discounts)
                         {
-                            orderData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
+                            orderViewData.Append($"<p>Descuento {detail.Name}: -${detail.Amount}</p>");
                         }
                     }
 
                     if (to.PagoPorTodos || to.PagoPorElMismo)
                     {
-                        orderData.Append($"<p>Subtotal: ${to.TotalToTicket(store)}</p>");
+                        orderViewData.Append($"<p>Subtotal: ${to.TotalToTicket(store)}</p>");
                     }
                 }
                 double total = tableOpeningFamilyDTO.TotalToTicket(store);
