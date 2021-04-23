@@ -308,7 +308,7 @@ namespace Menoo.Printer.Builder.Tables
                     }
                 }
                 double total = tableOpeningFamilyDTO.TotalToTicket(store);
-                ticket.SetRequestPayment(title, tableOpeningFamilyDTO.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy HH:mm"), total.ToString(), orderData.ToString());
+                ticket.SetRequestPayment(title, tableOpeningFamilyDTO.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy HH:mm"), total.ToString(), orderViewData.ToString());
                 await _ticketRepository.SaveAsync(ticket);
             }
         }
