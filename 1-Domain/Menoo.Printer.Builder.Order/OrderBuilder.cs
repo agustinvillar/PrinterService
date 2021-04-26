@@ -280,7 +280,7 @@ namespace Menoo.Printer.Builder.Orders
                 {
                     var paymentRenglon = payment.Renglones.FirstOrDefault(f => f.Type == PrinterService.Infraestructure.Database.SqlServer.MainSchema.Entities.PaymentRenglon.PaymentRenglonType.DISCOUNT);
                     builder.Append(line);
-                    builder.Append($"<p>Método de Pago: {payment.CardBrand}-{payment.PaymentMethod}</p>");
+                    builder.Append($"<p>Método de Pago: {payment.CardBrand}</p>");
                     builder.Append($"<p>--------------------------------------------------</p>");
                     if (paymentRenglon != null) 
                     {
