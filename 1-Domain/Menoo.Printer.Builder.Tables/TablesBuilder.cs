@@ -100,7 +100,7 @@ namespace Menoo.Printer.Builder.Tables
                             foreach (var order in to.Orders)
                             {
                                 var orderData = await _orderRepository.GetById<OrderV2>(order.Id, "orders");
-                                if (orderData.Status.ToLower() == "cancelada") 
+                                if (orderData.Status.ToLower() == "cancelado") 
                                 {
                                     continue;
                                 }
@@ -252,7 +252,7 @@ namespace Menoo.Printer.Builder.Tables
                     foreach (var order in to.Orders)
                     {
                         var orderData = await _orderRepository.GetById<OrderV2>(order.Id, "orders");
-                        if (orderData.Status.ToLower() == "cancelada")
+                        if (orderData.Status.ToLower() == "cancelado")
                         {
                             continue;
                         }
