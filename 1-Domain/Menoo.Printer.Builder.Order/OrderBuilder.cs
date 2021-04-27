@@ -262,7 +262,7 @@ namespace Menoo.Printer.Builder.Orders
                 builder.Append("</tr>");
                 builder.Append("<tr>");
                 builder.Append("<td>Hora de retiro: </td>");
-                builder.Append($"<td>{order.TakeAwayHour}</td>");
+                builder.Append($"<td><b>{order.TakeAwayHour}</b></td>");
                 builder.Append("</tr>");
                 builder.Append("<tr>");
                 builder.Append("<td>Número de orden: </td>");
