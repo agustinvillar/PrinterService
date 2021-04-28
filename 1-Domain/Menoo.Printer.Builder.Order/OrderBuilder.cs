@@ -276,10 +276,11 @@ namespace Menoo.Printer.Builder.Orders
                     builder.Append("</tr>");
                 }
                 builder.Append("</table>");
+                builder.Append(line);
                 if (payment != null)
                 {
                     var paymentRenglon = payment.Renglones.FirstOrDefault(f => f.Type == PrinterService.Infraestructure.Database.SqlServer.MainSchema.Entities.PaymentRenglon.PaymentRenglonType.DISCOUNT);
-                    builder.Append(line);
+
                     builder.Append($"<p>Método de Pago: {payment.CardBrand}</p>");
                     builder.Append($"<p>--------------------------------------------------</p>");
                     if (paymentRenglon != null) 
@@ -299,7 +300,6 @@ namespace Menoo.Printer.Builder.Orders
                     builder.Append($"<p>--------------------------------------------------</p>");
                     builder.Append(@"<div class=""center""><b>TOTAL: $" + payment.TransactionAmount + "</b><br/><br/><br/><br/></div>");
                 }
-                builder.Append(line);
                 builder.Append(qrCode);
                 title = isCancelled ? "TakeAway cancelado" : "Nuevo TakeAway";
                 ticket.SetOrder(title, builder.ToString());
