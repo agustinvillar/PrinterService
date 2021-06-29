@@ -39,29 +39,32 @@ namespace Menoo.Printer.Listener.Orders
 
         public void Listen()
         {
-            //Nuevo TA creado.
-            _firestoreDb.Collection("orders")
-               .WhereEqualTo("status", "pendiente")
-               .Listen(OnTakeAwayCreated);
+            ////Nuevo TA creado.
+            //_firestoreDb.Collection("orders")
+            //   .WhereEqualTo("status", "pendiente")
+            //   .Listen(OnTakeAwayCreated);
 
-            //Nueva orden de reserva o mesa.
-            _firestoreDb.Collection("orders")
-               .WhereEqualTo("status", "preparando")
-               .Listen(OnOrderCreated);
+            ////Nueva orden de reserva o mesa.
+            //_firestoreDb.Collection("orders")
+            //   .WhereEqualTo("status", "preparando")
+            //   .Listen(OnOrderCreated);
 
-            //Orden cancelada.
-            _firestoreDb.Collection("orders")
-                .WhereEqualTo("status", "cancelado")
-                .Listen(OnCancelled);
-            
+            ////Orden cancelada.
+            //_firestoreDb.Collection("orders")
+            //    .WhereEqualTo("status", "cancelado")
+            //    .Listen(OnCancelled);
+
             //Reimpresión de orden
             _firestoreDb.Collection("rePrint")
                 .Listen(RePrintOrder);
+
+            _firestoreDb.Collection("printEvent")
+                  .Listen(OnRecieve);
         }
 
         public override string ToString()
         {
-            return "Order.Listener";
+            return PrintListeners.ORDER_LISTENER;
         }
 
         #region listeners
@@ -269,12 +272,87 @@ namespace Menoo.Printer.Listener.Orders
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). Ha ocurrido un error al capturar nuevos TA. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"OrderListener::RePrintOrder(). Ha ocurrido un error al reimprimir una orden. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+            }
+        }
+
+        private void OnRecieve(QuerySnapshot snapshot) 
+        {
+            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            if (snapshot.Documents.Count == 0)
+            {
+                return;
+            }
+            var tickets = snapshot.Documents
+                                        .Where(filter => filter.Exists)
+                                        .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
+                                        .OrderByDescending(o => o.CreateTime)
+                                        .Select(s => s.Id)
+                                        .ToList();
+            var ticketsToPrint = GetOrdersReToPrint(tickets);
+            if (ticketsToPrint == null || ticketsToPrint.Count == 0)
+            {
+                return;
+            }
+            foreach (var ticket in ticketsToPrint)
+            {
+                var documentReference = snapshot.Documents.FirstOrDefault(f => f.Id == ticket && f.Exists);
+                if (documentReference == null)
+                {
+                    continue;
+                }
+                    
+                try
+                {
+                    var messageQueue = GetMessagePrintType(documentReference);
+                    _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
+                    SetOrderAsRePrintedAsync(messageQueue, ticket).GetAwaiter().GetResult();
+                }
+                catch (Exception e)
+                {
+                    _generalWriter.WriteEntry($"OrderListener::OnRecieve(). Error desconocido al procesar el item a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                }
+                finally
+                {
+                    Thread.Sleep(_delayTask);
+                }
             }
         }
         #endregion
 
         #region private methods
+        private PrintMessage GetMessagePrintType(DocumentSnapshot documentReference)
+        {
+            var printMessage = new PrintMessage
+            {
+                Builder = PrintBuilder.ORDER_BUILDER
+            };
+            var document = documentReference.ConvertTo<DocumentMessage>();
+            switch (document.Event)
+            {
+                case "NEW_TABLE_ORDER":
+                    printMessage.DocumentId = document.EntityId;
+                    printMessage.DocumentsId = document.EntityIdArray;
+                    printMessage.PrintEvent = PrintEvents.NEW_TABLE_ORDER;
+                    printMessage.TypeDocument = PrintTypes.ORDER;
+                    printMessage.SubTypeDocument = SubOrderPrintTypes.ORDER_TABLE;
+                    break;
+                case "NEW_TAKE_AWAY":
+                    printMessage.DocumentId = document.EntityId;
+                    printMessage.PrintEvent = PrintEvents.NEW_TAKE_AWAY;
+                    printMessage.TypeDocument = PrintTypes.ORDER;
+                    printMessage.SubTypeDocument = SubOrderPrintTypes.ORDER_TA;
+                    break;
+                case "ORDER_CANCELLED":
+                    printMessage.DocumentId = document.EntityId;
+                    printMessage.DocumentsId = document.EntityIdArray;
+                    printMessage.PrintEvent = PrintEvents.ORDER_CANCELLED;
+                    printMessage.TypeDocument = PrintTypes.ORDER;
+                    break;
+            }
+            return printMessage;
+        }
+
         private List<string> GetOrdersToPrint(List<string> documentIds, bool isCreated, bool isCancelled) 
         {
             List<string> ticketsToPrint = null;

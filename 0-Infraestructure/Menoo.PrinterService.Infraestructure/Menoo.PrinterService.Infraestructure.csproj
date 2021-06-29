@@ -171,6 +171,7 @@
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Constants\PrintBiulder.cs" />
     <Compile Include="Constants\PrintEvents.cs" />
+    <Compile Include="Constants\PrintListeners.cs" />
     <Compile Include="Constants\PrintProperties.cs" />
     <Compile Include="Constants\PrintTypes.cs" />
     <Compile Include="Database\Firebase\Entities\Booking.cs" />
