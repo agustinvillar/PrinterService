@@ -42,23 +42,24 @@ namespace Menoo.Printer.Listener.Tables
 
         public void Listen()
         {
-            _firestoreDb.Collection("tableOpeningFamily")
-                  .OrderByDescending("openedAtNumber")
-                  .Limit(1)
-                  .Listen(OnOpenFamily);
+            //_firestoreDb.Collection("tableOpeningFamily")
+            //      .OrderByDescending("openedAtNumber")
+            //      .Limit(1)
+            //      .Listen(OnOpenFamily);
 
-            _firestoreDb.Collection("tableOpeningFamily")
-               .WhereEqualTo("closed", true)
-               .Listen(OnClose);
+            //_firestoreDb.Collection("tableOpeningFamily")
+            //   .WhereEqualTo("closed", true)
+            //   .Listen(OnClose);
 
-            _firestoreDb.Collection("tableOpeningFamily")
-                .WhereEqualTo("closed", false)
-                .Listen(OnRequestPayment);
+            //_firestoreDb.Collection("tableOpeningFamily")
+            //    .WhereEqualTo("closed", false)
+            //    .Listen(OnRequestPayment);
+
         }
 
         public override string ToString()
         {
-            return "Tables.Listener";
+            return PrintListeners.TABLE_LISTENER;
         }
 
         #region listeners
@@ -200,6 +201,11 @@ namespace Menoo.Printer.Listener.Tables
             {
                 _generalWriter.WriteEntry($"TablesListener::OnRequestPayment(). Ha ocurrido un error al enviar la solicitud de pago de la mesa. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
             }
+        }
+
+        private void OnRecieve(QuerySnapshot snapshot)
+        {
+           
         }
         #endregion
 
