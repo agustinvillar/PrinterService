@@ -46,18 +46,21 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             modelBuilder.Configurations.AddFromAssembly(typeof(PrinterContext).Assembly);
         }
 
-        public List<string> GetItemsToPrint(List<string> documentIds, bool isCreated, bool isCancelled)
+        public List<Tuple<string, PrintMessage>> GetItemsToPrint(List<Tuple<string, PrintMessage>> tickets, bool isCreated, bool isCancelled)
         {
-            var ticketsToPrint = new List<string>();
-            var printedTickets = GetTicketsPrintedAsync()
-                            .GetAwaiter()
-                            .GetResult();
+            var ticketsToPrint = new List<Tuple<string, PrintMessage>>();
+            var printedTickets = GetTicketsPrintedAsync().GetAwaiter().GetResult();
             if (isCreated)
             {
                 var printedTicketIds = printedTickets.Select(s => s.DocumentId).ToList();
-                ticketsToPrint.AddRange((from c in documentIds
-                                         where !printedTicketIds.Contains(c)
-                                         select c));
+                foreach (var ticket in tickets)
+                {
+                    bool documentExists = printedTicketIds.Contains(ticket.Item1);
+                    if (!documentExists) 
+                    {
+                        ticketsToPrint.Add(ticket);
+                    }
+                }
             }
             else if (isCancelled)
             {
@@ -67,9 +70,10 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
                     {
                         continue;
                     }
-                    if (bool.Parse(ticket.IsCreatedPrinted) && !bool.Parse(ticket.IsCancelledPrinted) && documentIds.Contains(ticket.DocumentId))
+                    if (bool.Parse(ticket.IsCreatedPrinted) && !bool.Parse(ticket.IsCancelledPrinted) && tickets.Select(s => s.Item1).Contains(ticket.DocumentId))
                     {
-                        ticketsToPrint.Add(ticket.DocumentId);
+                        var ticketInfo = tickets.FirstOrDefault(f => f.Item1 == ticket.DocumentId);
+                        ticketsToPrint.Add(ticketInfo);
                     }
                 }
             }

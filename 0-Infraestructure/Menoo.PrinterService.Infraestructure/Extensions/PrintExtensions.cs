@@ -2,6 +2,7 @@
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Queues;
+using System;
 using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Infraestructure.Extensions
@@ -19,46 +20,49 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
             return printSettings;
         }
 
-        public static PrintMessage GetMessagePrintType(this DocumentSnapshot documentReference)
+        public static Tuple<string, PrintMessage> GetMessagePrintType(this DocumentSnapshot documentReference)
         {
-            var printMessage = new PrintMessage();
+            Tuple<string, PrintMessage> printMessage = null;
+            var message = new PrintMessage();
             var document = documentReference.ConvertTo<DocumentMessage>();
             switch (document.Event)
             {
                 #region orders
                 case "NEW_TABLE_ORDER":
-                    printMessage.DocumentId = document.EntityId;
-                    printMessage.DocumentsId = document.EntityIdArray;
-                    printMessage.PrintEvent = PrintEvents.NEW_TABLE_ORDER;
-                    printMessage.TypeDocument = PrintTypes.ORDER;
-                    printMessage.SubTypeDocument = SubOrderPrintTypes.ORDER_TABLE;
-                    printMessage.Builder = PrintBuilder.ORDER_BUILDER;
+                    message.DocumentId = document.EntityId;
+                    message.DocumentsId = document.EntityIdArray;
+                    message.PrintEvent = PrintEvents.NEW_TABLE_ORDER;
+                    message.TypeDocument = PrintTypes.ORDER;
+                    message.SubTypeDocument = SubOrderPrintTypes.ORDER_TABLE;
+                    message.Builder = PrintBuilder.ORDER_BUILDER;
                     break;
                 case "NEW_TAKE_AWAY":
-                    printMessage.DocumentId = document.EntityId;
-                    printMessage.PrintEvent = PrintEvents.NEW_TAKE_AWAY;
-                    printMessage.TypeDocument = PrintTypes.ORDER;
-                    printMessage.SubTypeDocument = SubOrderPrintTypes.ORDER_TA;
+                    message.DocumentId = document.EntityId;
+                    message.PrintEvent = PrintEvents.NEW_TAKE_AWAY;
+                    message.TypeDocument = PrintTypes.ORDER;
+                    message.SubTypeDocument = SubOrderPrintTypes.ORDER_TA;
+                    message.Builder = PrintBuilder.ORDER_BUILDER;
                     break;
                 case "ORDER_CANCELLED":
-                    printMessage.DocumentId = document.EntityId;
-                    printMessage.DocumentsId = document.EntityIdArray;
-                    printMessage.PrintEvent = PrintEvents.ORDER_CANCELLED;
-                    printMessage.TypeDocument = PrintTypes.ORDER;
+                    message.DocumentId = document.EntityId;
+                    message.DocumentsId = document.EntityIdArray;
+                    message.PrintEvent = PrintEvents.ORDER_CANCELLED;
+                    message.TypeDocument = PrintTypes.ORDER;
+                    message.Builder = PrintBuilder.ORDER_BUILDER;
                     break;
                 #endregion
                 #region tables
                 case "TABLE_OPENED":
-                    printMessage.DocumentId = document.EntityId;
-                    printMessage.PrintEvent = PrintEvents.TABLE_OPENED;
-                    printMessage.TypeDocument = PrintTypes.TABLE;
-                    printMessage.Builder = PrintBuilder.TABLE_BUILDER;
+                    message.DocumentId = document.EntityId;
+                    message.PrintEvent = PrintEvents.TABLE_OPENED;
+                    message.TypeDocument = PrintTypes.TABLE;
+                    message.Builder = PrintBuilder.TABLE_BUILDER;
                     break;
                 case "TABLE_CLOSED":
-                    printMessage.DocumentId = document.EntityId;
-                    printMessage.PrintEvent = PrintEvents.TABLE_CLOSED;
-                    printMessage.TypeDocument = PrintTypes.TABLE;
-                    printMessage.Builder = PrintBuilder.TABLE_BUILDER;
+                    message.DocumentId = document.EntityId;
+                    message.PrintEvent = PrintEvents.TABLE_CLOSED;
+                    message.TypeDocument = PrintTypes.TABLE;
+                    message.Builder = PrintBuilder.TABLE_BUILDER;
                     break;
                 case "REQUEST_PAYMENT":
                     break;
@@ -66,6 +70,10 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
                 default:
                     printMessage = null;
                     break;
+            }
+            if (message != null) 
+            {
+                printMessage = new Tuple<string, PrintMessage>(documentReference.Id, message);
             }
             return printMessage;
         }

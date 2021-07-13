@@ -78,34 +78,34 @@ namespace Menoo.Printer.Listener.Tables
                                             .OrderByDescending(o => o.UpdateTime)
                                             .Select(s => s.Id)
                                             .ToList();
-                var ticketsToPrint = GetTablesToPrint(ticketTables, false, true);
-                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                {
-                    return;
-                }
-                foreach (var ticket in ticketsToPrint)
-                {
-                    var messageQueue = new PrintMessage
-                    {
-                        DocumentId = ticket,
-                        PrintEvent = PrintEvents.TABLE_CLOSED,
-                        TypeDocument = PrintTypes.TABLE,
-                        Builder = PrintBuilder.TABLE_BUILDER
-                    };
-                    try
-                    {
-                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetTablesAsPrintedAsync(messageQueue, false, true).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"TablesListener::OnClose(). No se envió el cierre de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                //var ticketsToPrint = GetTablesToPrint(ticketTables, false, true);
+                //if (ticketsToPrint == null || ticketsToPrint.Count == 0)
+                //{
+                //    return;
+                //}
+                //foreach (var ticket in ticketsToPrint)
+                //{
+                //    var messageQueue = new PrintMessage
+                //    {
+                //        DocumentId = ticket,
+                //        PrintEvent = PrintEvents.TABLE_CLOSED,
+                //        TypeDocument = PrintTypes.TABLE,
+                //        Builder = PrintBuilder.TABLE_BUILDER
+                //    };
+                //    try
+                //    {
+                //        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
+                //        SetTablesAsPrintedAsync(messageQueue, false, true).GetAwaiter().GetResult();
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        _generalWriter.WriteEntry($"TablesListener::OnClose(). No se envió el cierre de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                //    }
+                //    finally
+                //    {
+                //        Thread.Sleep(_delayTask);
+                //    }
+                //}
             }
             catch (Exception e)
             {
@@ -125,34 +125,34 @@ namespace Menoo.Printer.Listener.Tables
                 string currentId = snapshot.Documents.SingleOrDefault().Id;
                 var ticketTables = new List<string> { snapshot.Documents.SingleOrDefault().Id };
 
-                var ticketsToPrint = GetTablesToPrint(ticketTables, true, false);
-                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                {
-                    return;
-                }
-                foreach (var ticket in ticketsToPrint)
-                {
-                    var messageQueue = new PrintMessage
-                    {
-                        DocumentId = ticket,
-                        PrintEvent = PrintEvents.TABLE_OPENED,
-                        TypeDocument = PrintTypes.TABLE,
-                        Builder = PrintBuilder.TABLE_BUILDER
-                    };
-                    try
-                    {
-                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetTablesAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). No se envió la apertura de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                //var ticketsToPrint = GetTablesToPrint(ticketTables, true, false);
+                //if (ticketsToPrint == null || ticketsToPrint.Count == 0)
+                //{
+                //    return;
+                //}
+                //foreach (var ticket in ticketsToPrint)
+                //{
+                //    var messageQueue = new PrintMessage
+                //    {
+                //        DocumentId = ticket,
+                //        PrintEvent = PrintEvents.TABLE_OPENED,
+                //        TypeDocument = PrintTypes.TABLE,
+                //        Builder = PrintBuilder.TABLE_BUILDER
+                //    };
+                //    try
+                //    {
+                //        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
+                //        SetTablesAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). No se envió la apertura de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                //    }
+                //    finally
+                //    {
+                //        Thread.Sleep(_delayTask);
+                //    }
+                //}
             }
             catch (Exception e)
             {
@@ -282,9 +282,9 @@ namespace Menoo.Printer.Listener.Tables
             return ticketsToPrint;
         }
 
-        private List<string> GetTablesToPrint(List<string> documentIds, bool isCreated, bool isCancelled)
+        private List<Tuple<string, PrintMessage>> GetTablesToPrint(List<Tuple<string, PrintMessage>> documentIds, bool isCreated, bool isCancelled)
         {
-            List<string> ticketsToPrint = null;
+            List<Tuple<string, PrintMessage>> ticketsToPrint = null;
             using (var sqlServerContext = new PrinterContext())
             {
                 ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);

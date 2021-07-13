@@ -71,34 +71,34 @@ namespace Menoo.Printer.Listener.Bookings
                                             .OrderByDescending(o => o.CreateTime)
                                             .Select(s => s.Id)
                                             .ToList();
-                var ticketsToPrint = GetBookingsToPrint(ticketsOrders, true, false);
-                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                {
-                    return;
-                }
-                foreach (var ticket in ticketsToPrint)
-                {
-                    var messageQueue = new PrintMessage
-                    {
-                        DocumentId = ticket,
-                        PrintEvent = PrintEvents.NEW_BOOKING,
-                        TypeDocument = PrintTypes.BOOKING,
-                        Builder = PrintBuilder.BOOKING_BUILDER
-                    };
-                    try
-                    {
-                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetBookingAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"BookingListener::OnAcepted(). No se envió la reserva [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                //var ticketsToPrint = GetBookingsToPrint(ticketsOrders, true, false);
+                //if (ticketsToPrint == null || ticketsToPrint.Count == 0)
+                //{
+                //    return;
+                //}
+                //foreach (var ticket in ticketsToPrint)
+                //{
+                //    var messageQueue = new PrintMessage
+                //    {
+                //        DocumentId = ticket,
+                //        PrintEvent = PrintEvents.NEW_BOOKING,
+                //        TypeDocument = PrintTypes.BOOKING,
+                //        Builder = PrintBuilder.BOOKING_BUILDER
+                //    };
+                //    try
+                //    {
+                //        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
+                //        SetBookingAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        _generalWriter.WriteEntry($"BookingListener::OnAcepted(). No se envió la reserva [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                //    }
+                //    finally
+                //    {
+                //        Thread.Sleep(_delayTask);
+                //    }
+                //}
             }
             catch (Exception e)
             {
@@ -121,34 +121,34 @@ namespace Menoo.Printer.Listener.Bookings
                                             .OrderByDescending(o => o.UpdateTime)
                                             .Select(s => s.Id)
                                             .ToList();
-                var ticketsToPrint = GetBookingsToPrint(ticketsOrders, false, true);
-                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                {
-                    return;
-                }
-                foreach (var ticket in ticketsToPrint)
-                {
-                    var messageQueue = new PrintMessage
-                    {
-                        DocumentId = ticket,
-                        PrintEvent = PrintEvents.CANCELED_BOOKING,
-                        TypeDocument = PrintTypes.BOOKING,
-                        Builder = PrintBuilder.BOOKING_BUILDER
-                    };
-                    try
-                    {
-                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetBookingAsPrintedAsync(messageQueue, false, true).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"BookingListener::OnCancelled(). No se envió la reserva [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                //var ticketsToPrint = GetBookingsToPrint(ticketsOrders, false, true);
+                //if (ticketsToPrint == null || ticketsToPrint.Count == 0)
+                //{
+                //    return;
+                //}
+                //foreach (var ticket in ticketsToPrint)
+                //{
+                //    var messageQueue = new PrintMessage
+                //    {
+                //        DocumentId = ticket,
+                //        PrintEvent = PrintEvents.CANCELED_BOOKING,
+                //        TypeDocument = PrintTypes.BOOKING,
+                //        Builder = PrintBuilder.BOOKING_BUILDER
+                //    };
+                //    try
+                //    {
+                //        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
+                //        SetBookingAsPrintedAsync(messageQueue, false, true).GetAwaiter().GetResult();
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        _generalWriter.WriteEntry($"BookingListener::OnCancelled(). No se envió la reserva [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                //    }
+                //    finally
+                //    {
+                //        Thread.Sleep(_delayTask);
+                //    }
+                //}
             }
             catch (Exception e)
             {
@@ -158,9 +158,9 @@ namespace Menoo.Printer.Listener.Bookings
         #endregion
 
         #region private methods
-        private List<string> GetBookingsToPrint(List<string> documentIds, bool isCreated, bool isCancelled)
+        private List<Tuple<string, PrintMessage>> GetBookingsToPrint(List<Tuple<string, PrintMessage>> documentIds, bool isCreated, bool isCancelled)
         {
-            List<string> ticketsToPrint = null;
+            List<Tuple<string, PrintMessage>> ticketsToPrint = null;
             using (var sqlServerContext = new PrinterContext())
             {
                 ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);
