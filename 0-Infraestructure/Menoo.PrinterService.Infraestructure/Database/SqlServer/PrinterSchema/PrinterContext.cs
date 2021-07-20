@@ -15,9 +15,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 {
     public class PrinterContext : DbContext
     {
-        public DbSet<Entities.TicketHistory> TicketHistory { get; set; }
+        public DbSet<TicketHistory> TicketHistory { get; set; }
 
-        public DbSet<Entities.TicketHistorySettings> TicketHistorySettings { get; set; }
+        public DbSet<TicketHistorySettings> TicketHistorySettings { get; set; }
 
         static PrinterContext()
         {
@@ -28,11 +28,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             : base("name=Microsoft.SQLServer.Menoo.ConnectionString")
         {
         }
-
-        //internal SqlServerContext(string dbConnection)
-        //    : base(dbConnection)
-        //{
-        //}
 
         public PrinterContext(DbConnection dbConnection) 
             : base(dbConnection, true) 
@@ -127,24 +122,25 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             }
         }
 
-        public async Task SetPrintedAsync(PrintMessage message, bool isNew = true, bool isCancelled = false)
+        public async Task SetPrintedAsync(Tuple<string, PrintMessage> message, bool isNew = true, bool isCancelled = false)
         {
+            string id = message.Item1;
             if (isNew)
             {
-                if (TicketHistory.Any(f => f.Id == message.DocumentId)) 
+                if (TicketHistory.Any(f => f.Id == id)) 
                 {
                     return;
                 }
                 var historyDetails = new List<TicketHistorySettings>()
                 {
                     new TicketHistorySettings{
-                        TicketHistoryId = message.DocumentId,
+                        TicketHistoryId = id,
                         Name = PrintProperties.IS_NEW_PRINTED,
                         Value = "true",
                         Id = Guid.NewGuid()
                     },
                     new TicketHistorySettings{
-                        TicketHistoryId = message.DocumentId,
+                        TicketHistoryId = id,
                         Name = PrintProperties.IS_CANCELLED_PRINTED,
                         Value = "false",
                         Id = Guid.NewGuid()
@@ -153,21 +149,22 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 
                 var history = new TicketHistory
                 {
-                    Id = message.DocumentId,
-                    PrintEvent = message.PrintEvent,
+                    Id = id,
+                    PrintEvent = message.Item2.PrintEvent,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     ExternalId = string.Empty
                 };
+
                 this.TicketHistory.Add(history);
                 this.TicketHistorySettings.AddRange(historyDetails);
                 await this.SaveChangesAsync();
             }
             if (isCancelled)
             {
-                var ticketCreated = await this.TicketHistory.FirstOrDefaultAsync(f => f.Id == message.DocumentId);
+                var ticketCreated = await TicketHistory.FirstOrDefaultAsync(f => f.Id == id);
                 ticketCreated.UpdatedAt = DateTime.Now;
-                var ticketCreatedSettings = await this.TicketHistorySettings.FirstOrDefaultAsync(f => f.TicketHistoryId == message.DocumentId && f.Name == PrintProperties.IS_CANCELLED_PRINTED);
+                var ticketCreatedSettings = await this.TicketHistorySettings.FirstOrDefaultAsync(f => f.TicketHistoryId == id && f.Name == PrintProperties.IS_CANCELLED_PRINTED);
                 ticketCreatedSettings.Value = "true";
                 this.SaveChanges();
             }

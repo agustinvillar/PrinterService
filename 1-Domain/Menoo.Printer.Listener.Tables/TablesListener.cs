@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Menoo.Printer.Listener.Tables
@@ -160,7 +159,8 @@ namespace Menoo.Printer.Listener.Tables
             }
         }
 
-        private void OnRequestPayment(QuerySnapshot snapshot)
+        #region request payment
+        /*private void OnRequestPayment(QuerySnapshot snapshot)
         {
             _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
             try
@@ -201,7 +201,8 @@ namespace Menoo.Printer.Listener.Tables
             {
                 _generalWriter.WriteEntry($"TablesListener::OnRequestPayment(). Ha ocurrido un error al enviar la solicitud de pago de la mesa. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
             }
-        }
+        }*/
+        #endregion
 
         private void OnRecieve(QuerySnapshot snapshot)
         {
@@ -292,32 +293,33 @@ namespace Menoo.Printer.Listener.Tables
             return ticketsToPrint;
         }
 
-        private async Task SetTablesAsPrintedAsync(PrintMessage message, bool isNew = true, bool isCancelled = false, bool isRequestPayment = false)
+        private async Task SetTablesAsPrintedAsync(Tuple<string, PrintMessage> message, bool isNew = true, bool isCancelled = false, bool isRequestPayment = false)
         {
+            string id = message.Item1;
             using (var sqlServerContext = new PrinterContext())
             {
                 if (isNew)
                 {
-                    if (sqlServerContext.TicketHistory.Any(f => f.Id == message.DocumentId))
+                    if (sqlServerContext.TicketHistory.Any(f => f.Id == id))
                     {
                         return;
                     }
                     var historyDetails = new List<TicketHistorySettings>()
                     {
                         new TicketHistorySettings{
-                            TicketHistoryId = message.DocumentId,
+                            TicketHistoryId = id,
                             Name = PrintProperties.IS_NEW_PRINTED,
                             Value = "true",
                             Id = Guid.NewGuid()
                         },
                         new TicketHistorySettings{
-                            TicketHistoryId = message.DocumentId,
+                            TicketHistoryId = id,
                             Name = PrintProperties.IS_CANCELLED_PRINTED,
                             Value = "false",
                             Id = Guid.NewGuid()
                         },
                         new TicketHistorySettings{
-                            TicketHistoryId = message.DocumentId,
+                            TicketHistoryId = id,
                             Name = PrintProperties.IS_REQUEST_PAYMENT,
                             Value = "false",
                             Id = Guid.NewGuid()
@@ -326,8 +328,8 @@ namespace Menoo.Printer.Listener.Tables
 
                     var history = new TicketHistory
                     {
-                        Id = message.DocumentId,
-                        PrintEvent = message.PrintEvent,
+                        Id = id,
+                        PrintEvent = message.Item2.PrintEvent,
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now,
                         ExternalId = string.Empty
@@ -338,23 +340,23 @@ namespace Menoo.Printer.Listener.Tables
                 }
                 if (isCancelled)
                 {
-                    var ticketCreated = await sqlServerContext.TicketHistory.FirstOrDefaultAsync(f => f.Id == message.DocumentId);
+                    var ticketCreated = await sqlServerContext.TicketHistory.FirstOrDefaultAsync(f => f.Id == id);
                     ticketCreated.UpdatedAt = DateTime.Now;
-                    var ticketCreatedSettings = await sqlServerContext.TicketHistorySettings.FirstOrDefaultAsync(f => f.TicketHistoryId == message.DocumentId && f.Name == PrintProperties.IS_CANCELLED_PRINTED);
+                    var ticketCreatedSettings = await sqlServerContext.TicketHistorySettings.FirstOrDefaultAsync(f => f.TicketHistoryId == id && f.Name == PrintProperties.IS_CANCELLED_PRINTED);
                     ticketCreatedSettings.Value = "true";
                     sqlServerContext.SaveChanges();
                 }
                 if (isRequestPayment)
                 {
-                    var ticketCreated = await sqlServerContext.TicketHistory.FirstOrDefaultAsync(f => f.Id == message.DocumentId);
+                    var ticketCreated = await sqlServerContext.TicketHistory.FirstOrDefaultAsync(f => f.Id == id);
                     ticketCreated.UpdatedAt = DateTime.Now;
-                    var ticketCreatedSettings = await sqlServerContext.TicketHistorySettings.FirstOrDefaultAsync(f => f.TicketHistoryId == message.DocumentId && f.Name == PrintProperties.IS_REQUEST_PAYMENT);
+                    var ticketCreatedSettings = await sqlServerContext.TicketHistorySettings.FirstOrDefaultAsync(f => f.TicketHistoryId == id && f.Name == PrintProperties.IS_REQUEST_PAYMENT);
                     if (ticketCreatedSettings == null)
                     {
                         var historyDetails = new List<TicketHistorySettings>()
                         {
                             new TicketHistorySettings{
-                                TicketHistoryId = message.DocumentId,
+                                TicketHistoryId = id,
                                 Name = PrintProperties.IS_REQUEST_PAYMENT,
                                 Value = "true",
                                 Id = Guid.NewGuid()

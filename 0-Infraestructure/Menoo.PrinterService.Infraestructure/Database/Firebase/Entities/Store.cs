@@ -17,6 +17,13 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         public string Name { get; set; }
     }
 
+    public class UnifiedSectorData
+    {
+        [JsonProperty("unifiedTicketSectorId")]
+        [FirestoreProperty("unifiedTicketSectorId")]
+        public string UnifiedTicketSectorId { get; set; }
+    }
+
     [FirestoreData]
     public class Store
     {
@@ -47,5 +54,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("logoImage")]
         [JsonProperty("logoImage")]
         public string LogoImage { get; set; }
+
+        [FirestoreProperty("printSettings")]
+        [JsonProperty("printSettings")]
+        public UnifiedSectorData UnifiedTicket { get; set; }
     }
 }

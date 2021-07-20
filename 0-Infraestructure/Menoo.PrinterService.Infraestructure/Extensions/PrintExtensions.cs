@@ -4,6 +4,7 @@ using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Menoo.PrinterService.Infraestructure.Extensions
 {
@@ -76,6 +77,12 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
                 printMessage = new Tuple<string, PrintMessage>(documentReference.Id, message);
             }
             return printMessage;
+        }
+
+        public static PrintSettings SectorUnifiedTicket(this Store store) 
+        {
+            var sector = store.Sectors.FirstOrDefault(f => f.Id == store.UnifiedTicket.UnifiedTicketSectorId);
+            return sector;
         }
     }
 }

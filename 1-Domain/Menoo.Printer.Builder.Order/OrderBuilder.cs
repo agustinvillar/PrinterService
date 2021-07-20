@@ -195,6 +195,38 @@ namespace Menoo.Printer.Builder.Orders
             return items;
         }
 
+        private string CreateHtmlFromLines(List<OrderV2> orders)
+        {
+            var lines = new List<string>();
+            var items = new StringBuilder();
+            foreach (var order in orders)
+            {
+                if (order.Items == null)
+                {
+                    items.Append("");
+                }
+                foreach (var item in order.Items)
+                {
+                    if (item != null)
+                    {
+                        lines.Add($"<p style='font-size: 65px;'><b>--{item.Name}</b> x {item.Quantity}</p>");
+                    }
+
+                    if (item?.Options != null)
+                    {
+                        lines.AddRange(item.Options.Select(option => option.Name));
+                    }
+                    if (!string.IsNullOrEmpty(item?.GuestComment))
+                    {
+                        lines.Add($"Comentario: {item.GuestComment}");
+                    }
+                }
+                string orderToTicket = lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
+                items.Append(orderToTicket + "<br>");
+            }
+            return items.ToString();
+        }
+
         private async Task CreateOrderTicket(OrderV2 order, Ticket ticket, string line, bool isOrderOk, bool isCancelled = false, bool isTakeAway = false, bool printQR = false)
         {
             StringBuilder builder = new StringBuilder();
@@ -343,7 +375,6 @@ namespace Menoo.Printer.Builder.Orders
                 Copies = copies
             };
             bool isOrderOk = order?.OrderType != null;
-            //ticket.PrintBefore = isTakeAway ? Utils.BeforeAt(order.OrderDate, 30) : Utils.BeforeAt(order.OrderDate, 60);
             ticket.PrintBefore = isTakeAway ? Utils.BeforeAt(now, 30) : Utils.BeforeAt(now, 60);
             var line = CreateHtmlFromLines(order);
             await CreateOrderTicket(order, ticket, line, isOrderOk, isCancelled, isTakeAway, printQR);

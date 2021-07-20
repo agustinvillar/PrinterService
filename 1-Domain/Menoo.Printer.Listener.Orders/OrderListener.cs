@@ -79,7 +79,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(ticket.Item2, false, true).GetAwaiter().GetResult();
+                        SetOrderAsPrintedAsync(ticket, false, true).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -107,7 +107,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(ticket.Item2).GetAwaiter().GetResult();
+                        SetOrderAsPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -135,7 +135,7 @@ namespace Menoo.Printer.Listener.Orders
                     try
                     {
                         _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(ticket.Item2).GetAwaiter().GetResult();
+                        SetOrderAsPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -228,7 +228,7 @@ namespace Menoo.Printer.Listener.Orders
             var orderCancelledTickets = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.ORDER_CANCELLED);
             if (newTableOrderTickets.Count() > 0) 
             {
-                OnOrderCreated(newTakeAwayTickets);
+                OnOrderCreated(newTableOrderTickets);
             }
             if (newTakeAwayTickets.Count() > 0) 
             {
@@ -263,7 +263,7 @@ namespace Menoo.Printer.Listener.Orders
             return ticketsToRePrint;
         }
 
-        private async Task SetOrderAsPrintedAsync(PrintMessage message, bool isNew = true, bool isCancelled = false)
+        private async Task SetOrderAsPrintedAsync(Tuple<string, PrintMessage> message, bool isNew = true, bool isCancelled = false)
         {
             using (var sqlServerContext = new PrinterContext())
             {
