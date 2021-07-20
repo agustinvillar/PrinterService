@@ -4,6 +4,7 @@ using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities;
+using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Menoo.Printer.Listener.Tables
@@ -54,6 +56,8 @@ namespace Menoo.Printer.Listener.Tables
             //    .WhereEqualTo("closed", false)
             //    .Listen(OnRequestPayment);
 
+            _firestoreDb.Collection("printEvent")
+                  .Listen(OnRecieve);
         }
 
         public override string ToString()
@@ -62,49 +66,27 @@ namespace Menoo.Printer.Listener.Tables
         }
 
         #region listeners
-        private void OnClose(QuerySnapshot snapshot)
+        private void OnClose(List<Tuple<string, PrintMessage>> tickets)
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
             try
             {
-                if (snapshot.Documents.Count == 0)
+                var ticketsToPrint = GetTablesToPrint(tickets, true, false);
+                foreach (var ticket in ticketsToPrint)
                 {
-                    return;
+                    try
+                    {
+                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
+                        SetTablesAsPrintedAsync(ticket, false, true).GetAwaiter().GetResult();
+                    }
+                    catch (Exception e)
+                    {
+                        _generalWriter.WriteEntry($"TablesListener::OnClose(). No se envió el cierre de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(_delayTask);
+                    }
                 }
-                var ticketTables = snapshot.Documents
-                                            .Where(filter => filter.Exists)
-                                            .Where(filter => filter.UpdateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                            .OrderByDescending(o => o.UpdateTime)
-                                            .Select(s => s.Id)
-                                            .ToList();
-                //var ticketsToPrint = GetTablesToPrint(ticketTables, false, true);
-                //if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                //{
-                //    return;
-                //}
-                //foreach (var ticket in ticketsToPrint)
-                //{
-                //    var messageQueue = new PrintMessage
-                //    {
-                //        DocumentId = ticket,
-                //        PrintEvent = PrintEvents.TABLE_CLOSED,
-                //        TypeDocument = PrintTypes.TABLE,
-                //        Builder = PrintBuilder.TABLE_BUILDER
-                //    };
-                //    try
-                //    {
-                //        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                //        SetTablesAsPrintedAsync(messageQueue, false, true).GetAwaiter().GetResult();
-                //    }
-                //    catch (Exception e)
-                //    {
-                //        _generalWriter.WriteEntry($"TablesListener::OnClose(). No se envió el cierre de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                //    }
-                //    finally
-                //    {
-                //        Thread.Sleep(_delayTask);
-                //    }
-                //}
             }
             catch (Exception e)
             {
@@ -112,46 +94,27 @@ namespace Menoo.Printer.Listener.Tables
             }
         }
 
-        private void OnOpenFamily(QuerySnapshot snapshot)
+        private void OnOpenFamily(List<Tuple<string, PrintMessage>> tickets)
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
             try
             {
-                if (snapshot.Documents.Count == 0)
+                var ticketsToPrint = GetTablesToPrint(tickets, true, false);
+                foreach (var ticket in ticketsToPrint)
                 {
-                    return;
+                    try 
+                    {
+                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
+                        SetTablesAsPrintedAsync(ticket).GetAwaiter().GetResult();
+                    }
+                    catch (Exception e)
+                    {
+                        _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). No se envió la apertura de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(_delayTask);
+                    }
                 }
-                string currentId = snapshot.Documents.SingleOrDefault().Id;
-                var ticketTables = new List<string> { snapshot.Documents.SingleOrDefault().Id };
-
-                //var ticketsToPrint = GetTablesToPrint(ticketTables, true, false);
-                //if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                //{
-                //    return;
-                //}
-                //foreach (var ticket in ticketsToPrint)
-                //{
-                //    var messageQueue = new PrintMessage
-                //    {
-                //        DocumentId = ticket,
-                //        PrintEvent = PrintEvents.TABLE_OPENED,
-                //        TypeDocument = PrintTypes.TABLE,
-                //        Builder = PrintBuilder.TABLE_BUILDER
-                //    };
-                //    try
-                //    {
-                //        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                //        SetTablesAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
-                //    }
-                //    catch (Exception e)
-                //    {
-                //        _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). No se envió la apertura de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                //    }
-                //    finally
-                //    {
-                //        Thread.Sleep(_delayTask);
-                //    }
-                //}
             }
             catch (Exception e)
             {
@@ -160,6 +123,11 @@ namespace Menoo.Printer.Listener.Tables
         }
 
         #region request payment
+        private void OnRequestPayment(List<Tuple<string, PrintMessage>> tickets) 
+        {
+            
+        }
+
         /*private void OnRequestPayment(QuerySnapshot snapshot)
         {
             _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
@@ -206,7 +174,32 @@ namespace Menoo.Printer.Listener.Tables
 
         private void OnRecieve(QuerySnapshot snapshot)
         {
-           
+            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            if (snapshot.Documents.Count == 0)
+            {
+                return;
+            }
+            var tickets = snapshot.Documents
+                                        .Where(filter => filter.Exists)
+                                        .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
+                                        .OrderByDescending(o => o.CreateTime)
+                                        .Select(s => s.GetMessagePrintType())
+                                        .ToList();
+            var openTables = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.TABLE_OPENED);
+            var closeTables = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.TABLE_CLOSED);
+            var paymentsRequest = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.REQUEST_PAYMENT);
+            if (openTables.Count() > 0)
+            {
+                OnOpenFamily(openTables);
+            }
+            if (closeTables.Count() > 0)
+            {
+                OnClose(closeTables);
+            }
+            if (paymentsRequest.Count() > 0)
+            {
+
+            }
         }
         #endregion
 

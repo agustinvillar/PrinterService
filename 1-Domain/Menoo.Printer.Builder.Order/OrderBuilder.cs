@@ -42,8 +42,6 @@ namespace Menoo.Printer.Builder.Orders
 
         private readonly TicketRepository _ticketRepository;
 
-        private readonly int _ticketTAPaymentDelay;
-
         public OrderBuilder(
             FirestoreDb firestoreDb,
             StoreRepository storeRepository,
@@ -59,7 +57,6 @@ namespace Menoo.Printer.Builder.Orders
             _bookingRepository = bookingRepository;
             _orderRepository = orderRepository;
             _itemRepository = itemRepository;
-            _ticketTAPaymentDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("ticketTAPaymentDelay"));
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
