@@ -66,6 +66,26 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
                     message.Builder = PrintBuilder.TABLE_BUILDER;
                     break;
                 case "REQUEST_PAYMENT":
+                    message.DocumentId = document.EntityId;
+                    message.PrintEvent = PrintEvents.REQUEST_PAYMENT;
+                    message.TypeDocument = PrintTypes.TABLE;
+                    message.Builder = PrintBuilder.TABLE_BUILDER;
+                    break;
+                #endregion
+                #region bookings
+                case "NEW_BOOKING":
+                    message.DocumentId = document.EntityId;
+                    message.DocumentsId = document.EntityIdArray;
+                    message.PrintEvent = PrintEvents.NEW_BOOKING;
+                    message.TypeDocument = PrintTypes.BOOKING;
+                    message.Builder = PrintBuilder.BOOKING_BUILDER;
+                    break;
+                case "CANCELED_BOOKING":
+                    message.DocumentId = document.EntityId;
+                    message.DocumentsId = document.EntityIdArray;
+                    message.PrintEvent = PrintEvents.CANCELED_BOOKING;
+                    message.TypeDocument = PrintTypes.BOOKING;
+                    message.Builder = PrintBuilder.BOOKING_BUILDER;
                     break;
                 #endregion
                 default:

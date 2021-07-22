@@ -237,6 +237,7 @@
     <Compile Include="Queues\PublisherService.cs" />
     <Compile Include="Repository\BookingRepository.cs" />
     <Compile Include="Repository\StoreRepository.cs" />
+    <Compile Include="Repository\TableOpeningFamilyRepository.cs" />
     <Compile Include="Repository\TicketRepository.cs" />
     <Compile Include="Repository\UserRepository.cs" />
     <Compile Include="Start.cs" />

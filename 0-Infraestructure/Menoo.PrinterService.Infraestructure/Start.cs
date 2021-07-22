@@ -45,6 +45,11 @@ namespace Menoo.PrinterService.Infraestructure
                 var userRepository = new UserRepository(firebaseDb);
                 return userRepository;
             });
+            dependencyResolver.Register(() => {
+                var firebaseDb = GetInstanceFirebase();
+                var tableOpeningRepository = new TableOpeningFamilyRepository(firebaseDb);
+                return tableOpeningRepository;
+            });
             dependencyResolver.Register<IPublisherService, PublisherService>();
         }
 

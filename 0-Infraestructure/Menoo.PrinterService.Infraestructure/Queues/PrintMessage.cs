@@ -39,5 +39,9 @@ namespace Menoo.PrinterService.Infraestructure.Queues
         [FirestoreProperty("read")]
         [JsonProperty("read")]
         public bool Read { get; set; }
+
+        [FirestoreProperty("tableOpId")]
+        [JsonProperty("tableOpId")]
+        public string TableOpeningId { get; set; }
     }
 }

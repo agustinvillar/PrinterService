@@ -1,6 +1,5 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.Printer.Builder.Orders.Repository;
-using Menoo.Printer.Builder.Tables.Repository;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
@@ -224,14 +223,7 @@ namespace Menoo.Printer.Builder.Tables
         {
             string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             string title = string.Empty;
-            if (typeRequest == SubOrderPrintTypes.REQUEST_PAYMENT_POS)
-            {
-                title = "Solicitud de pago POS";
-            }
-            else if (typeRequest == SubOrderPrintTypes.REQUEST_PAYMENT_CASH)
-            {
-                title = "Solicitud de pago efectivo";
-            }
+            
             var ticket = new Ticket
             {
                 TicketType = TicketTypeEnum.PAYMENT_REQUEST.ToString(),
@@ -248,6 +240,14 @@ namespace Menoo.Printer.Builder.Tables
             {
                 foreach (var to in tableOpeningFamilyDTO.TableOpenings)
                 {
+                    if (to.PayWithPOS)
+                    {
+                        title = "Solicitud de pago POS";
+                    }
+                    else
+                    {
+                        title = "Solicitud de pago efectivo";
+                    }
                     orderViewData.Append($"<p>Cliente: {to.UserName}</p>");
                     foreach (var order in to.Orders)
                     {
@@ -268,7 +268,6 @@ namespace Menoo.Printer.Builder.Tables
                                     {
                                         orderViewData.Append($"<p>{option.Name} {option.Price}</p>");
                                     }
-
                                 }
                             }
                         }

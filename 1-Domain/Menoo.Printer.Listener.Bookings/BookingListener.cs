@@ -1,12 +1,15 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure;
+using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
+using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Menoo.Printer.Listener.Bookings
@@ -36,67 +39,37 @@ namespace Menoo.Printer.Listener.Bookings
 
         public void Listen()
         {
-            //Aceptada
-            _firestoreDb.Collection("bookings")
-                       .WhereEqualTo("bookingState", "aceptada")
-                       //.OrderByDescending("updatedAt")
-                       .Listen(OnAcepted);
-            //Cancelada
-            _firestoreDb.Collection("bookings")
-                       .WhereEqualTo("bookingState", "cancelada")
-                       //.OrderByDescending("updatedAt")
-                       .Listen(OnCancelled);
+            _firestoreDb.Collection("printEvent")
+                  .Listen(OnRecieve);
         }
 
         public override string ToString()
         {
-            return "Booking.Listener";
+            return PrintListeners.BOOKING_LISTENER;
         }
 
         #region listener
-        private void OnAcepted(QuerySnapshot snapshot)
+        private void OnAcepted(List<Tuple<string, PrintMessage>> tickets)
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
             try
             {
-                if (snapshot.Documents.Count == 0)
+                var ticketsToPrint = GetBookingsToPrint(tickets, true, false);
+                foreach (var ticket in ticketsToPrint)
                 {
-                    return;
+                    try
+                    {
+                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
+                        SetBookingAsPrintedAsync(ticket).GetAwaiter().GetResult();
+                    }
+                    catch (Exception e)
+                    {
+                        _generalWriter.WriteEntry($"OrderListener::OnAcepted(). No se envió la reserva [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(_delayTask);
+                    }
                 }
-                var ticketsOrders = snapshot.Documents
-                                            .Where(filter => filter.Exists)
-                                            .Where(filter => filter.UpdateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                            .OrderByDescending(o => o.CreateTime)
-                                            .Select(s => s.Id)
-                                            .ToList();
-                //var ticketsToPrint = GetBookingsToPrint(ticketsOrders, true, false);
-                //if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                //{
-                //    return;
-                //}
-                //foreach (var ticket in ticketsToPrint)
-                //{
-                //    var messageQueue = new PrintMessage
-                //    {
-                //        DocumentId = ticket,
-                //        PrintEvent = PrintEvents.NEW_BOOKING,
-                //        TypeDocument = PrintTypes.BOOKING,
-                //        Builder = PrintBuilder.BOOKING_BUILDER
-                //    };
-                //    try
-                //    {
-                //        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                //        SetBookingAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
-                //    }
-                //    catch (Exception e)
-                //    {
-                //        _generalWriter.WriteEntry($"BookingListener::OnAcepted(). No se envió la reserva [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                //    }
-                //    finally
-                //    {
-                //        Thread.Sleep(_delayTask);
-                //    }
-                //}
             }
             catch (Exception e)
             {
@@ -104,64 +77,67 @@ namespace Menoo.Printer.Listener.Bookings
             }
         }
 
-        private void OnCancelled(QuerySnapshot snapshot) 
+        private void OnCancelled(List<Tuple<string, PrintMessage>> tickets) 
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
             try
             {
-                if (snapshot.Documents.Count == 0)
+                var ticketsToPrint = GetBookingsToPrint(tickets, false, true);
+                foreach (var ticket in ticketsToPrint)
                 {
-                    return;
+                    try
+                    {
+                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
+                        SetBookingAsPrintedAsync(ticket, false, true).GetAwaiter().GetResult();
+                    }
+                    catch (Exception e)
+                    {
+                        _generalWriter.WriteEntry($"OrderListener::OnCancelled(). No se envió la reserva [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
+                    }
+                    finally
+                    {
+                        Thread.Sleep(_delayTask);
+                    }
                 }
-                var ticketsOrders = snapshot.Documents
-                                            .Where(filter => filter.Exists)
-                                            .Where(filter => filter.UpdateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                            .OrderByDescending(o => o.UpdateTime)
-                                            .Select(s => s.Id)
-                                            .ToList();
-                //var ticketsToPrint = GetBookingsToPrint(ticketsOrders, false, true);
-                //if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                //{
-                //    return;
-                //}
-                //foreach (var ticket in ticketsToPrint)
-                //{
-                //    var messageQueue = new PrintMessage
-                //    {
-                //        DocumentId = ticket,
-                //        PrintEvent = PrintEvents.CANCELED_BOOKING,
-                //        TypeDocument = PrintTypes.BOOKING,
-                //        Builder = PrintBuilder.BOOKING_BUILDER
-                //    };
-                //    try
-                //    {
-                //        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                //        SetBookingAsPrintedAsync(messageQueue, false, true).GetAwaiter().GetResult();
-                //    }
-                //    catch (Exception e)
-                //    {
-                //        _generalWriter.WriteEntry($"BookingListener::OnCancelled(). No se envió la reserva [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                //    }
-                //    finally
-                //    {
-                //        Thread.Sleep(_delayTask);
-                //    }
-                //}
             }
             catch (Exception e)
             {
                 _generalWriter.WriteEntry($"BookingListener::OnCancelled(). Ha ocurrido un error al cancelar reservas. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
             }
         }
+
+        private void OnRecieve(QuerySnapshot snapshot)
+        {
+            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            if (snapshot.Documents.Count == 0)
+            {
+                return;
+            }
+            var tickets = snapshot.Documents
+                                        .Where(filter => filter.Exists)
+                                        .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
+                                        .OrderByDescending(o => o.CreateTime)
+                                        .Select(s => s.GetMessagePrintType())
+                                        .ToList();
+            var newBookings = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.NEW_BOOKING);
+            var cancelledBookings = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.CANCELED_BOOKING);
+            if (newBookings.Count() > 0)
+            {
+                OnAcepted(newBookings);
+            }
+            if (cancelledBookings.Count() > 0)
+            {
+                OnCancelled(cancelledBookings);
+            }
+        }
         #endregion
 
         #region private methods
-        private List<Tuple<string, PrintMessage>> GetBookingsToPrint(List<Tuple<string, PrintMessage>> documentIds, bool isCreated, bool isCancelled)
+        private List<Tuple<string, PrintMessage>> GetBookingsToPrint(List<Tuple<string, PrintMessage>> documents, bool isCreated, bool isCancelled)
         {
             List<Tuple<string, PrintMessage>> ticketsToPrint = null;
             using (var sqlServerContext = new PrinterContext())
             {
-                ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);
+                ticketsToPrint = sqlServerContext.GetItemsToPrint(documents, isCreated, isCancelled);
             }
             return ticketsToPrint;
         }

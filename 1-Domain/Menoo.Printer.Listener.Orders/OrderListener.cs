@@ -40,21 +40,6 @@ namespace Menoo.Printer.Listener.Orders
 
         public void Listen()
         {
-            ////Nuevo TA creado.
-            //_firestoreDb.Collection("orders")
-            //   .WhereEqualTo("status", "pendiente")
-            //   .Listen(OnTakeAwayCreated);
-
-            ////Nueva orden de reserva o mesa.
-            //_firestoreDb.Collection("orders")
-            //   .WhereEqualTo("status", "preparando")
-            //   .Listen(OnOrderCreated);
-
-            ////Orden cancelada.
-            //_firestoreDb.Collection("orders")
-            //    .WhereEqualTo("status", "cancelado")
-            //    .Listen(OnCancelled);
-
             //Reimpresión de orden
             _firestoreDb.Collection("rePrint")
                 .Listen(RePrintOrder);
