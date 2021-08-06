@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.ServiceProcess;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace Menoo.PrinterService.Builder
 {
@@ -22,6 +23,10 @@ namespace Menoo.PrinterService.Builder
         private readonly EventLog _generalWriter;
 
         private readonly BuiltinHandlerActivator _adapter;
+
+        private long _tickCounter;
+
+        private Timer _timer;
 
         public Builder()
         {
@@ -106,6 +111,18 @@ namespace Menoo.PrinterService.Builder
             _adapter.Bus.Subscribe<PrintMessage>().GetAwaiter().GetResult();
         }
 
+        private void ConfigureTimer()
+        {
+            double.TryParse(GlobalConfig.ConfigurationManager.GetSetting("serviceInternal"), out double interval);
+            if (interval == 0d)
+            {
+                interval = 10000d;
+            }
+            _tickCounter = 0L;
+            _timer = new Timer(interval);
+            _timer.Elapsed += ServiceTimer_Tick;
+        }
+
         private void InitializeService()
         {
             try
@@ -115,6 +132,7 @@ namespace Menoo.PrinterService.Builder
                 CanPauseAndContinue = false;
                 CanShutdown = true;
                 ServiceName = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderName");
+                ConfigureTimer();
             }
             catch (Exception ex)
             {
@@ -122,8 +140,37 @@ namespace Menoo.PrinterService.Builder
                 {
                     Source = GlobalConfig.ConfigurationManager.GetSetting("defaultLog")
                 };
-                eventLog.WriteEntry($"Builder::InitializeService()" + Environment.NewLine + ex, EventLogEntryType.Error);
+                eventLog.WriteEntry("Builder::InitializeService()" + Environment.NewLine + ex, EventLogEntryType.Error);
                 eventLog.Dispose();
+            }
+        }
+
+        private void ServiceTimer_Tick(object sender, ElapsedEventArgs e)
+        {
+            try
+            {
+                long memSize = 0L;
+                _tickCounter++;
+                if (_tickCounter % 60L == 0L)
+                {
+                    memSize = GC.GetTotalMemory(true);
+                    _generalWriter.WriteEntry($"Builder::ServiceTimer_Tick(). Se ha liberado {memSize / 1024 }." , EventLogEntryType.Warning);
+                }
+                if (_tickCounter % 3600L == 0L)
+                {
+                    _timer.Stop();
+                    //Proceso de mantenimiento de .NET.
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.WaitForFullGCComplete();
+                    memSize = GC.GetTotalMemory(true);
+                    _generalWriter.WriteEntry($"Builder::ServiceTimer_Tick(). Se ha liberado {memSize / 1024 }.", EventLogEntryType.Warning);
+                    _timer.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                _generalWriter.WriteEntry("Builder::ServiceTimer_Tick()" + Environment.NewLine + ex, EventLogEntryType.Error);
             }
         }
     }
