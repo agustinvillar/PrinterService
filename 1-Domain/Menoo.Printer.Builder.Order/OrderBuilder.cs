@@ -126,7 +126,7 @@ namespace Menoo.Printer.Builder.Orders
             {
                 foreach (var order in orders)
                 {
-                    BuildOrderCreated(order, OrderTypes.MESA);
+                    BuildOrderCreated(order, OrderTypes.MESA, false);
                 }
             }
         }
@@ -144,8 +144,12 @@ namespace Menoo.Printer.Builder.Orders
             }
         }
 
-        private void BuildOrderCreated(OrderV2 order, string orderType)
+        private void BuildOrderCreated(OrderV2 order, string orderType, bool isSingleTicket = true)
         {
+            if (!isSingleTicket) 
+            {
+                return;
+            }
             List<PrintSettings> sectors = new List<PrintSettings>();
             var sectorsByItems = ItemExtensions.GetPrintSector(order.Items, _itemRepository);
             bool isTakeAway = !string.IsNullOrEmpty(orderType) && orderType.Contains("TakeAway");
@@ -193,7 +197,8 @@ namespace Menoo.Printer.Builder.Orders
             }
             else
             {
-                sectors.AddRange(GetSectorByEvent(order.Store.Id, printEvent));
+                var sectorByEvent = GetSectorByEvent(order.Store.Id, printEvent);
+                sectors.AddRange(sectorByEvent);
             }
             if (sectors.Count > 0)
             {
@@ -433,7 +438,8 @@ namespace Menoo.Printer.Builder.Orders
         private List<PrintSettings> GetSectorByEvent(string storeId, string @event)
         {
             var storeData = _storeRepository.GetById<Store>(storeId, "stores").GetAwaiter().GetResult();
-            return storeData.GetPrintSettings(@event);
+            var sectors = storeData.GetPrintSettings(@event);
+            return sectors;
         }
 
         private async Task SaveOrderAsync(OrderV2 order, string sectorName, int copies, string printerName, bool isCancelled, bool isTakeAway, bool printQR)
