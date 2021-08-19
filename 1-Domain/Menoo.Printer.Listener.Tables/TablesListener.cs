@@ -56,13 +56,13 @@ namespace Menoo.Printer.Listener.Tables
         {
             try
             {
-                var ticketsToPrint = GetTablesToPrint(tickets, true, false);
+                var ticketsToPrint = GetItemsToPrint(tickets, PrintEvents.TABLE_CLOSED);
                 foreach (var ticket in ticketsToPrint)
                 {
                     try
                     {
                         _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetTablesAsPrintedAsync(ticket, false, true).GetAwaiter().GetResult();
+                        SetItemPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -84,13 +84,13 @@ namespace Menoo.Printer.Listener.Tables
         {
             try
             {
-                var ticketsToPrint = GetTablesToPrint(tickets, true, false);
+                var ticketsToPrint = GetItemsToPrint(tickets, PrintEvents.TABLE_OPENED);
                 foreach (var ticket in ticketsToPrint)
                 {
                     try 
                     {
                         _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetTablesAsPrintedAsync(ticket).GetAwaiter().GetResult();
+                        SetItemPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -112,13 +112,13 @@ namespace Menoo.Printer.Listener.Tables
         {
             try
             {
-                var ticketsToPrint = GetRequestPayment(tickets);
+                var ticketsToPrint = GetItemsToPrint(tickets, PrintEvents.REQUEST_PAYMENT);
                 foreach (var ticket in ticketsToPrint)
                 {
                     try
                     {
                         _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetTablesAsPrintedAsync(ticket, false, false, true).GetAwaiter().GetResult();
+                        SetItemPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -168,90 +168,21 @@ namespace Menoo.Printer.Listener.Tables
         #endregion
 
         #region private methods
-        private List<Tuple<string, PrintMessage>> GetRequestPayment(List<Tuple<string, PrintMessage>> documents)
-        {
-            List<Tuple<string, PrintMessage>> ticketsToPrint = new List<Tuple<string, PrintMessage>>();
-            List<TicketRequestPayment> ticketsPrinted = null;
-            using (var sqlServerContext = new PrinterContext())
-            {
-                ticketsPrinted = sqlServerContext.TicketHistorySettings.Where(f => f.Name == PrintProperties.IS_REQUEST_PAYMENT).Select(s => new TicketRequestPayment
-                {
-                    Id = s.Id,
-                    TicketHistoryId = s.TicketHistoryId,
-                    IsRequestPaymentPrinted = s.Value
-                }).ToList();
-            }
-            foreach (var document in documents)
-            {
-                if (!ticketsPrinted.Any(f => f.TicketHistoryId == document.Item1)) 
-                {
-                    ticketsToPrint.Add(document);
-                }
-            }
-            return ticketsToPrint;
-        }
-
-        private List<Tuple<string, PrintMessage>> GetTablesToPrint(List<Tuple<string, PrintMessage>> documentIds, bool isCreated, bool isCancelled)
+        private List<Tuple<string, PrintMessage>> GetItemsToPrint(List<Tuple<string, PrintMessage>> documents, string printEvent)
         {
             List<Tuple<string, PrintMessage>> ticketsToPrint = null;
             using (var sqlServerContext = new PrinterContext())
             {
-                ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);
+                ticketsToPrint = sqlServerContext.GetItemsToPrint(documents, DateTime.Now, printEvent);
             }
             return ticketsToPrint;
         }
 
-        private async Task SetTablesAsPrintedAsync(Tuple<string, PrintMessage> message, bool isNew = true, bool isCancelled = false, bool isRequestPayment = false)
+        private async Task SetItemPrintedAsync(Tuple<string, PrintMessage> message)
         {
-            string id = message.Item1;
             using (var sqlServerContext = new PrinterContext())
             {
-                if (sqlServerContext.TicketHistory.Any(f => f.Id == id))
-                {
-                    return;
-                }
-                var historyDetails = new List<TicketHistorySettings>();
-                var history = new TicketHistory
-                {
-                    Id = id,
-                    PrintEvent = message.Item2.PrintEvent,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
-                    ExternalId = string.Empty
-                };
-                sqlServerContext.TicketHistory.Add(history);
-                if (isNew)
-                {
-                    historyDetails.Add(new TicketHistorySettings
-                    {
-                        TicketHistoryId = id,
-                        Name = PrintProperties.IS_NEW_PRINTED,
-                        Value = "true",
-                        Id = Guid.NewGuid()
-                    });
-                }
-                if (isCancelled)
-                {
-                    historyDetails.Add(new TicketHistorySettings
-                    {
-                        TicketHistoryId = id,
-                        Name = PrintProperties.IS_CANCELLED_PRINTED,
-                        Value = "true",
-                        Id = Guid.NewGuid()
-                    });
-                }
-                if (isRequestPayment)
-                {
-                    historyDetails.Add(new TicketHistorySettings
-                    {
-                        TicketHistoryId = id,
-                        Name = PrintProperties.IS_REQUEST_PAYMENT,
-                        Value = "true",
-                        Id = Guid.NewGuid()
-                    });
-                }
-                sqlServerContext.TicketHistorySettings.AddRange(historyDetails);
-                await sqlServerContext.SaveChangesAsync();
+                await sqlServerContext.SetPrintedAsync(message);
             }
         }
         #endregion

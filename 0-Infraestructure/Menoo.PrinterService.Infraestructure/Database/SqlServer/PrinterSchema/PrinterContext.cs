@@ -1,6 +1,5 @@
 ﻿using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.ViewModels;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
 using System.Collections.Generic;
@@ -16,8 +15,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
     public class PrinterContext : DbContext
     {
         public DbSet<TicketHistory> TicketHistory { get; set; }
-
-        public DbSet<TicketHistorySettings> TicketHistorySettings { get; set; }
 
         static PrinterContext()
         {
@@ -41,50 +38,33 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             modelBuilder.Configurations.AddFromAssembly(typeof(PrinterContext).Assembly);
         }
 
-        public List<Tuple<string, PrintMessage>> GetItemsToPrint(List<Tuple<string, PrintMessage>> tickets, bool isCreated, bool isCancelled)
+        public List<Tuple<string, PrintMessage>> GetItemsToPrint(List<Tuple<string, PrintMessage>> tickets, DateTime now, string printEvent)
         {
             var ticketsToPrint = new List<Tuple<string, PrintMessage>>();
-            var printedTickets = GetTicketsPrintedAsync().GetAwaiter().GetResult();
-            if (isCreated)
+            var printedTickets = GetTicketsPrintedAsync(now, printEvent).GetAwaiter().GetResult();
+            foreach (var ticket in tickets)
             {
-                var printedTicketIds = printedTickets.Select(s => s.DocumentId).ToList();
-                foreach (var ticket in tickets)
+                bool documentExists = printedTickets.Contains(ticket.Item1);
+                if (!documentExists) 
                 {
-                    bool documentExists = printedTicketIds.Contains(ticket.Item1);
-                    if (!documentExists) 
-                    {
-                        ticketsToPrint.Add(ticket);
-                    }
-                }
-            }
-            else if (isCancelled)
-            {
-                foreach (var ticket in printedTickets)
-                {
-                    if (string.IsNullOrEmpty(ticket.IsCreatedPrinted) && string.IsNullOrEmpty(ticket.IsCancelledPrinted)) 
-                    {
-                        continue;
-                    }
-                    if (bool.Parse(ticket.IsCreatedPrinted) && !bool.Parse(ticket.IsCancelledPrinted) && tickets.Select(s => s.Item1).Contains(ticket.DocumentId))
-                    {
-                        var ticketInfo = tickets.FirstOrDefault(f => f.Item1 == ticket.DocumentId);
-                        ticketsToPrint.Add(ticketInfo);
-                    }
+                    ticketsToPrint.Add(ticket);
                 }
             }
             return ticketsToPrint;
         }
 
-        public List<string> GetItemsToRePrint(List<string> documentIds) 
+        public List<string> GetItemsToRePrint(List<string> tickets, DateTime now) 
         {
             var ticketsToRePrint = new List<string>();
-            var printedTickets = GetTicketsRePrintedAsync()
-                            .GetAwaiter()
-                            .GetResult();
-            var printedTicketIds = printedTickets.Select(s => s.DocumentId).ToList();
-            ticketsToRePrint.AddRange((from c in documentIds
-                                     where !printedTicketIds.Contains(c)
-                                     select c));
+            var printedTickets = GetTicketsRePrintedAsync(now).GetAwaiter().GetResult();
+            foreach (var ticket in tickets)
+            {
+                bool documentExists = printedTickets.Contains(ticket);
+                if (!documentExists)
+                {
+                    ticketsToRePrint.Add(ticket);
+                }
+            }
             return ticketsToRePrint;
         }
 
@@ -122,52 +102,21 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             }
         }
 
-        public async Task SetPrintedAsync(Tuple<string, PrintMessage> message, bool isNew = true, bool isCancelled = false)
+        public async Task SetPrintedAsync(Tuple<string, PrintMessage> message)
         {
             string id = message.Item1;
-            if (isNew)
+            if (TicketHistory.Any(f => f.Id == id))
             {
-                if (TicketHistory.Any(f => f.Id == id)) 
-                {
-                    return;
-                }
-                var historyDetails = new List<TicketHistorySettings>()
-                {
-                    new TicketHistorySettings{
-                        TicketHistoryId = id,
-                        Name = PrintProperties.IS_NEW_PRINTED,
-                        Value = "true",
-                        Id = Guid.NewGuid()
-                    },
-                    new TicketHistorySettings{
-                        TicketHistoryId = id,
-                        Name = PrintProperties.IS_CANCELLED_PRINTED,
-                        Value = "false",
-                        Id = Guid.NewGuid()
-                    }
-                };
-
-                var history = new TicketHistory
-                {
-                    Id = id,
-                    PrintEvent = message.Item2.PrintEvent,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
-                    ExternalId = string.Empty
-                };
-
-                this.TicketHistory.Add(history);
-                this.TicketHistorySettings.AddRange(historyDetails);
-                await this.SaveChangesAsync();
+                return;
             }
-            if (isCancelled)
+            var history = new TicketHistory
             {
-                var ticketCreated = await TicketHistory.FirstOrDefaultAsync(f => f.Id == id);
-                ticketCreated.UpdatedAt = DateTime.Now;
-                var ticketCreatedSettings = await this.TicketHistorySettings.FirstOrDefaultAsync(f => f.TicketHistoryId == id && f.Name == PrintProperties.IS_CANCELLED_PRINTED);
-                ticketCreatedSettings.Value = "true";
-                this.SaveChanges();
-            }
+                Id = id,
+                PrintEvent = message.Item2.PrintEvent,
+                CreatedAt = DateTime.Now
+            };
+            this.TicketHistory.Add(history);
+            await this.SaveChangesAsync();
         }
 
         public async Task SetRePrintedAsync(PrintMessage message, string documentId)
@@ -176,48 +125,34 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             {
                 return;
             }
-            var historyDetails = new List<TicketHistorySettings>()
-                {
-                    new TicketHistorySettings{
-                        TicketHistoryId = documentId,
-                        Name = PrintProperties.IS_REPRINTED,
-                        Value = "true",
-                        Id = Guid.NewGuid()
-                    }
-                };
-
             var history = new TicketHistory
             {
                 Id = documentId,
                 PrintEvent = message.PrintEvent,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-                ExternalId = string.Empty
+                CreatedAt = DateTime.Now
             };
             this.TicketHistory.Add(history);
-            this.TicketHistorySettings.AddRange(historyDetails);
             await this.SaveChangesAsync();
         }
 
         #region private methods
-        private async Task<List<TicketHistoryViewModel>> GetTicketsPrintedAsync()
+        private async Task<List<string>> GetTicketsPrintedAsync(DateTime now, string printEvent)
         {
-            List<TicketHistoryViewModel> ticketsPrinted = await this.TicketHistorySettings.GroupBy(g => g.TicketHistoryId).Select(s => new TicketHistoryViewModel
-            {
-                DocumentId = s.Key,
-                IsCancelledPrinted = s.FirstOrDefault(f => f.Name == PrintProperties.IS_CANCELLED_PRINTED).Value,
-                IsCreatedPrinted = s.FirstOrDefault(f => f.Name == PrintProperties.IS_NEW_PRINTED).Value
-            }).ToListAsync();
+            List<string> ticketsPrinted = await this.TicketHistory
+                .Where(f => f.CreatedAt.ToString("dd/MM/yyyy") == now.ToString("dd/MM/yyyy"))
+                .Where(f => f.PrintEvent == printEvent)
+                .Select(s => s.Id )
+                .ToListAsync();
             return ticketsPrinted;
         }
 
-        private async Task<List<TicketRePrinterViewModel>> GetTicketsRePrintedAsync()
+        private async Task<List<string>> GetTicketsRePrintedAsync(DateTime now)
         {
-            List<TicketRePrinterViewModel> ticketsPrinted = await this.TicketHistorySettings.GroupBy(g => g.TicketHistoryId).Select(s => new TicketRePrinterViewModel
-            {
-                DocumentId = s.Key,
-                IsRePrinted = s.FirstOrDefault(f => f.Name == PrintProperties.IS_REPRINTED).Value
-            }).ToListAsync();
+            List<string> ticketsPrinted = await this.TicketHistory
+                .Where(f => f.CreatedAt.ToString("dd/MM/yyyy") == now.ToString("dd/MM/yyyy"))
+                .Where(f => f.PrintEvent == PrintEvents.REPRINT_ORDER)
+                .Select(s => s.Id )
+                .ToListAsync();
             return ticketsPrinted;
         }
         #endregion

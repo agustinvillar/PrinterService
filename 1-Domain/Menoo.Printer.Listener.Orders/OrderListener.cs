@@ -58,13 +58,13 @@ namespace Menoo.Printer.Listener.Orders
         {
             try
             {
-                var ticketsToPrint = GetOrdersToPrint(tickets, false, true);
+                var ticketsToPrint = GetOrdersToPrint(tickets, PrintEvents.ORDER_CANCELLED);
                 foreach (var ticket in ticketsToPrint)
                 {
                     try
                     {
                         _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(ticket, false, true).GetAwaiter().GetResult();
+                        SetOrderAsPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -86,7 +86,7 @@ namespace Menoo.Printer.Listener.Orders
         {
             try
             {
-                var ticketsToPrint = GetOrdersToPrint(tickets, true, false);
+                var ticketsToPrint = GetOrdersToPrint(tickets, PrintEvents.NEW_TABLE_ORDER);
                 foreach (var ticket in ticketsToPrint)
                 {
                     try
@@ -114,7 +114,7 @@ namespace Menoo.Printer.Listener.Orders
         {
             try
             {
-                var ticketsToPrint = GetOrdersToPrint(tickets, true, false);
+                var ticketsToPrint = GetOrdersToPrint(tickets, PrintEvents.NEW_TAKE_AWAY);
                 foreach (var ticket in ticketsToPrint)
                 {
                     try
@@ -228,12 +228,12 @@ namespace Menoo.Printer.Listener.Orders
 
         #region private methods
 
-        private List<Tuple<string, PrintMessage>> GetOrdersToPrint(List<Tuple<string, PrintMessage>> tickets, bool isCreated, bool isCancelled) 
+        private List<Tuple<string, PrintMessage>> GetOrdersToPrint(List<Tuple<string, PrintMessage>> tickets, string printEvent) 
         {
             List<Tuple<string, PrintMessage>> ticketsToPrint = null;
             using (var sqlServerContext = new PrinterContext())
             {
-                ticketsToPrint = sqlServerContext.GetItemsToPrint(tickets, isCreated, isCancelled);
+                ticketsToPrint = sqlServerContext.GetItemsToPrint(tickets, DateTime.Now, printEvent);
             }
             return ticketsToPrint;
         }
@@ -243,16 +243,16 @@ namespace Menoo.Printer.Listener.Orders
             List<string> ticketsToRePrint = null;
             using (var sqlServerContext = new PrinterContext())
             {
-                ticketsToRePrint = sqlServerContext.GetItemsToRePrint(documentIds);
+                ticketsToRePrint = sqlServerContext.GetItemsToRePrint(documentIds, DateTime.Now);
             }
             return ticketsToRePrint;
         }
 
-        private async Task SetOrderAsPrintedAsync(Tuple<string, PrintMessage> message, bool isNew = true, bool isCancelled = false)
+        private async Task SetOrderAsPrintedAsync(Tuple<string, PrintMessage> message)
         {
             using (var sqlServerContext = new PrinterContext())
             {
-                await sqlServerContext.SetPrintedAsync(message, isNew, isCancelled);
+                await sqlServerContext.SetPrintedAsync(message);
             }
         }
 

@@ -53,7 +53,7 @@ namespace Menoo.Printer.Listener.Bookings
         {
             try
             {
-                var ticketsToPrint = GetBookingsToPrint(tickets, true, false);
+                var ticketsToPrint = GetBookingsToPrint(tickets, PrintEvents.NEW_BOOKING);
                 foreach (var ticket in ticketsToPrint)
                 {
                     try
@@ -81,13 +81,13 @@ namespace Menoo.Printer.Listener.Bookings
         {
             try
             {
-                var ticketsToPrint = GetBookingsToPrint(tickets, false, true);
+                var ticketsToPrint = GetBookingsToPrint(tickets, PrintEvents.CANCELED_BOOKING);
                 foreach (var ticket in ticketsToPrint)
                 {
                     try
                     {
                         _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetBookingAsPrintedAsync(ticket, false, true).GetAwaiter().GetResult();
+                        SetBookingAsPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -132,21 +132,21 @@ namespace Menoo.Printer.Listener.Bookings
         #endregion
 
         #region private methods
-        private List<Tuple<string, PrintMessage>> GetBookingsToPrint(List<Tuple<string, PrintMessage>> documents, bool isCreated, bool isCancelled)
+        private List<Tuple<string, PrintMessage>> GetBookingsToPrint(List<Tuple<string, PrintMessage>> documents, string printEvent)
         {
             List<Tuple<string, PrintMessage>> ticketsToPrint = null;
             using (var sqlServerContext = new PrinterContext())
             {
-                ticketsToPrint = sqlServerContext.GetItemsToPrint(documents, isCreated, isCancelled);
+                ticketsToPrint = sqlServerContext.GetItemsToPrint(documents, DateTime.Now, printEvent);
             }
             return ticketsToPrint;
         }
 
-        private async Task SetBookingAsPrintedAsync(Tuple<string, PrintMessage> message, bool isNew = true, bool isCancelled = false)
+        private async Task SetBookingAsPrintedAsync(Tuple<string, PrintMessage> message)
         {
             using (var sqlServerContext = new PrinterContext())
             {
-                await sqlServerContext.SetPrintedAsync(message, isNew, isCancelled);
+                await sqlServerContext.SetPrintedAsync(message);
             }
         }
         #endregion
