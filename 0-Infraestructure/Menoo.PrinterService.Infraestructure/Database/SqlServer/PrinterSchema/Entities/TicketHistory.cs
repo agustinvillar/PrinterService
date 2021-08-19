@@ -1,6 +1,4 @@
-﻿using Menoo.PrinterService.Infraestructure.Enums;
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities
 {
@@ -9,6 +7,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
         public string Id { get; set; }
 
         public string PrintEvent { get; set; }
+
+        public string DayCreatedAt { get; set; }
 
         public DateTime CreatedAt { get; set; }
     }

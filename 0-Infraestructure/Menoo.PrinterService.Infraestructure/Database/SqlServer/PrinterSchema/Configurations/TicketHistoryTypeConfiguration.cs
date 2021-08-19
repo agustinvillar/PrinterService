@@ -10,7 +10,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
 
             Property(d => d.Id).HasColumnOrder(0).IsRequired();
             Property(d => d.PrintEvent).HasColumnOrder(2).IsRequired();
-            Property(d => d.CreatedAt).HasColumnOrder(3).IsRequired();
+            Property(d => d.DayCreatedAt).HasColumnOrder(3).IsRequired();
+            Property(d => d.CreatedAt).HasColumnOrder(4).IsRequired();
         }
     }
 }

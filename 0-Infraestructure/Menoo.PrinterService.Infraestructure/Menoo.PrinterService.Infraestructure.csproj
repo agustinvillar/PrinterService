@@ -224,8 +224,12 @@
     <Compile Include="Interfaces\ISubscriptionService.cs" />
     <Compile Include="Interfaces\ITicketBuilder.cs" />
     <Compile Include="Migrations\202108190505259_Intial.cs" />
-    <Compile Include="Migrations\202108190505259_Intial.designer.cs">
+    <Compile Include="Migrations\202108190505259_Intial.Designer.cs">
       <DependentUpon>202108190505259_Intial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202108191605450_DayCreateAtColumn.cs" />
+    <Compile Include="Migrations\202108191605450_DayCreateAtColumn.designer.cs">
+      <DependentUpon>202108191605450_DayCreateAtColumn.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OnStartUpAttribute.cs" />
@@ -247,6 +251,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202108190505259_Intial.resx">
       <DependentUpon>202108190505259_Intial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202108191605450_DayCreateAtColumn.resx">
+      <DependentUpon>202108191605450_DayCreateAtColumn.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

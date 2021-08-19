@@ -41,7 +41,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
         public List<Tuple<string, PrintMessage>> GetItemsToPrint(List<Tuple<string, PrintMessage>> tickets, DateTime now, string printEvent)
         {
             var ticketsToPrint = new List<Tuple<string, PrintMessage>>();
-            var printedTickets = GetTicketsPrintedAsync(now, printEvent).GetAwaiter().GetResult();
+            var printedTickets = GetTicketsPrinted(now, printEvent);
             foreach (var ticket in tickets)
             {
                 bool documentExists = printedTickets.Contains(ticket.Item1);
@@ -56,7 +56,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
         public List<string> GetItemsToRePrint(List<string> tickets, DateTime now) 
         {
             var ticketsToRePrint = new List<string>();
-            var printedTickets = GetTicketsRePrintedAsync(now).GetAwaiter().GetResult();
+            var printedTickets = GetTicketsRePrinted(now);
             foreach (var ticket in tickets)
             {
                 bool documentExists = printedTickets.Contains(ticket);
@@ -109,12 +109,14 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             {
                 return;
             }
+            var now = DateTime.Now;
             var history = new TicketHistory
             {
                 Id = id,
                 PrintEvent = message.Item2.PrintEvent,
-                CreatedAt = DateTime.Now
-            };
+                CreatedAt = DateTime.Now,
+                DayCreatedAt = now.ToString("dd/MM/yyyy")
+        };
             this.TicketHistory.Add(history);
             await this.SaveChangesAsync();
         }
@@ -125,34 +127,39 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             {
                 return;
             }
+            var now = DateTime.Now;
             var history = new TicketHistory
             {
                 Id = documentId,
                 PrintEvent = message.PrintEvent,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                DayCreatedAt = now.ToString("dd/MM/yyyy")
             };
             this.TicketHistory.Add(history);
             await this.SaveChangesAsync();
         }
 
         #region private methods
-        private async Task<List<string>> GetTicketsPrintedAsync(DateTime now, string printEvent)
+        private List<string> GetTicketsPrinted(DateTime now, string printEvent)
         {
-            List<string> ticketsPrinted = await this.TicketHistory
-                .Where(f => f.CreatedAt.ToString("dd/MM/yyyy") == now.ToString("dd/MM/yyyy"))
+            string dateTimeNow = now.ToString("dd/MM/yyyy");
+            List<string> ticketsPrinted = this.TicketHistory.ToList()
+                .Where(f => f.DayCreatedAt == dateTimeNow)
                 .Where(f => f.PrintEvent == printEvent)
-                .Select(s => s.Id )
-                .ToListAsync();
+                .Select(s => s.Id)
+                .ToList();
+  
             return ticketsPrinted;
         }
 
-        private async Task<List<string>> GetTicketsRePrintedAsync(DateTime now)
+        private List<string> GetTicketsRePrinted(DateTime now)
         {
-            List<string> ticketsPrinted = await this.TicketHistory
-                .Where(f => f.CreatedAt.ToString("dd/MM/yyyy") == now.ToString("dd/MM/yyyy"))
+            string dateTimeNow = now.ToString("dd/MM/yyyy");
+            List<string> ticketsPrinted = this.TicketHistory.ToList()
+                .Where(f => f.DayCreatedAt == dateTimeNow)
                 .Where(f => f.PrintEvent == PrintEvents.REPRINT_ORDER)
                 .Select(s => s.Id )
-                .ToListAsync();
+                .ToList();
             return ticketsPrinted;
         }
         #endregion
