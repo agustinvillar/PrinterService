@@ -126,7 +126,7 @@ namespace Menoo.Printer.Builder.Orders
             {
                 foreach (var order in orders)
                 {
-                    BuildOrderCreated(order, OrderTypes.MESA, false);
+                    BuildOrderCreated(order, OrderTypes.MESA, store.Sectors.Count > 1);
                 }
             }
         }
