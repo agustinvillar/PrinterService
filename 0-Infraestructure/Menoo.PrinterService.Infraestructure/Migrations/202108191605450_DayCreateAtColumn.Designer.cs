@@ -7,13 +7,13 @@ namespace Menoo.PrinterService.Infraestructure.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class PrinterDb : IMigrationMetadata
+    public sealed partial class DayCreateAtColumn : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(PrinterDb));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(DayCreateAtColumn));
         
         string IMigrationMetadata.Id
         {
-            get { return "202102010755352_PrinterDb"; }
+            get { return "202108191605450_DayCreateAtColumn"; }
         }
         
         string IMigrationMetadata.Source

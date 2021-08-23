@@ -101,7 +101,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repository\TableOpeningFamilyRepository.cs" />
     <Compile Include="Start.cs" />
     <Compile Include="TablesBuilder.cs" />
   </ItemGroup>

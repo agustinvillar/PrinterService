@@ -171,6 +171,7 @@
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Constants\PrintBiulder.cs" />
     <Compile Include="Constants\PrintEvents.cs" />
+    <Compile Include="Constants\PrintListeners.cs" />
     <Compile Include="Constants\PrintProperties.cs" />
     <Compile Include="Constants\PrintTypes.cs" />
     <Compile Include="Database\Firebase\Entities\Booking.cs" />
@@ -202,18 +203,15 @@
     <Compile Include="Database\SqlServer\MainSchema\Entities\Store.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\CustomModelHistoryConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\MyHistoryContext.cs" />
-    <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistorySettingsTypeConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistoryTypeConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Entities\TicketHistory.cs" />
-    <Compile Include="Database\SqlServer\PrinterSchema\Entities\TicketHistorySettings.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\PrinterContext.cs" />
-    <Compile Include="Database\SqlServer\PrinterSchema\ViewModels\TicketRePrinterViewModel.cs" />
     <Compile Include="Enums\BookingEnum.cs" />
     <Compile Include="Enums\DiscountTypeEnum.cs" />
     <Compile Include="Enums\PrintStatus.cs" />
     <Compile Include="Enums\ProviderEnum.cs" />
     <Compile Include="Enums\TicketTypeEnum.cs" />
-    <Compile Include="Extensions\PrintSettingsExtensions.cs" />
+    <Compile Include="Extensions\PrintExtensions.cs" />
     <Compile Include="HandlerAttribute.cs" />
     <Compile Include="Interfaces\IConfigurationManager.cs" />
     <Compile Include="Interfaces\IFirebaseListener.cs" />
@@ -225,9 +223,13 @@
     <Compile Include="Interfaces\IPublisherService.cs" />
     <Compile Include="Interfaces\ISubscriptionService.cs" />
     <Compile Include="Interfaces\ITicketBuilder.cs" />
-    <Compile Include="Migrations\202102010755352_PrinterDb.cs" />
-    <Compile Include="Migrations\202102010755352_PrinterDb.designer.cs">
-      <DependentUpon>202102010755352_PrinterDb.cs</DependentUpon>
+    <Compile Include="Migrations\202108190505259_Intial.cs" />
+    <Compile Include="Migrations\202108190505259_Intial.Designer.cs">
+      <DependentUpon>202108190505259_Intial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202108191605450_DayCreateAtColumn.cs" />
+    <Compile Include="Migrations\202108191605450_DayCreateAtColumn.designer.cs">
+      <DependentUpon>202108191605450_DayCreateAtColumn.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OnStartUpAttribute.cs" />
@@ -236,22 +238,24 @@
     <Compile Include="Queues\PublisherService.cs" />
     <Compile Include="Repository\BookingRepository.cs" />
     <Compile Include="Repository\StoreRepository.cs" />
+    <Compile Include="Repository\TableOpeningFamilyRepository.cs" />
     <Compile Include="Repository\TicketRepository.cs" />
     <Compile Include="Repository\UserRepository.cs" />
     <Compile Include="Start.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="Database\SqlServer\PrinterSchema\ViewModels\TicketHistoryViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202102010755352_PrinterDb.resx">
-      <DependentUpon>202102010755352_PrinterDb.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202108190505259_Intial.resx">
+      <DependentUpon>202108190505259_Intial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202108191605450_DayCreateAtColumn.resx">
+      <DependentUpon>202108191605450_DayCreateAtColumn.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Grpc.Core.1.22.1\build\net45\Grpc.Core.targets" Condition="Exists('..\..\packages\Grpc.Core.1.22.1\build\net45\Grpc.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

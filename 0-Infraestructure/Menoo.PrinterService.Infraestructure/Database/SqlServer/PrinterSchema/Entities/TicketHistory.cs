@@ -1,26 +1,15 @@
-﻿using Menoo.PrinterService.Infraestructure.Enums;
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities
 {
     public class TicketHistory
     {
-        public TicketHistory() 
-        {
-            TicketHistorySettings = new List<TicketHistorySettings>();
-        }
-
         public string Id { get; set; }
-
-        public string ExternalId { get; set; }
 
         public string PrintEvent { get; set; }
 
-        public DateTime? CreatedAt { get; set; }
+        public string DayCreatedAt { get; set; }
 
-        public DateTime? UpdatedAt { get; set; }
-
-        public virtual List<TicketHistorySettings> TicketHistorySettings { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

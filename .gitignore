@@ -350,3 +350,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+2-Listener/Menoo.PrinterService.Listener/InstallUtil.InstallLog
+3-Builder/Menoo.PrinterService.Builder/InstallUtil.InstallLog

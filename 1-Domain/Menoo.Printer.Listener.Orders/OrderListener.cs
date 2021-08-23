@@ -3,6 +3,7 @@ using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
+using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
@@ -39,65 +40,31 @@ namespace Menoo.Printer.Listener.Orders
 
         public void Listen()
         {
-            //Nuevo TA creado.
-            _firestoreDb.Collection("orders")
-               .WhereEqualTo("status", "pendiente")
-               .Listen(OnTakeAwayCreated);
-
-            //Nueva orden de reserva o mesa.
-            _firestoreDb.Collection("orders")
-               .WhereEqualTo("status", "preparando")
-               .Listen(OnOrderCreated);
-
-            //Orden cancelada.
-            _firestoreDb.Collection("orders")
-                .WhereEqualTo("status", "cancelado")
-                .Listen(OnCancelled);
-            
             //Reimpresión de orden
             _firestoreDb.Collection("rePrint")
                 .Listen(RePrintOrder);
+
+            _firestoreDb.Collection("printEvent")
+                  .Listen(OnRecieve);
         }
 
         public override string ToString()
         {
-            return "Order.Listener";
+            return PrintListeners.ORDER_LISTENER;
         }
 
         #region listeners
-        private void OnCancelled(QuerySnapshot snapshot)
+        private void OnCancelled(List<Tuple<string, PrintMessage>> tickets)
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
             try
             {
-                if (snapshot.Documents.Count == 0)
-                {
-                    return;
-                }
-                var ticketsOrders = snapshot.Documents
-                                            .Where(filter => filter.Exists)
-                                            .Where(filter => filter.UpdateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                            .OrderByDescending(o => o.UpdateTime)
-                                            .Select(s => s.Id)
-                                            .ToList();
-                var ticketsToPrint = GetOrdersToPrint(ticketsOrders, false, true);
-                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                {
-                    return;
-                }
+                var ticketsToPrint = GetOrdersToPrint(tickets, PrintEvents.ORDER_CANCELLED);
                 foreach (var ticket in ticketsToPrint)
                 {
-                    var messageQueue = new PrintMessage
-                    {
-                        DocumentId = ticket,
-                        PrintEvent = PrintEvents.ORDER_CANCELLED,
-                        TypeDocument = PrintTypes.ORDER,
-                        Builder = PrintBuilder.ORDER_BUILDER
-                    };
                     try
                     {
-                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(messageQueue, false, true).GetAwaiter().GetResult();
+                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
+                        SetOrderAsPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -115,39 +82,17 @@ namespace Menoo.Printer.Listener.Orders
             }
         }
 
-        private void OnOrderCreated(QuerySnapshot snapshot)
+        private void OnOrderCreated(List<Tuple<string, PrintMessage>> tickets)
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
             try
             {
-                if (snapshot.Documents.Count == 0)
-                {
-                    return;
-                }
-                var ticketsOrders = snapshot.Documents
-                                            .Where(filter => filter.Exists)
-                                            .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                            .OrderByDescending(o => o.CreateTime)
-                                            .Select(s => s.Id)
-                                            .ToList();
-                var ticketsToPrint = GetOrdersToPrint(ticketsOrders, true, false);
-                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                {
-                    return;
-                }
+                var ticketsToPrint = GetOrdersToPrint(tickets, PrintEvents.NEW_TABLE_ORDER);
                 foreach (var ticket in ticketsToPrint)
                 {
-                    var messageQueue = new PrintMessage
-                    {
-                        DocumentId = ticket,
-                        PrintEvent = PrintEvents.NEW_ORDER,
-                        TypeDocument = PrintTypes.ORDER,
-                        Builder = PrintBuilder.ORDER_BUILDER
-                    };
                     try
                     {
-                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
+                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
+                        SetOrderAsPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -165,40 +110,17 @@ namespace Menoo.Printer.Listener.Orders
             }
         }
 
-        private void OnTakeAwayCreated(QuerySnapshot snapshot)
+        private void OnTakeAwayCreated(List<Tuple<string, PrintMessage>> tickets)
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
             try
             {
-                if (snapshot.Documents.Count == 0)
-                {
-                    return;
-                }
-                var ticketsTakeAway = snapshot.Documents
-                                            .Where(filter => filter.Exists)
-                                            .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                            .OrderByDescending(o => o.CreateTime)
-                                            .Select(s => s.Id)
-                                            .ToList();
-                var ticketsToPrint = GetOrdersToPrint(ticketsTakeAway, true, false);
-                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                {
-                    return;
-                }
+                var ticketsToPrint = GetOrdersToPrint(tickets, PrintEvents.NEW_TAKE_AWAY);
                 foreach (var ticket in ticketsToPrint)
                 {
-                    var messageQueue = new PrintMessage
-                    {
-                        DocumentId = ticket,
-                        PrintEvent = PrintEvents.NEW_TAKE_AWAY,
-                        TypeDocument = PrintTypes.ORDER,
-                        SubTypeDocument = SubOrderPrintTypes.ORDER_TA,
-                        Builder = PrintBuilder.ORDER_BUILDER
-                    };
                     try
                     {
-                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(messageQueue).GetAwaiter().GetResult();
+                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
+                        SetOrderAsPrintedAsync(ticket).GetAwaiter().GetResult();
                     }
                     catch (Exception e)
                     {
@@ -269,18 +191,49 @@ namespace Menoo.Printer.Listener.Orders
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). Ha ocurrido un error al capturar nuevos TA. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"OrderListener::RePrintOrder(). Ha ocurrido un error al reimprimir una orden. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+            }
+        }
+
+        private void OnRecieve(QuerySnapshot snapshot) 
+        {
+            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            if (snapshot.Documents.Count == 0)
+            {
+                return;
+            }
+            var tickets = snapshot.Documents
+                                        .Where(filter => filter.Exists)
+                                        .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
+                                        .OrderByDescending(o => o.CreateTime)
+                                        .Select(s => s.GetMessagePrintType())
+                                        .ToList();
+            var newTableOrderTickets = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.NEW_TABLE_ORDER);
+            var newTakeAwayTickets = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.NEW_TAKE_AWAY);
+            var orderCancelledTickets = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.ORDER_CANCELLED);
+            if (newTableOrderTickets.Count() > 0) 
+            {
+                OnOrderCreated(newTableOrderTickets);
+            }
+            if (newTakeAwayTickets.Count() > 0) 
+            {
+                OnTakeAwayCreated(newTakeAwayTickets);
+            }
+            if (orderCancelledTickets.Count() > 0) 
+            {
+                OnCancelled(orderCancelledTickets);
             }
         }
         #endregion
 
         #region private methods
-        private List<string> GetOrdersToPrint(List<string> documentIds, bool isCreated, bool isCancelled) 
+
+        private List<Tuple<string, PrintMessage>> GetOrdersToPrint(List<Tuple<string, PrintMessage>> tickets, string printEvent) 
         {
-            List<string> ticketsToPrint = null;
+            List<Tuple<string, PrintMessage>> ticketsToPrint = null;
             using (var sqlServerContext = new PrinterContext())
             {
-                ticketsToPrint = sqlServerContext.GetItemsToPrint(documentIds, isCreated, isCancelled);
+                ticketsToPrint = sqlServerContext.GetItemsToPrint(tickets, DateTime.Now, printEvent);
             }
             return ticketsToPrint;
         }
@@ -290,16 +243,16 @@ namespace Menoo.Printer.Listener.Orders
             List<string> ticketsToRePrint = null;
             using (var sqlServerContext = new PrinterContext())
             {
-                ticketsToRePrint = sqlServerContext.GetItemsToRePrint(documentIds);
+                ticketsToRePrint = sqlServerContext.GetItemsToRePrint(documentIds, DateTime.Now);
             }
             return ticketsToRePrint;
         }
 
-        private async Task SetOrderAsPrintedAsync(PrintMessage message, bool isNew = true, bool isCancelled = false)
+        private async Task SetOrderAsPrintedAsync(Tuple<string, PrintMessage> message)
         {
             using (var sqlServerContext = new PrinterContext())
             {
-                await sqlServerContext.SetPrintedAsync(message, isNew, isCancelled);
+                await sqlServerContext.SetPrintedAsync(message);
             }
         }
 
