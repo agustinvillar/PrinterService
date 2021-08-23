@@ -18,7 +18,6 @@ namespace Menoo.PrinterService.Listener
 
         protected override void OnStart(string[] args)
         {
-            Debugger.Launch();
             _generalWriter.WriteEntry("PrinterListener::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             var listeners = GlobalConfig.DependencyResolver.ResolveAll<IFirebaseListener>();
             foreach (var listener in listeners)
