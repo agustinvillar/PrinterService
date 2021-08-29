@@ -178,6 +178,7 @@
     <Compile Include="Database\Firebase\Entities\Item.cs" />
     <Compile Include="Database\Firebase\Entities\Orders.cs" />
     <Compile Include="Database\Firebase\Entities\Payment.cs" />
+    <Compile Include="Database\Firebase\Entities\PrintEventMessage.cs" />
     <Compile Include="Database\Firebase\Entities\PrintSettings.cs" />
     <Compile Include="Database\Firebase\Entities\Store.cs" />
     <Compile Include="Database\Firebase\Entities\TableOpeningFamily.cs" />

@@ -16,6 +16,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
     {
         public DbSet<TicketHistory> TicketHistory { get; set; }
 
+        public DbSet<TicketHistoryDetail> TicketHistoryDetail { get; set; }
+
         static PrinterContext()
         {
             System.Data.Entity.Database.SetInitializer<PrinterContext>(null);
@@ -36,36 +38,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             modelBuilder.HasDefaultSchema("printer");
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Configurations.AddFromAssembly(typeof(PrinterContext).Assembly);
-        }
-
-        public List<Tuple<string, PrintMessage>> GetItemsToPrint(List<Tuple<string, PrintMessage>> tickets, DateTime now, string printEvent)
-        {
-            var ticketsToPrint = new List<Tuple<string, PrintMessage>>();
-            var printedTickets = GetTicketsPrinted(now, printEvent);
-            foreach (var ticket in tickets)
-            {
-                bool documentExists = printedTickets.Contains(ticket.Item1);
-                if (!documentExists) 
-                {
-                    ticketsToPrint.Add(ticket);
-                }
-            }
-            return ticketsToPrint;
-        }
-
-        public List<string> GetItemsToRePrint(List<string> tickets, DateTime now) 
-        {
-            var ticketsToRePrint = new List<string>();
-            var printedTickets = GetTicketsRePrinted(now);
-            foreach (var ticket in tickets)
-            {
-                bool documentExists = printedTickets.Contains(ticket);
-                if (!documentExists)
-                {
-                    ticketsToRePrint.Add(ticket);
-                }
-            }
-            return ticketsToRePrint;
         }
 
         public override int SaveChanges()
@@ -104,20 +76,22 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 
         public async Task SetPrintedAsync(Tuple<string, PrintMessage> message)
         {
-            string id = message.Item1;
-            if (TicketHistory.Any(f => f.Id == id))
+            if (TicketHistory.Any(f => f.Id == message.Item1)) 
             {
                 return;
             }
             var now = DateTime.Now;
             var history = new TicketHistory
             {
-                Id = id,
+                Id = message.Item1,
                 PrintEvent = message.Item2.PrintEvent,
                 CreatedAt = DateTime.Now,
                 DayCreatedAt = now.ToString("dd/MM/yyyy")
-        };
-            this.TicketHistory.Add(history);
+            };
+            var historyDetails = new TicketHistoryDetail 
+            {
+                
+            };
             await this.SaveChangesAsync();
         }
 
@@ -140,28 +114,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
         }
 
         #region private methods
-        private List<string> GetTicketsPrinted(DateTime now, string printEvent)
-        {
-            string dateTimeNow = now.ToString("dd/MM/yyyy");
-            List<string> ticketsPrinted = this.TicketHistory.ToList()
-                .Where(f => f.DayCreatedAt == dateTimeNow)
-                .Where(f => f.PrintEvent == printEvent)
-                .Select(s => s.Id)
-                .ToList();
-  
-            return ticketsPrinted;
-        }
-
-        private List<string> GetTicketsRePrinted(DateTime now)
-        {
-            string dateTimeNow = now.ToString("dd/MM/yyyy");
-            List<string> ticketsPrinted = this.TicketHistory.ToList()
-                .Where(f => f.DayCreatedAt == dateTimeNow)
-                .Where(f => f.PrintEvent == PrintEvents.REPRINT_ORDER)
-                .Select(s => s.Id )
-                .ToList();
-            return ticketsPrinted;
-        }
+        
         #endregion
     }
 }
