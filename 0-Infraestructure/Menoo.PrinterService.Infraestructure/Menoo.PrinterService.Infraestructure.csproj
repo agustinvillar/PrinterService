@@ -202,6 +202,7 @@
     <Compile Include="Database\SqlServer\MainSchema\Entities\Refund.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\SmsVerification.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\Store.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistoryDetail.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\CustomModelHistoryConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\MyHistoryContext.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistoryTypeConfiguration.cs" />
