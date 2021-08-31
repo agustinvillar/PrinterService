@@ -42,28 +42,31 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
         public bool IsTicketPrinted(Tuple<string, PrintMessage> message)
         {
             string now = DateTime.Now.ToString("dd/MM/yyyy");
-            bool isExists = TicketHistory.AnyAsync(f => f.Id == message.Item1).GetAwaiter().GetResult();
-            if (isExists) 
+            bool? isExists = TicketHistory.AnyAsync(f => f.Id == message.Item1).GetAwaiter().GetResult();
+            if (isExists.GetValueOrDefault()) 
             {
                 return true;
             }
             if (message.Item2.DocumentsId != null && message.Item2.DocumentsId.Count > 0)
             {
-                var list = TicketHistory.Where(f => f.PrintEvent == message.Item2.PrintEvent)
+                var allTickets = TicketHistory.Where(f => f.PrintEvent == message.Item2.PrintEvent)
                                         .Where(f => f.DayCreatedAt == now)
-                                        .Select(s => s.TicketHistoryDetail)
-                                        .FirstOrDefaultAsync()
+                                        .ToListAsync()
                                         .GetAwaiter()
-                                        .GetResult()
-                                        .Select(s => s.EntityId)
-                                        .ToList();
-                isExists = list.Intersect(message.Item2.DocumentsId).Any();
+                                        .GetResult();
+                
+                isExists = allTickets?.Select(s => s.TicketHistoryDetail).FirstOrDefault()?.Select(s => s.EntityId).Intersect(message.Item2.DocumentsId).Any();
             }
             else
             {
-                isExists = TicketHistory.AnyAsync(f => f.TicketHistoryDetail.Select(s => s.EntityId).Contains(message.Item2.DocumentId) && f.PrintEvent == message.Item2.PrintEvent && f.DayCreatedAt == now).GetAwaiter().GetResult();
+                var queryResult = TicketHistory.Where(f => f.PrintEvent == message.Item2.PrintEvent)
+                                               .Where(f => f.DayCreatedAt == now)
+                                               .ToListAsync()
+                                               .GetAwaiter()
+                                               .GetResult();
+                isExists = queryResult?.Any(f => f.TicketHistoryDetail.Select(s => s.EntityId).Contains(message.Item2.DocumentId));
             }
-            return isExists;
+            return isExists.GetValueOrDefault();
         }
 
         public bool IsTicketPrinted(QuerySnapshot documentSnapshot)

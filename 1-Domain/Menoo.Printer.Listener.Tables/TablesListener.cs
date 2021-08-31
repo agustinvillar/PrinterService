@@ -35,7 +35,7 @@ namespace Menoo.Printer.Listener.Tables
             FirestoreDb firestoreDb,
             IPublisherService publisherService) 
         {
-            _interceptor = new OnActionRecieve(PrintTypes.TABLE);
+            _interceptor = new OnActionRecieve(PrintBuilder.TABLE_BUILDER);
             _firestoreDb = firestoreDb;
             _publisherService = publisherService;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
@@ -97,7 +97,7 @@ namespace Menoo.Printer.Listener.Tables
             {
                 return;
             }
-            var documentReference = snapshot.Single();
+            var documentReference = snapshot.Documents.FirstOrDefault();
             var message = PrintExtensions.GetMessagePrintType(documentReference);
             if (message.Item2.PrintEvent == PrintEvents.TABLE_OPENED)
             {
@@ -111,8 +111,8 @@ namespace Menoo.Printer.Listener.Tables
             {
                 OnRequestPayment(message);
             }
-            Thread.Sleep(_delayTask);
             _interceptor.OnExit(snapshot);
+            Thread.Sleep(_delayTask);
         }
         #endregion
     }

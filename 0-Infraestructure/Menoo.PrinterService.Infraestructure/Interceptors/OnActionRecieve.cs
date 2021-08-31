@@ -19,57 +19,54 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
 
         public bool OnEntry(QuerySnapshot documentReference, bool isReprint = false)
         {
-            bool validEntry = false;
             if (documentReference.Documents != null && documentReference.Documents.Count > 0)
             {
                 var document = GetDocument(documentReference);
                 if (document.Item2.Builder != _printEventType && !isReprint)
                 {
-                    validEntry = false;
+                    return false;
                 }
                 else if (isReprint && document.Item2.PrintEvent != PrintEvents.REPRINT_ORDER) 
                 {
-                    validEntry = false;
+                    return false;
                 }
                 using (var sqlServerContext = new PrinterContext())
                 {
                     if (sqlServerContext.IsTicketPrinted(document))
                     {
-                        validEntry = false;
+                        return false;
                     }
                 }
-                validEntry = true;
+                return true;
             }
-            return validEntry;
+            return false;
         }
 
-        public bool OnExit(QuerySnapshot documentReference, bool isReprint = false)
+        public void OnExit(QuerySnapshot documentReference, bool isReprint = false)
         {
-            bool validEntry = false;
+
             if (documentReference.Documents != null && documentReference.Documents.Count > 0)
             {
                 var document = GetDocument(documentReference);
                 if (document.Item2.Builder != _printEventType && !isReprint)
                 {
-                    validEntry = false;
+                    return;
                 }
                 else if (isReprint && document.Item2.PrintEvent != PrintEvents.REPRINT_ORDER)
                 {
-                    validEntry = false;
+                    return;
                 }
                 using (var sqlServerContext = new PrinterContext())
                 {
-                    validEntry = true;
                     sqlServerContext.SetPrintedAsync(document).GetAwaiter().GetResult();
                 }
             }
-            return validEntry;
         }
 
         #region private methods
         private Tuple<string, PrintMessage> GetDocument(QuerySnapshot documentReference) 
         {
-            var snapshot = documentReference.Single();
+            var snapshot = documentReference.Documents.FirstOrDefault();
             try
             {
                 var document = PrintExtensions.GetMessagePrintType(snapshot);
