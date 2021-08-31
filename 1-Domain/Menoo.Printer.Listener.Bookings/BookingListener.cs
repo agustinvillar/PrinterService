@@ -83,7 +83,7 @@ namespace Menoo.Printer.Listener.Bookings
             {
                 return;
             }
-            var documentReference = snapshot.Documents.FirstOrDefault();
+            var documentReference = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
             var message = PrintExtensions.GetMessagePrintType(documentReference);
             if (message.Item2.PrintEvent == PrintEvents.NEW_BOOKING)
             {
