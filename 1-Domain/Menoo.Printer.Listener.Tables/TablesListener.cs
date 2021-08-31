@@ -97,7 +97,7 @@ namespace Menoo.Printer.Listener.Tables
             {
                 return;
             }
-            var documentReference = snapshot.Documents.FirstOrDefault();
+            var documentReference = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
             var message = PrintExtensions.GetMessagePrintType(documentReference);
             if (message.Item2.PrintEvent == PrintEvents.TABLE_OPENED)
             {

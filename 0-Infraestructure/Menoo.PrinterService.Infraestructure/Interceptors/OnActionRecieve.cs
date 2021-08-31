@@ -66,7 +66,7 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
         #region private methods
         private Tuple<string, PrintMessage> GetDocument(QuerySnapshot documentReference) 
         {
-            var snapshot = documentReference.Documents.FirstOrDefault();
+            var snapshot = documentReference.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
             try
             {
                 var document = PrintExtensions.GetMessagePrintType(snapshot);
