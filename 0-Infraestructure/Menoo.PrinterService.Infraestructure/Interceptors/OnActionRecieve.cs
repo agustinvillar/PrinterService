@@ -1,55 +1,69 @@
 ﻿using Google.Cloud.Firestore;
+using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Queues;
-using PostSharp.Aspects;
-using PostSharp.Serialization;
 using System;
 using System.Linq;
 
 namespace Menoo.PrinterService.Infraestructure.Interceptors
 {
-    [PSerializable]
-    public sealed class OnActionRecieve : OnMethodBoundaryAspect
+    public sealed class OnActionRecieve
     {
-        public override void OnEntry(MethodExecutionArgs args)
+        private readonly string _printEventType;
+
+        public OnActionRecieve(string printEventType)
         {
-            var documentReference = (QuerySnapshot)args.Arguments[0];
+            _printEventType = printEventType;
+        }
+
+        public bool OnEntry(QuerySnapshot documentReference, bool isReprint = false)
+        {
+            bool validEntry = false;
             if (documentReference.Documents != null && documentReference.Documents.Count > 0)
             {
                 var document = GetDocument(documentReference);
+                if (document.Item2.Builder != _printEventType && !isReprint)
+                {
+                    validEntry = false;
+                }
+                else if (isReprint && document.Item2.PrintEvent != PrintEvents.REPRINT_ORDER) 
+                {
+                    validEntry = false;
+                }
                 using (var sqlServerContext = new PrinterContext())
                 {
                     if (sqlServerContext.IsTicketPrinted(document))
                     {
-                        args.ReturnValue = args.MethodExecutionTag;
-                        args.FlowBehavior = FlowBehavior.Return;
+                        validEntry = false;
                     }
                 }
+                validEntry = true;
             }
-            else 
-            {
-                args.ReturnValue = args.MethodExecutionTag;
-                args.FlowBehavior = FlowBehavior.Return;
-            }
+            return validEntry;
         }
 
-        public override void OnExit(MethodExecutionArgs args)
+        public bool OnExit(QuerySnapshot documentReference, bool isReprint = false)
         {
-            var documentReference = (QuerySnapshot)args.Arguments[0];
+            bool validEntry = false;
             if (documentReference.Documents != null && documentReference.Documents.Count > 0)
             {
                 var document = GetDocument(documentReference);
+                if (document.Item2.Builder != _printEventType && !isReprint)
+                {
+                    validEntry = false;
+                }
+                else if (isReprint && document.Item2.PrintEvent != PrintEvents.REPRINT_ORDER)
+                {
+                    validEntry = false;
+                }
                 using (var sqlServerContext = new PrinterContext())
                 {
+                    validEntry = true;
                     sqlServerContext.SetPrintedAsync(document).GetAwaiter().GetResult();
                 }
             }
-            else
-            {
-                args.ReturnValue = args.MethodExecutionTag;
-                args.FlowBehavior = FlowBehavior.Return;
-            }
+            return validEntry;
         }
 
         #region private methods

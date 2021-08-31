@@ -19,6 +19,8 @@ namespace Menoo.Printer.Listener.Bookings
     [Handler]
     public class BookingListener : IFirebaseListener
     {
+        private readonly OnActionRecieve _interceptor;
+
         private readonly FirestoreDb _firestoreDb;
 
         private readonly EventLog _generalWriter;
@@ -31,6 +33,7 @@ namespace Menoo.Printer.Listener.Bookings
             FirestoreDb firestoreDb,
             IPublisherService publisherService)
         {
+            _interceptor = new OnActionRecieve(PrintTypes.BOOKING);
             _firestoreDb = firestoreDb;
             _publisherService = publisherService;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
@@ -73,9 +76,13 @@ namespace Menoo.Printer.Listener.Bookings
             }
         }
 
-        [OnActionRecieve]
         private void OnRecieve(QuerySnapshot snapshot)
         {
+            bool isEntry = _interceptor.OnEntry(snapshot);
+            if (!isEntry)
+            {
+                return;
+            }
             var documentReference = snapshot.Single();
             var message = PrintExtensions.GetMessagePrintType(documentReference);
             if (message.Item2.PrintEvent == PrintEvents.NEW_BOOKING)
@@ -87,6 +94,7 @@ namespace Menoo.Printer.Listener.Bookings
                 OnCancelled(message);
             }
             Thread.Sleep(_delayTask);
+            _interceptor.OnExit(snapshot);
         }
         #endregion
     }

@@ -18,6 +18,8 @@ namespace Menoo.Printer.Listener.Orders
     {
         private readonly FirestoreDb _firestoreDb;
 
+        private readonly OnActionRecieve _interceptor;
+
         private readonly EventLog _generalWriter;
 
         private readonly IPublisherService _publisherService;
@@ -28,6 +30,7 @@ namespace Menoo.Printer.Listener.Orders
             FirestoreDb firestoreDb,
             IPublisherService publisherService)
         {
+            _interceptor = new OnActionRecieve(PrintTypes.ORDER);
             _firestoreDb = firestoreDb;
             _publisherService = publisherService;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
@@ -86,9 +89,13 @@ namespace Menoo.Printer.Listener.Orders
             }
         }
 
-        [OnActionRecieve]
         private void RePrintOrder(QuerySnapshot snapshot)
         {
+            bool isEntry = _interceptor.OnEntry(snapshot, true);
+            if (!isEntry)
+            {
+                return;
+            }
             var documentReference = snapshot.Single();
             var message = PrintExtensions.GetReprintMessage(documentReference);
             try
@@ -99,11 +106,16 @@ namespace Menoo.Printer.Listener.Orders
             {
                 _generalWriter.WriteEntry($"OrderListener::RePrintOrder(). No se envió la orden a la cola de impresión. {Environment.NewLine} Detalles: {e}{Environment.NewLine} {JsonConvert.SerializeObject(message, Formatting.Indented)}", EventLogEntryType.Error);
             }
+            _interceptor.OnExit(snapshot, true);
         }
 
-        [OnActionRecieve]
         private void OnRecieve(QuerySnapshot snapshot) 
         {
+            bool isEntry = _interceptor.OnEntry(snapshot);
+            if (!isEntry)
+            {
+                return;
+            }
             var documentReference = snapshot.Single();
             var message = PrintExtensions.GetMessagePrintType(documentReference);
             if (message.Item2.PrintEvent == PrintEvents.NEW_TABLE_ORDER)
@@ -119,6 +131,7 @@ namespace Menoo.Printer.Listener.Orders
                 OnCancelled(message);
             }
             Thread.Sleep(_delayTask);
+            _interceptor.OnExit(snapshot);
         }
         #endregion
     }
