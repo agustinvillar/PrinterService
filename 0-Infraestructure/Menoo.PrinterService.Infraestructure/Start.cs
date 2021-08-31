@@ -1,5 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
@@ -15,7 +16,7 @@ namespace Menoo.PrinterService.Infraestructure
             var dependencyResolver = GlobalConfig.DependencyResolver;
             string listenerLog = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerName");
             string builderLog = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderName");
-            if (!string.IsNullOrEmpty(listenerLog)) 
+            if (!string.IsNullOrEmpty(listenerLog))
             {
                 dependencyResolver.Register(() => {
                     var log = ConfigureListenerEventLog();
@@ -51,6 +52,7 @@ namespace Menoo.PrinterService.Infraestructure
                 return tableOpeningRepository;
             });
             dependencyResolver.Register<IPublisherService, PublisherService>();
+            dependencyResolver.RegisterPerThread(() => { return new PrinterContext(); });
         }
 
         static EventLog ConfigureListenerEventLog()

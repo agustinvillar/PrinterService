@@ -6,6 +6,7 @@ using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Enums;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
@@ -26,11 +27,11 @@ namespace Menoo.Printer.Builder.Orders
     [Handler]
     public class OrderBuilder : ITicketBuilder
     {
-        private readonly BookingRepository _bookingRepository;
-
         private readonly FirestoreDb _firestoreDb;
 
         private readonly EventLog _generalWriter;
+
+        private readonly BookingRepository _bookingRepository;
 
         private readonly ItemRepository _itemRepository;
 
@@ -60,7 +61,7 @@ namespace Menoo.Printer.Builder.Orders
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
-        public async Task BuildAsync(PrintMessage data)
+        public async Task BuildAsync(string id, PrintMessage data)
         {
             if (data.Builder != PrintBuilder.ORDER_BUILDER)
             {
@@ -75,12 +76,12 @@ namespace Menoo.Printer.Builder.Orders
                     var order = await _orderRepository.GetOrderById(documentId);
                     orders.Add(order);
                 }
-                BuildMultipleOrderCreated(orders);
+                BuildMultipleOrderCreated(id, orders);
             }
             else
             {
                 var order = await _orderRepository.GetOrderById(data.DocumentId);
-                BuildSingleOrderCreated(order, data);
+                BuildSingleOrderCreated(id, order, data);
             }
         }
 
@@ -90,7 +91,7 @@ namespace Menoo.Printer.Builder.Orders
         }
 
         #region private methods
-        private void BuildMultipleOrderCreated(List<OrderV2> orders)
+        private void BuildMultipleOrderCreated(string id, List<OrderV2> orders)
         {
             var ordersByStore = orders.GroupBy(g => g.Store.Id).FirstOrDefault();
             var store = _storeRepository.GetById<Store>(ordersByStore.Key, "stores").GetAwaiter().GetResult();
@@ -121,17 +122,21 @@ namespace Menoo.Printer.Builder.Orders
                 $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
                 $"Número de orden: {ordersByOrderNumber.Key}{Environment.NewLine}");
             _ticketRepository.SaveAsync(ticket).GetAwaiter().GetResult();
+            using (var dbContext = new PrinterContext())
+            {
+                dbContext.UpdateAsync(id, html).GetAwaiter().GetResult();
+            }
             // Imprimir los tickets de forma individual
             if (store.Sectors.Count > 0)
             {
                 foreach (var order in orders)
                 {
-                    BuildOrderCreated(order, OrderTypes.MESA, store.Sectors.Count > 1);
+                    BuildOrderCreated(id, order, OrderTypes.MESA, store.Sectors.Count > 1);
                 }
             }
         }
 
-        private void BuildOrderCancelled(OrderV2 order)
+        private void BuildOrderCancelled(string id, OrderV2 order)
         {
             bool isTakeAway = order.OrderType.ToUpper().Trim() == OrderTypes.TAKEAWAY;
             List<PrintSettings> sectors = GetSectorByEvent(order.Store.Id, PrintEvents.ORDER_CANCELLED);
@@ -139,12 +144,12 @@ namespace Menoo.Printer.Builder.Orders
             {
                 foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
                 {
-                    SaveOrderAsync(order, sector.Name, sector.Copies, sector.Printer, true, isTakeAway, sector.PrintQR).GetAwaiter().GetResult();
+                    SaveOrderAsync(id, order, sector.Name, sector.Copies, sector.Printer, true, isTakeAway, sector.PrintQR).GetAwaiter().GetResult();
                 }
             }
         }
 
-        private void BuildOrderCreated(OrderV2 order, string orderType, bool isSingleTicket = true)
+        private void BuildOrderCreated(string id, OrderV2 order, string orderType, bool isSingleTicket = true)
         {
             if (!isSingleTicket) 
             {
@@ -204,29 +209,29 @@ namespace Menoo.Printer.Builder.Orders
             {
                 foreach (var sector in sectors.OrderBy(o => o.Name))
                 {
-                    SaveOrderAsync(order, sector.Name, sector.Copies, sector.Printer, false, isTakeAway, sector.PrintQR).GetAwaiter().GetResult();
+                    SaveOrderAsync(id, order, sector.Name, sector.Copies, sector.Printer, false, isTakeAway, sector.PrintQR).GetAwaiter().GetResult();
                 }
             }
         }
 
-        private void BuildOrderToReprint(OrderV2 orderDTO)
+        private void BuildOrderToReprint(string id, OrderV2 orderDTO)
         {
-            BuildOrderCreated(orderDTO, orderDTO.OrderType);
+            BuildOrderCreated(id, orderDTO, orderDTO.OrderType);
         }
 
-        private void BuildSingleOrderCreated(OrderV2 order, PrintMessage message)
+        private void BuildSingleOrderCreated(string id, OrderV2 order, PrintMessage message)
         {
             if (message.PrintEvent == PrintEvents.NEW_ORDER || message.PrintEvent == PrintEvents.NEW_TAKE_AWAY)
             {
-                BuildOrderCreated(order, message.SubTypeDocument);
+                BuildOrderCreated(id, order, message.SubTypeDocument);
             }
             else if (message.PrintEvent == PrintEvents.ORDER_CANCELLED)
             {
-                BuildOrderCancelled(order);
+                BuildOrderCancelled(id, order);
             }
             else if (message.PrintEvent == PrintEvents.REPRINT_ORDER)
             {
-                BuildOrderToReprint(order);
+                BuildOrderToReprint(id, order);
             }
         }
 
@@ -442,7 +447,7 @@ namespace Menoo.Printer.Builder.Orders
             return sectors;
         }
 
-        private async Task SaveOrderAsync(OrderV2 order, string sectorName, int copies, string printerName, bool isCancelled, bool isTakeAway, bool printQR)
+        private async Task SaveOrderAsync(string id, OrderV2 order, string sectorName, int copies, string printerName, bool isCancelled, bool isTakeAway, bool printQR)
         {
             string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             var ticket = new Ticket
@@ -467,6 +472,10 @@ namespace Menoo.Printer.Builder.Orders
                 $"Tipo de orden: {order.OrderType.ToUpper().Trim()}{Environment.NewLine}" +
                 $"Estado de la orden: {order.Status.ToUpper()}");
             await _ticketRepository.SaveAsync(ticket);
+            using (var dbContext = new PrinterContext())
+            {
+                await dbContext.UpdateAsync(id, ticket.Data);
+            }
         }
         #endregion
     }

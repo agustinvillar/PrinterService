@@ -2,6 +2,7 @@
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
@@ -16,6 +17,8 @@ namespace Menoo.Printer.Builder.BookingBuilder
     [Handler]
     public class BookingBuilder : ITicketBuilder
     {
+        private readonly PrinterContext _printerContext;
+
         private readonly FirestoreDb _firestoreDb;
 
         private readonly EventLog _generalWriter;
@@ -29,12 +32,14 @@ namespace Menoo.Printer.Builder.BookingBuilder
         private readonly TicketRepository _ticketRepository;
 
         public BookingBuilder(
+            PrinterContext printerContext,
             FirestoreDb firestoreDb,
             StoreRepository storeRepository,
             TicketRepository ticketRepository,
             BookingRepository bookingRepository,
             UserRepository userRepository)
         {
+            _printerContext = printerContext;
             _firestoreDb = firestoreDb;
             _storeRepository = storeRepository;
             _ticketRepository = ticketRepository;
@@ -43,7 +48,7 @@ namespace Menoo.Printer.Builder.BookingBuilder
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
-        public async Task BuildAsync(PrintMessage data)
+        public async Task BuildAsync(string id, PrintMessage data)
         {
             if (data.Builder != PrintBuilder.BOOKING_BUILDER)
             {
@@ -51,10 +56,10 @@ namespace Menoo.Printer.Builder.BookingBuilder
             }
             var bookingDTO = await _bookingRepository.GetById<Booking>(data.DocumentId);
             var userDTO = await _userRepository.GetById<User>(bookingDTO.UserId);
-            await SaveTicketBooking(bookingDTO, userDTO, data.PrintEvent);
+            await SaveTicketBooking(id, bookingDTO, userDTO, data.PrintEvent);
         }
 
-        private async Task SaveTicketBooking(Booking booking, User user, string printEvent)
+        private async Task SaveTicketBooking(string id, Booking booking, User user, string printEvent)
         {
             string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             var store = await _storeRepository.GetById<Store>(booking.Store.Id, "stores");
@@ -85,7 +90,6 @@ namespace Menoo.Printer.Builder.BookingBuilder
                     };
 
                     ticket.SetBookingData(title, booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
-
                     _generalWriter.WriteEntry($"BookingBuilder::SaveTicketBooking(). Enviando a imprimir la reserva con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
                                 $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
                                 $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
@@ -93,8 +97,8 @@ namespace Menoo.Printer.Builder.BookingBuilder
                                 $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
                                 $"Número de reserva: {booking.BookingNumber}{Environment.NewLine}" +
                                 $"Estado de la reserva: {booking.BookingState.ToUpper()}");
-
                     await _ticketRepository.SaveAsync(ticket);
+                    await _printerContext.UpdateAsync(id, ticket.Data);
                 }
             }
         }

@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities
 {
     public class TicketHistory
     {
+        public TicketHistory() 
+        {
+            TicketHistoryDetail = new List<TicketHistoryDetail>();
+        }
+
         public string Id { get; set; }
 
         public string PrintEvent { get; set; }
@@ -14,14 +20,16 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
 
         public string DocumentPrinted { get; set; }
 
-        public virtual TicketHistoryDetail TicketHistoryDetail { get; set; }
+        public virtual List<TicketHistoryDetail> TicketHistoryDetail { get; set; }
     }
 
     public class TicketHistoryDetail
     {
         public Guid Id { get; set; }
 
-        public string OrderId { get; set; }
+        public string EntityId { get; set; }
+
+        public string TicketHistoryId { get; set; }
 
         public virtual TicketHistory TicketHistory { get; set; }
     }

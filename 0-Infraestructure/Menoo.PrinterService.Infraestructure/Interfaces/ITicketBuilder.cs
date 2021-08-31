@@ -5,6 +5,6 @@ namespace Menoo.PrinterService.Infraestructure.Interfaces
 {
     public interface ITicketBuilder
     {
-        Task BuildAsync(PrintMessage data);
+        Task BuildAsync(string id, PrintMessage data);
     }
 }

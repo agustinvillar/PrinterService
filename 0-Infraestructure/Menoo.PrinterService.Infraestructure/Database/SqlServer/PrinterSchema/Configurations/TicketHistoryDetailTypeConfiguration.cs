@@ -9,7 +9,11 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
             HasKey(d => d.Id);
 
             Property(d => d.Id).HasColumnOrder(0).IsRequired();
-            Property(d => d.OrderId).HasColumnOrder(2).IsRequired();
+            Property(d => d.EntityId).HasColumnOrder(2).IsRequired();
+
+            HasRequired(d => d.TicketHistory)
+                    .WithMany(d => d.TicketHistoryDetail)
+                    .HasForeignKey(c => c.TicketHistoryId);
         }
     }
 }

@@ -9,7 +9,7 @@
     {
         public Configuration()
         {
-            /*this.TargetDatabase = new System.Data.Entity.Infrastructure.DbConnectionInfo("Data Source=menoo.cun3qa90azfx.us-east-2.rds.amazonaws.com;Initial Catalog=Menoo;User Id=Admin;Password=Menoo2019*", "System.Data.SqlClient");*/
+            //this.TargetDatabase = new System.Data.Entity.Infrastructure.DbConnectionInfo("Data Source=menoo.cun3qa90azfx.us-east-2.rds.amazonaws.com;Initial Catalog=MenooTESTING;User Id=Admin;Password=Menoo2019*", "System.Data.SqlClient");
             AutomaticMigrationsEnabled = false;
         }
 

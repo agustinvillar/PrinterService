@@ -54,7 +54,7 @@ namespace Menoo.PrinterService.Builder
                         $"FirebaseId: {data.DocumentId}{Environment.NewLine}", EventLogEntryType.Information);
                     try
                     {
-                        await builder.BuildAsync(data);
+                        await builder.BuildAsync(extras["id"], data);
                     }
                     catch (Exception e) 
                     {
@@ -98,9 +98,9 @@ namespace Menoo.PrinterService.Builder
 
         private void ConfigureWorker()
         {
-            _adapter.Handle<PrintMessage>(async message =>
+            _adapter.Handle<PrintMessage>(async (bus, context, message) =>
             {
-                await RecieveAsync(message);
+                await RecieveAsync(message, context.Headers);
             });
             Configure.With(_adapter)
                 .Logging(l => l.Serilog())

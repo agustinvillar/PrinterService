@@ -25,7 +25,7 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
         {
             Tuple<string, PrintMessage> printMessage = null;
             var message = new PrintMessage();
-            var document = documentReference.ConvertTo<DocumentMessage>();
+            var document = documentReference.ConvertTo<PrintEventMessage>();
             switch (document.Event)
             {
                 #region orders
@@ -92,10 +92,25 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
                     printMessage = null;
                     break;
             }
-            if (message != null) 
+            if (message != null)
             {
                 printMessage = new Tuple<string, PrintMessage>(documentReference.Id, message);
             }
+            return printMessage;
+        }
+
+        public static Tuple<string, PrintMessage> GetReprintMessage(this DocumentSnapshot documentReference) 
+        {
+            documentReference.ToDictionary().TryGetValue("orderId", out object orderId);
+            var messageQueue = new PrintMessage
+            {
+                DocumentId = orderId.ToString(),
+                PrintEvent = PrintEvents.REPRINT_ORDER,
+                TypeDocument = PrintTypes.ORDER,
+                SubTypeDocument = string.Empty,
+                Builder = PrintBuilder.ORDER_BUILDER
+            };
+            var printMessage = new Tuple<string, PrintMessage>(documentReference.Id, messageQueue);
             return printMessage;
         }
 

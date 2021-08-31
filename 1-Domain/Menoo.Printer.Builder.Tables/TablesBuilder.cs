@@ -3,6 +3,7 @@ using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Enums;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
@@ -50,7 +51,8 @@ namespace Menoo.Printer.Builder.Tables
         {
             return PrintBuilder.TABLE_BUILDER;
         }
-        public async Task BuildAsync(PrintMessage data)
+
+        public async Task BuildAsync(string id, PrintMessage data)
         {
             if (data.Builder != PrintBuilder.TABLE_BUILDER)
             {
@@ -59,20 +61,20 @@ namespace Menoo.Printer.Builder.Tables
             var tableOpeningFamilyDTO = await _tableOpeningFamilyRepository.GetById<TableOpeningFamily>(data.DocumentId, "tableOpeningFamily");
             if (data.PrintEvent == PrintEvents.TABLE_OPENED)
             {
-                await BuildOpenTableOpeningFamilyAsync(tableOpeningFamilyDTO);
+                await BuildOpenTableOpeningFamilyAsync(id, tableOpeningFamilyDTO);
             }
             else if (data.PrintEvent == PrintEvents.TABLE_CLOSED)
             {
-                await BuildCloseTableOpeningFamilyAsync(tableOpeningFamilyDTO);
+                await BuildCloseTableOpeningFamilyAsync(id, tableOpeningFamilyDTO);
             }
             else if (data.PrintEvent == PrintEvents.REQUEST_PAYMENT) 
             {
-                await BuildRequestPaymentAsync(tableOpeningFamilyDTO, data.SubTypeDocument);
+                await BuildRequestPaymentAsync(id, tableOpeningFamilyDTO, data.SubTypeDocument);
             }
         }
 
         #region private methods
-        private async Task BuildCloseTableOpeningFamilyAsync(TableOpeningFamily tableOpeningFamilyDTO)
+        private async Task BuildCloseTableOpeningFamilyAsync(string id, TableOpeningFamily tableOpeningFamilyDTO)
         {
             var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
             var sectors = store.GetPrintSettings(PrintEvents.TABLE_CLOSED);
@@ -178,11 +180,15 @@ namespace Menoo.Printer.Builder.Tables
                     }
                     ticket.SetTableClosing(SetTitleForCloseTable(tableOpeningFamilyDTO), tableOpeningFamilyDTO.TableNumberToShow, tableOpeningFamilyDTO.ClosedAt, total.ToString(), orderViewData.ToString());
                     await _ticketRepository.SaveAsync(ticket);
+                    using (var dbContext = new PrinterContext()) 
+                    {
+                        await dbContext.UpdateAsync(id, ticket.Data);
+                    }
                 }
             }
         }
 
-        private async Task BuildOpenTableOpeningFamilyAsync(TableOpeningFamily tableOpeningFamilyDTO)
+        private async Task BuildOpenTableOpeningFamilyAsync(string id, TableOpeningFamily tableOpeningFamilyDTO)
         {
             var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
             var sectors = store.GetPrintSettings(PrintEvents.TABLE_OPENED);
@@ -202,11 +208,15 @@ namespace Menoo.Printer.Builder.Tables
                     };
                     ticket.SetTableOpening("Apertura de mesa", tableOpeningFamilyDTO.TableNumberToShow, tableOpeningFamilyDTO.OpenedAt);
                     await _ticketRepository.SaveAsync(ticket);
+                    using (var dbContext = new PrinterContext())
+                    {
+                        await dbContext.UpdateAsync(id, ticket.Data);
+                    }
                 }
             }
         }
 
-        private async Task BuildRequestPaymentAsync(TableOpeningFamily tableOpeningFamilyDTO, string typeRequest)
+        private async Task BuildRequestPaymentAsync(string id, TableOpeningFamily tableOpeningFamilyDTO, string typeRequest)
         {
             var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
             var sectors = store.GetPrintSettings(PrintEvents.REQUEST_PAYMENT);
@@ -214,12 +224,12 @@ namespace Menoo.Printer.Builder.Tables
             {
                 foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
                 {
-                    await SaveRequestPayment(tableOpeningFamilyDTO, typeRequest, store, sector);
+                    await SaveRequestPayment(id, tableOpeningFamilyDTO, typeRequest, store, sector);
                 }
             }
         }
 
-        private async Task SaveRequestPayment(TableOpeningFamily tableOpeningFamilyDTO, string typeRequest, Store store, PrintSettings sector)
+        private async Task SaveRequestPayment(string id, TableOpeningFamily tableOpeningFamilyDTO, string typeRequest, Store store, PrintSettings sector)
         {
             string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             string title = string.Empty;
@@ -309,6 +319,10 @@ namespace Menoo.Printer.Builder.Tables
                 double total = tableOpeningFamilyDTO.TotalToTicket(store);
                 ticket.SetRequestPayment(title, tableOpeningFamilyDTO.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy HH:mm"), total.ToString(), orderViewData.ToString());
                 await _ticketRepository.SaveAsync(ticket);
+                using (var dbContext = new PrinterContext())
+                {
+                    await dbContext.UpdateAsync(id, ticket.Data);
+                }
             }
         }
 
