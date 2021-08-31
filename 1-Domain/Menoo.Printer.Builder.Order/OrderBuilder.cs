@@ -127,11 +127,12 @@ namespace Menoo.Printer.Builder.Orders
                 dbContext.UpdateAsync(id, html).GetAwaiter().GetResult();
             }
             // Imprimir los tickets de forma individual
-            if (store.Sectors.Count > 0)
+            var otherSectors = store.Sectors.Where(f => f.Id != unifiedSector.Id);
+            if (otherSectors.Count() > 0)
             {
                 foreach (var order in orders)
                 {
-                    BuildOrderCreated(id, order, OrderTypes.MESA, store.Sectors.Count > 1);
+                    BuildOrderCreated(id, order, OrderTypes.MESA, otherSectors.Count() > 1);
                 }
             }
         }
