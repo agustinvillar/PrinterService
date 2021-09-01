@@ -291,7 +291,7 @@ namespace Menoo.Printer.Builder.Orders
                 builder.Append("</table>");
                 builder.Append(line);
                 builder.Append(qrCode);
-                title = isCancelled ? "Orden de mesa cancelada" : "Nueva orden de mesa";
+                title = isCancelled ? "Orden de mesa <b>CANCELADA</b>" : "Nueva orden de mesa";
                 ticket.SetOrder(title, builder.ToString());
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == OrderTypes.RESERVA)
