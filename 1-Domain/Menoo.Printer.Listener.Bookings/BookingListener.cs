@@ -42,8 +42,8 @@ namespace Menoo.Printer.Listener.Bookings
 
         public void Listen()
         {
-            _firestoreDb.Collection("printEvent")
-                  .Listen(OnRecieve);
+            //_firestoreDb.Collection("printEvent")
+            //      .Listen(OnRecieve);
         }
 
         public override string ToString()

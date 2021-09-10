@@ -124,7 +124,7 @@ namespace Menoo.Printer.Builder.Orders
             _ticketRepository.SaveAsync(ticket).GetAwaiter().GetResult();
             using (var dbContext = new PrinterContext())
             {
-                dbContext.UpdateAsync(id, html).GetAwaiter().GetResult();
+                dbContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
             }
             // Imprimir los tickets de forma individual
             var otherSectors = store.Sectors.Where(f => f.Id != unifiedSector.Id);

@@ -43,8 +43,8 @@ namespace Menoo.Printer.Listener.Orders
             _firestoreDb.Collection("rePrint")
                 .Listen(RePrintOrder);
 
-            _firestoreDb.Collection("printEvent")
-                  .Listen(OnRecieve);
+            //_firestoreDb.Collection("printEvent")
+            //      .Listen(OnRecieve);
         }
 
         public override string ToString()

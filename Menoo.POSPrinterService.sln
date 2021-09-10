@@ -31,7 +31,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Builder.Order
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Builder.Bookings", "1-Domain\Menoo.Printer.Builder.Bookings\Menoo.Printer.Builder.Bookings.csproj", "{54298B8C-DB9B-45A4-AFDE-14CD05E1BB19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Builder.Tables", "1-Domain\Menoo.Printer.Builder.Tables\Menoo.Printer.Builder.Tables.csproj", "{8D9104AB-B2C4-4E38-8EFC-1FD3AB22081A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Builder.Tables", "1-Domain\Menoo.Printer.Builder.Tables\Menoo.Printer.Builder.Tables.csproj", "{B088C46B-3B17-440A-98B6-5FE6B6C4DDB2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4-Tester", "4-Tester", "{E4004B3D-8650-4C6C-8AEC-FE164AA3300B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.PrinterService.TesterBuilder", "4.Tester\Builder\ConsoleApp1\Menoo.PrinterService.TesterBuilder.csproj", "{E099E304-0795-4162-9DC5-EB703C5E3D1D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Listener.Generic", "1-Domain\Menoo.Printer.Listener.Generic\Menoo.Printer.Listener.Generic.csproj", "{58B950FC-3EA4-4146-9B35-4BDBF9FA7B6A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,10 +77,18 @@ Global
 		{54298B8C-DB9B-45A4-AFDE-14CD05E1BB19}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54298B8C-DB9B-45A4-AFDE-14CD05E1BB19}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54298B8C-DB9B-45A4-AFDE-14CD05E1BB19}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8D9104AB-B2C4-4E38-8EFC-1FD3AB22081A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8D9104AB-B2C4-4E38-8EFC-1FD3AB22081A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8D9104AB-B2C4-4E38-8EFC-1FD3AB22081A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8D9104AB-B2C4-4E38-8EFC-1FD3AB22081A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B088C46B-3B17-440A-98B6-5FE6B6C4DDB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B088C46B-3B17-440A-98B6-5FE6B6C4DDB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B088C46B-3B17-440A-98B6-5FE6B6C4DDB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B088C46B-3B17-440A-98B6-5FE6B6C4DDB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E099E304-0795-4162-9DC5-EB703C5E3D1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E099E304-0795-4162-9DC5-EB703C5E3D1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E099E304-0795-4162-9DC5-EB703C5E3D1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E099E304-0795-4162-9DC5-EB703C5E3D1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58B950FC-3EA4-4146-9B35-4BDBF9FA7B6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58B950FC-3EA4-4146-9B35-4BDBF9FA7B6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58B950FC-3EA4-4146-9B35-4BDBF9FA7B6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58B950FC-3EA4-4146-9B35-4BDBF9FA7B6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,7 +104,9 @@ Global
 		{A67B916B-A30A-4B71-B42D-8E09A4D00D89} = {6903BA4F-F8A1-4CBA-BFF8-523DFAEA9B71}
 		{46EBC8AA-99EE-458D-A004-7F5E9BF6C608} = {305545E8-3FE4-4BE4-BDA9-711E1A063261}
 		{54298B8C-DB9B-45A4-AFDE-14CD05E1BB19} = {305545E8-3FE4-4BE4-BDA9-711E1A063261}
-		{8D9104AB-B2C4-4E38-8EFC-1FD3AB22081A} = {305545E8-3FE4-4BE4-BDA9-711E1A063261}
+		{B088C46B-3B17-440A-98B6-5FE6B6C4DDB2} = {305545E8-3FE4-4BE4-BDA9-711E1A063261}
+		{E099E304-0795-4162-9DC5-EB703C5E3D1D} = {E4004B3D-8650-4C6C-8AEC-FE164AA3300B}
+		{58B950FC-3EA4-4146-9B35-4BDBF9FA7B6A} = {9A24700E-87C8-4B27-AEB9-863DC77A0A8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28A3E29B-B789-4822-AA66-C3AFB6E515BA}

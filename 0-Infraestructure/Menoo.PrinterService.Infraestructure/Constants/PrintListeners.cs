@@ -7,5 +7,7 @@
         public static string BOOKING_LISTENER = "Booking.Listener";
 
         public static string TABLE_LISTENER = "Table.Listener";
+
+        public static string GENERIC_LISTENER = "Generic.Listener";
     }
 }

@@ -17,6 +17,10 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
             _printEventType = printEventType;
         }
 
+        public OnActionRecieve() 
+        {
+        }
+
         public bool OnEntry(QuerySnapshot documentReference, bool isReprint = false)
         {
             if (documentReference.Documents != null && documentReference.Documents.Count > 0)

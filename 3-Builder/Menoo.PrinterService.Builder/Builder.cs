@@ -47,11 +47,12 @@ namespace Menoo.PrinterService.Builder
                 {
                     _generalWriter.WriteEntry($"Builder::RecieveAsync(). Activando el builder de: {builder.ToString()}", EventLogEntryType.Information);
                     string type = !string.IsNullOrEmpty(data.SubTypeDocument) ? $"{data.TypeDocument}-{data.SubTypeDocument}" : $"{data.TypeDocument}";
+                    string documentsId = data.DocumentsId.Count > 0 ? string.Join(",", data.DocumentsId) : data.DocumentId;
                     _generalWriter.WriteEntry(
                         $"{builder.ToString()}::BuildAsync(). Nuevo ticket de impresión recibido. {Environment.NewLine}" +
                         $"Evento: {data.PrintEvent}{Environment.NewLine}" +
                         $"Tipo: {type}{Environment.NewLine}" +
-                        $"FirebaseId: {data.DocumentId}{Environment.NewLine}", EventLogEntryType.Information);
+                        $"FirebaseId: {documentsId}{Environment.NewLine}", EventLogEntryType.Information);
                     try
                     {
                         await builder.BuildAsync(extras["id"], data);
@@ -62,7 +63,7 @@ namespace Menoo.PrinterService.Builder
                             $"{builder.ToString()}::RecieveAsync(). NO se imprimió el ticket de impresión recibido. {Environment.NewLine}" +
                             $"Evento: {data.PrintEvent}{Environment.NewLine}" +
                             $"Tipo: {type}{Environment.NewLine}" +
-                            $"FirebaseId: {data.DocumentId}{Environment.NewLine}" +
+                            $"FirebaseId: {documentsId}{Environment.NewLine}" +
                             $"Excepción: {e.ToString()}", EventLogEntryType.Error);
                     }
                     break;
