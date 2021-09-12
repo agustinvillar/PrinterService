@@ -12,7 +12,7 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
     {
         private readonly PrinterContext _printerContext;
 
-        public OnActionRecieve(PrinterContext printerContext) 
+        public OnActionRecieve(PrinterContext printerContext)
         {
             _printerContext = printerContext;
         }
@@ -26,7 +26,7 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
                 {
                     return false;
                 }
-                else if (isReprint && document.Item2.PrintEvent != PrintEvents.REPRINT_ORDER) 
+                else if (isReprint && document.Item2.PrintEvent != PrintEvents.REPRINT_ORDER)
                 {
                     return false;
                 }
@@ -70,19 +70,11 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
         }
 
         #region private methods
-        private Tuple<string, PrintMessage> GetDocument(QuerySnapshot documentReference) 
+        private Tuple<string, PrintMessage> GetDocument(QuerySnapshot documentReference)
         {
             var snapshot = documentReference.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
-            try
-            {
-                var document = PrintExtensions.GetMessagePrintType(snapshot);
-                return document;
-            }
-            catch 
-            {
-                var documentToReprint = PrintExtensions.GetReprintMessage(snapshot);
-                return documentToReprint;
-            }
+            var document = PrintExtensions.GetMessagePrintType(snapshot);
+            return document;
         }
         #endregion
     }

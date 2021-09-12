@@ -90,8 +90,8 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
                     break;
                 #endregion
                 default:
-                    printMessage = null;
-                    break;
+                    var documentToReprint = GetReprintMessage(documentReference);
+                    return documentToReprint;
             }
             if (message != null)
             {
