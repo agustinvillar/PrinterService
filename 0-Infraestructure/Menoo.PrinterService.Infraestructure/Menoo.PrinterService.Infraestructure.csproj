@@ -213,6 +213,7 @@
     <Compile Include="Enums\PrintStatus.cs" />
     <Compile Include="Enums\ProviderEnum.cs" />
     <Compile Include="Enums\TicketTypeEnum.cs" />
+    <Compile Include="Exceptions\UnifiedSectorException.cs" />
     <Compile Include="Extensions\PrintExtensions.cs" />
     <Compile Include="HandlerAttribute.cs" />
     <Compile Include="Interceptors\OnActionRecieve.cs" />

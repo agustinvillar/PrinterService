@@ -1,5 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
@@ -52,6 +53,7 @@ namespace Menoo.PrinterService.Infraestructure
                 return tableOpeningRepository;
             });
             dependencyResolver.Register<IPublisherService, PublisherService>();
+            dependencyResolver.RegisterPerThread(() => { return new MenooContext(); });
             dependencyResolver.RegisterPerThread(() => { return new PrinterContext(); });
         }
 

@@ -20,7 +20,7 @@ namespace Menoo.Printer.Builder.Tables
     [Handler]
     public class TablesBuilder : ITicketBuilder
     {
-        private readonly FirestoreDb _firestoreDb;
+        private readonly PrinterContext _printerContext;
 
         private readonly EventLog _generalWriter;
 
@@ -33,13 +33,13 @@ namespace Menoo.Printer.Builder.Tables
         private readonly OrderRepository _orderRepository;
 
         public TablesBuilder(
-            FirestoreDb firestoreDb,
+            PrinterContext printerContext,
             StoreRepository storeRepository,
             TicketRepository ticketRepository,
             OrderRepository orderRepository,
             TableOpeningFamilyRepository tableOpeningFamilyRepository) 
         {
-            _firestoreDb = firestoreDb;
+            _printerContext = printerContext;
             _storeRepository = storeRepository;
             _ticketRepository = ticketRepository;
             _tableOpeningFamilyRepository = tableOpeningFamilyRepository;
@@ -180,10 +180,11 @@ namespace Menoo.Printer.Builder.Tables
                     }
                     ticket.SetTableClosing(SetTitleForCloseTable(tableOpeningFamilyDTO), tableOpeningFamilyDTO.TableNumberToShow, tableOpeningFamilyDTO.ClosedAt, total.ToString(), orderViewData.ToString());
                     await _ticketRepository.SaveAsync(ticket);
-                    using (var dbContext = new PrinterContext()) 
-                    {
-                        await dbContext.UpdateAsync(id, ticket.Data);
-                    }
+                    //using (var dbContext = new PrinterContext()) 
+                    //{
+                    //    await dbContext.UpdateAsync(id, ticket.Data);
+                    //}
+                    await _printerContext.UpdateAsync(id, ticket.Data);
                 }
             }
         }
@@ -208,10 +209,11 @@ namespace Menoo.Printer.Builder.Tables
                     };
                     ticket.SetTableOpening("Apertura de mesa", tableOpeningFamilyDTO.TableNumberToShow, tableOpeningFamilyDTO.OpenedAt);
                     await _ticketRepository.SaveAsync(ticket);
-                    using (var dbContext = new PrinterContext())
-                    {
-                        await dbContext.UpdateAsync(id, ticket.Data);
-                    }
+                    //using (var dbContext = new PrinterContext())
+                    //{
+                    //    await dbContext.UpdateAsync(id, ticket.Data);
+                    //}
+                    await _printerContext.UpdateAsync(id, ticket.Data);
                 }
             }
         }
@@ -319,10 +321,11 @@ namespace Menoo.Printer.Builder.Tables
                 double total = tableOpeningFamilyDTO.TotalToTicket(store);
                 ticket.SetRequestPayment(title, tableOpeningFamilyDTO.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy HH:mm"), total.ToString(), orderViewData.ToString());
                 await _ticketRepository.SaveAsync(ticket);
-                using (var dbContext = new PrinterContext())
-                {
-                    await dbContext.UpdateAsync(id, ticket.Data);
-                }
+                //using (var dbContext = new PrinterContext())
+                //{
+                //    await dbContext.UpdateAsync(id, ticket.Data);
+                //}
+                await _printerContext.UpdateAsync(id, ticket.Data);
             }
         }
 

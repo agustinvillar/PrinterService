@@ -1,6 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
+using Menoo.PrinterService.Infraestructure.Exceptions;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
 using System.Collections.Generic;
@@ -116,8 +117,15 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
 
         public static PrintSettings SectorUnifiedTicket(this Store store) 
         {
-            var sector = store.Sectors.FirstOrDefault(f => f.Id == store.UnifiedTicket.UnifiedTicketSectorId);
-            return sector;
+            try
+            {
+                var sector = store.Sectors.FirstOrDefault(f => f.Id == store.UnifiedTicket.UnifiedTicketSectorId);
+                return sector;
+            }
+            catch (Exception e) 
+            {
+                throw new UnifiedSectorException($"El restaurante {store.Name}-{store.Id}, no tiene configurado el sector unificado.", e);
+            }
         }
     }
 }

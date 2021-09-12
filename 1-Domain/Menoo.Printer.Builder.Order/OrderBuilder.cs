@@ -8,6 +8,7 @@ using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Enums;
+using Menoo.PrinterService.Infraestructure.Exceptions;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
@@ -27,15 +28,15 @@ namespace Menoo.Printer.Builder.Orders
     [Handler]
     public class OrderBuilder : ITicketBuilder
     {
-        private readonly FirestoreDb _firestoreDb;
+        private readonly MenooContext _menooContext;
+
+        private readonly PrinterContext _printerContext;
 
         private readonly EventLog _generalWriter;
 
         private readonly BookingRepository _bookingRepository;
 
         private readonly ItemRepository _itemRepository;
-
-        private readonly MenooContext _menooContext;
 
         private readonly OrderRepository _orderRepository;
 
@@ -44,15 +45,16 @@ namespace Menoo.Printer.Builder.Orders
         private readonly TicketRepository _ticketRepository;
 
         public OrderBuilder(
-            FirestoreDb firestoreDb,
+            MenooContext menooContext,
+            PrinterContext printerContext,
             StoreRepository storeRepository,
             TicketRepository ticketRepository,
             BookingRepository bookingRepository,
             OrderRepository orderRepository,
             ItemRepository itemRepository)
         {
-            _firestoreDb = firestoreDb;
-            _menooContext = new MenooContext();
+            _menooContext = menooContext;
+            _printerContext = printerContext;
             _storeRepository = storeRepository;
             _ticketRepository = ticketRepository;
             _bookingRepository = bookingRepository;
@@ -120,21 +122,23 @@ namespace Menoo.Printer.Builder.Orders
                 $"Sector de impresión: {unifiedSector.Name}{Environment.NewLine}" +
                 $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
                 $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
-                $"Número de orden: {ordersByOrderNumber.Key}{Environment.NewLine}");
+                $"Número de orden: {ordersByOrderNumber.Key}{Environment.NewLine}" +
+                $"Id en colección printEvents: {id}");
             _ticketRepository.SaveAsync(ticket).GetAwaiter().GetResult();
-            using (var dbContext = new PrinterContext())
-            {
-                dbContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
-            }
+            //using (var dbContext = new PrinterContext())
+            //{
+            //    dbContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
+            //}
+            _printerContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
             // Imprimir los tickets de forma individual
-            var otherSectors = store.Sectors.Where(f => f.Id != unifiedSector.Id);
+            /*var otherSectors = store.Sectors.Where(f => f.Id != unifiedSector.Id);
             if (otherSectors.Count() > 0)
             {
                 foreach (var order in orders)
                 {
                     BuildOrderCreated(id, order, OrderTypes.MESA, otherSectors.Count() > 1);
                 }
-            }
+            }*/
         }
 
         private void BuildOrderCancelled(string id, OrderV2 order)
@@ -471,12 +475,14 @@ namespace Menoo.Printer.Builder.Orders
                 $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
                 $"Número de orden: {order.OrderNumber}{Environment.NewLine}" +
                 $"Tipo de orden: {order.OrderType.ToUpper().Trim()}{Environment.NewLine}" +
-                $"Estado de la orden: {order.Status.ToUpper()}");
+                $"Estado de la orden: {order.Status.ToUpper()}" +
+               $"Id en colección printEvents: {id}");
             await _ticketRepository.SaveAsync(ticket);
-            using (var dbContext = new PrinterContext())
-            {
-                await dbContext.UpdateAsync(id, ticket.Data);
-            }
+            //using (var dbContext = new PrinterContext())
+            //{
+            //    await dbContext.UpdateAsync(id, ticket.Data);
+            //}
+            _printerContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
         }
         #endregion
     }

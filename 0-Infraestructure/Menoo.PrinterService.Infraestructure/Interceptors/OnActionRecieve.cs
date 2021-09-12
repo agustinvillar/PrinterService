@@ -10,15 +10,11 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
 {
     public sealed class OnActionRecieve
     {
-        private readonly string _printEventType;
+        private readonly PrinterContext _printerContext;
 
-        public OnActionRecieve(string printEventType)
+        public OnActionRecieve(PrinterContext printerContext) 
         {
-            _printEventType = printEventType;
-        }
-
-        public OnActionRecieve() 
-        {
+            _printerContext = printerContext;
         }
 
         public bool OnEntry(QuerySnapshot documentReference, bool isReprint = false)
@@ -26,7 +22,7 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
             if (documentReference.Documents != null && documentReference.Documents.Count > 0)
             {
                 var document = GetDocument(documentReference);
-                if (document.Item2.Builder != _printEventType && !isReprint)
+                if (!PrintEvents.EventExists(document.Item2.PrintEvent) && !isReprint)
                 {
                     return false;
                 }
@@ -34,12 +30,17 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
                 {
                     return false;
                 }
-                using (var sqlServerContext = new PrinterContext())
+                //using (var sqlServerContext = new PrinterContext())
+                //{
+                //    if (sqlServerContext.IsTicketPrinted(document))
+                //    {
+                //        return false;
+                //    }
+                //}
+                bool isPrinted = _printerContext.IsTicketPrinted(document);
+                if (isPrinted)
                 {
-                    if (sqlServerContext.IsTicketPrinted(document))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
                 return true;
             }
@@ -52,7 +53,7 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
             if (documentReference.Documents != null && documentReference.Documents.Count > 0)
             {
                 var document = GetDocument(documentReference);
-                if (document.Item2.Builder != _printEventType && !isReprint)
+                if (!PrintEvents.EventExists(document.Item2.PrintEvent) && !isReprint)
                 {
                     return;
                 }
@@ -60,10 +61,11 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
                 {
                     return;
                 }
-                using (var sqlServerContext = new PrinterContext())
-                {
-                    sqlServerContext.SetPrintedAsync(document).GetAwaiter().GetResult();
-                }
+                //using (var sqlServerContext = new PrinterContext())
+                //{
+                //    sqlServerContext.SetPrintedAsync(document).GetAwaiter().GetResult();
+                //}
+                _printerContext.SetPrintedAsync(document).GetAwaiter().GetResult();
             }
         }
 

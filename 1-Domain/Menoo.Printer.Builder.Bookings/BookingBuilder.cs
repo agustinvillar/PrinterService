@@ -19,8 +19,6 @@ namespace Menoo.Printer.Builder.BookingBuilder
     {
         private readonly PrinterContext _printerContext;
 
-        private readonly FirestoreDb _firestoreDb;
-
         private readonly EventLog _generalWriter;
 
         private readonly UserRepository _userRepository;
@@ -33,14 +31,12 @@ namespace Menoo.Printer.Builder.BookingBuilder
 
         public BookingBuilder(
             PrinterContext printerContext,
-            FirestoreDb firestoreDb,
             StoreRepository storeRepository,
             TicketRepository ticketRepository,
             BookingRepository bookingRepository,
             UserRepository userRepository)
         {
             _printerContext = printerContext;
-            _firestoreDb = firestoreDb;
             _storeRepository = storeRepository;
             _ticketRepository = ticketRepository;
             _bookingRepository = bookingRepository;
@@ -96,7 +92,8 @@ namespace Menoo.Printer.Builder.BookingBuilder
                                 $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
                                 $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
                                 $"Número de reserva: {booking.BookingNumber}{Environment.NewLine}" +
-                                $"Estado de la reserva: {booking.BookingState.ToUpper()}");
+                                $"Estado de la reserva: {booking.BookingState.ToUpper()}" +
+                                $"Id en colección printEvents: {id}");
                     await _ticketRepository.SaveAsync(ticket);
                     await _printerContext.UpdateAsync(id, ticket.Data);
                 }
