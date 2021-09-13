@@ -14,7 +14,6 @@ namespace ConsoleApp1
             {
                 if (builder.ToString() == PrintBuilder.ORDER_BUILDER) 
                 {
-                    var message = 
                 }
             }
         }

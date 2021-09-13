@@ -74,7 +74,6 @@ namespace Menoo.PrinterService.Builder
 
         protected override void OnStart(string[] args)
         {
-            Debugger.Launch();
             _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             ConfigureWorker();
         }
