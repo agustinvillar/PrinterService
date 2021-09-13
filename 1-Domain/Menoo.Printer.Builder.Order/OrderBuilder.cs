@@ -129,7 +129,7 @@ namespace Menoo.Printer.Builder.Orders
             //{
             //    dbContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
             //}
-            _printerContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
+            //_printerContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
             // Imprimir los tickets de forma individual
             foreach (var order in orders)
             {
@@ -519,7 +519,7 @@ namespace Menoo.Printer.Builder.Orders
             //{
             //    await dbContext.UpdateAsync(id, ticket.Data);
             //}
-            _printerContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
+            //_printerContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
         }
         #endregion
     }

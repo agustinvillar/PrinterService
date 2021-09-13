@@ -184,7 +184,7 @@ namespace Menoo.Printer.Builder.Tables
                     //{
                     //    await dbContext.UpdateAsync(id, ticket.Data);
                     //}
-                    await _printerContext.UpdateAsync(id, ticket.Data);
+                    //await _printerContext.UpdateAsync(id, ticket.Data);
                 }
             }
         }
@@ -213,7 +213,7 @@ namespace Menoo.Printer.Builder.Tables
                     //{
                     //    await dbContext.UpdateAsync(id, ticket.Data);
                     //}
-                    await _printerContext.UpdateAsync(id, ticket.Data);
+                    //await _printerContext.UpdateAsync(id, ticket.Data);
                 }
             }
         }
@@ -325,7 +325,7 @@ namespace Menoo.Printer.Builder.Tables
                 //{
                 //    await dbContext.UpdateAsync(id, ticket.Data);
                 //}
-                await _printerContext.UpdateAsync(id, ticket.Data);
+                //await _printerContext.UpdateAsync(id, ticket.Data);
             }
         }
 

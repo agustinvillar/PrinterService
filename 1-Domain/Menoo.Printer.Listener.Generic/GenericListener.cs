@@ -155,11 +155,11 @@ namespace Menoo.Printer.Listener.Generic
 
         private void OnRecieve(QuerySnapshot snapshot)
         {
-            bool isEntry = _interceptor.OnEntry(snapshot);
-            if (!isEntry)
-            {
-                return;
-            }
+            //bool isEntry = _interceptor.OnEntry(snapshot);
+            //if (!isEntry)
+            //{
+            //    return;
+            //}
             var documentReference = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
             var message = PrintExtensions.GetMessagePrintType(documentReference);
             switch (message.Item2.PrintEvent)
@@ -189,17 +189,17 @@ namespace Menoo.Printer.Listener.Generic
                     OnBookingCancelled(message);
                     break;
             }
-            _interceptor.OnExit(snapshot);
+            //_interceptor.OnExit(snapshot);
             Thread.Sleep(_delayTask);
         }
 
         private void RePrintOrder(QuerySnapshot snapshot)
         {
-            bool isEntry = _interceptor.OnEntry(snapshot, true);
-            if (!isEntry)
-            {
-                return;
-            }
+            //bool isEntry = _interceptor.OnEntry(snapshot, true);
+            //if (!isEntry)
+            //{
+            //    return;
+            //}
             var documentReference = snapshot.Single();
             var message = PrintExtensions.GetReprintMessage(documentReference);
             try
@@ -210,7 +210,7 @@ namespace Menoo.Printer.Listener.Generic
             {
                 _generalWriter.WriteEntry($"OrderListener::RePrintOrder(). No se envió la orden a la cola de impresión. {Environment.NewLine} Detalles: {e}{Environment.NewLine} {JsonConvert.SerializeObject(message, Formatting.Indented)}", EventLogEntryType.Error);
             }
-            _interceptor.OnExit(snapshot, true);
+            //_interceptor.OnExit(snapshot, true);
         }
         #endregion
     }
