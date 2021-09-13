@@ -131,14 +131,10 @@ namespace Menoo.Printer.Builder.Orders
             //}
             _printerContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
             // Imprimir los tickets de forma individual
-            /*var otherSectors = store.Sectors.Where(f => f.Id != unifiedSector.Id);
-            if (otherSectors.Count() > 0)
+            foreach (var order in orders)
             {
-                foreach (var order in orders)
-                {
-                    BuildOrderCreated(id, order, OrderTypes.MESA, otherSectors.Count() > 1);
-                }
-            }*/
+                BuildOrderBySector(id, order, OrderTypes.MESA);
+            }
         }
 
         private void BuildOrderCancelled(string id, OrderV2 order)
@@ -209,6 +205,47 @@ namespace Menoo.Printer.Builder.Orders
             {
                 var sectorByEvent = GetSectorByEvent(order.Store.Id, printEvent);
                 sectors.AddRange(sectorByEvent);
+            }
+            if (sectors.Count > 0)
+            {
+                foreach (var sector in sectors.OrderBy(o => o.Name))
+                {
+                    SaveOrderAsync(id, order, sector.Name, sector.Copies, sector.Printer, false, isTakeAway, sector.PrintQR).GetAwaiter().GetResult();
+                }
+            }
+        }
+
+        private void BuildOrderBySector(string id, OrderV2 order, string orderType)
+        {
+            List<PrintSettings> sectors = new List<PrintSettings>();
+            var sectorsByItems = ItemExtensions.GetPrintSector(order.Items, _itemRepository);
+            bool isTakeAway = !string.IsNullOrEmpty(orderType) && orderType.Contains("TakeAway");
+            string printEvent = string.Empty;
+            if (isTakeAway)
+            {
+                printEvent = PrintEvents.NEW_TAKE_AWAY;
+            }
+            else if (order.OrderType.ToUpper().Trim() == OrderTypes.RESERVA)
+            {
+                printEvent = PrintEvents.NEW_BOOKING;
+            }
+            else if (order.OrderType.ToUpper().Trim() == OrderTypes.MESA)
+            {
+                printEvent = PrintEvents.NEW_TABLE_ORDER;
+            }
+            if (sectorsByItems.Count > 0)
+            {
+                if (sectorsByItems.Select(s => s.Sectors).Count() > 0)
+                {
+                    foreach (var sector in sectorsByItems.Select(s => s.Sectors).FirstOrDefault())
+                    {
+                        bool isExists = sectors.Any(f => sector.Name == f.Name);
+                        if (!isExists && sector.AllowPrinting)
+                        {
+                            sectors.Add(sector);
+                        }
+                    }
+                }
             }
             if (sectors.Count > 0)
             {
