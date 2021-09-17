@@ -1,5 +1,4 @@
-﻿using Google.Cloud.Firestore;
-using Menoo.Printer.Builder.Orders.Constants;
+﻿using Menoo.Printer.Builder.Orders.Constants;
 using Menoo.Printer.Builder.Orders.Extensions;
 using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
@@ -8,7 +7,6 @@ using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Enums;
-using Menoo.PrinterService.Infraestructure.Exceptions;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
@@ -125,11 +123,7 @@ namespace Menoo.Printer.Builder.Orders
                 $"Número de orden: {ordersByOrderNumber.Key}{Environment.NewLine}" +
                 $"Id en colección printEvents: {id}");
             _ticketRepository.SaveAsync(ticket).GetAwaiter().GetResult();
-            //using (var dbContext = new PrinterContext())
-            //{
-            //    dbContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
-            //}
-            //_printerContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
+            _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data).GetAwaiter().GetResult();
             // Imprimir los tickets de forma individual
             foreach (var order in orders)
             {
@@ -515,11 +509,7 @@ namespace Menoo.Printer.Builder.Orders
                 $"Estado de la orden: {order.Status.ToUpper()}" +
                $"Id en colección printEvents: {id}");
             await _ticketRepository.SaveAsync(ticket);
-            //using (var dbContext = new PrinterContext())
-            //{
-            //    await dbContext.UpdateAsync(id, ticket.Data);
-            //}
-            //_printerContext.UpdateAsync(id, ticket.Data).GetAwaiter().GetResult();
+            await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
         }
         #endregion
     }

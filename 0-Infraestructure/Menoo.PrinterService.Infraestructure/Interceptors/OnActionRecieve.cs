@@ -1,8 +1,8 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Constants;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Queues;
+using Menoo.PrinterService.Infraestructure.Repository;
 using System;
 using System.Linq;
 
@@ -10,11 +10,11 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
 {
     public sealed class OnActionRecieve
     {
-        private readonly PrinterContext _printerContext;
+        private readonly TicketRepository _ticketRepository;
 
-        public OnActionRecieve(PrinterContext printerContext)
+        public OnActionRecieve(TicketRepository ticketRepository)
         {
-            _printerContext = printerContext;
+            _ticketRepository = ticketRepository;
         }
 
         public bool OnEntry(QuerySnapshot documentReference, bool isReprint = false)
@@ -30,14 +30,7 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
                 {
                     return false;
                 }
-                //using (var sqlServerContext = new PrinterContext())
-                //{
-                //    if (sqlServerContext.IsTicketPrinted(document))
-                //    {
-                //        return false;
-                //    }
-                //}
-                bool isPrinted = _printerContext.IsTicketPrinted(document);
+                bool isPrinted = _ticketRepository.IsTicketPrinted(document).GetAwaiter().GetResult();
                 if (isPrinted)
                 {
                     return false;
@@ -49,7 +42,6 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
 
         public void OnExit(QuerySnapshot documentReference, bool isReprint = false)
         {
-
             if (documentReference.Documents != null && documentReference.Documents.Count > 0)
             {
                 var document = GetDocument(documentReference);
@@ -61,11 +53,7 @@ namespace Menoo.PrinterService.Infraestructure.Interceptors
                 {
                     return;
                 }
-                //using (var sqlServerContext = new PrinterContext())
-                //{
-                //    sqlServerContext.SetPrintedAsync(document).GetAwaiter().GetResult();
-                //}
-                _printerContext.SetPrintedAsync(document).GetAwaiter().GetResult();
+                _ticketRepository.SetPrintedAsync(document).GetAwaiter().GetResult();
             }
         }
 

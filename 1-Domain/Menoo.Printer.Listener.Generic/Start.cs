@@ -1,6 +1,7 @@
 ﻿using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Interceptors;
+using Menoo.PrinterService.Infraestructure.Repository;
 using System;
 
 namespace Menoo.Printer.Listener.Generic
@@ -11,8 +12,8 @@ namespace Menoo.Printer.Listener.Generic
         public Start()
         {
             var dependencyResolver = GlobalConfig.DependencyResolver;
-            var context = dependencyResolver.Resolve<PrinterContext>();
-            var interceptor = new OnActionRecieve(context);
+            var repository = dependencyResolver.Resolve<TicketRepository>();
+            var interceptor = new OnActionRecieve(repository);
             dependencyResolver.Register(() => { return interceptor; });
             var listeners = Utils.DiscoverListeners(this.GetType().Assembly);
             foreach (var tuple in listeners)

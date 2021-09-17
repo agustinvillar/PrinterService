@@ -5,7 +5,7 @@ namespace Menoo.PrinterService.Infraestructure.Interfaces
 {
     public interface IFirebaseRepository<T> where T : class
     {
-        Task AddPropertyAsync(string id, string fieldName, string value, string collection);
+        Task AddPropertyAsync(string id, string fieldName, object value, string collection);
 
         Task DeleteAsync(string id, string collection);
 

@@ -95,7 +95,7 @@ namespace Menoo.Printer.Builder.BookingBuilder
                                 $"Estado de la reserva: {booking.BookingState.ToUpper()}" +
                                 $"Id en colección printEvents: {id}");
                     await _ticketRepository.SaveAsync(ticket);
-                    //await _printerContext.UpdateAsync(id, ticket.Data);
+                    await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
                 }
             }
         }

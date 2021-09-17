@@ -180,11 +180,7 @@ namespace Menoo.Printer.Builder.Tables
                     }
                     ticket.SetTableClosing(SetTitleForCloseTable(tableOpeningFamilyDTO), tableOpeningFamilyDTO.TableNumberToShow, tableOpeningFamilyDTO.ClosedAt, total.ToString(), orderViewData.ToString());
                     await _ticketRepository.SaveAsync(ticket);
-                    //using (var dbContext = new PrinterContext()) 
-                    //{
-                    //    await dbContext.UpdateAsync(id, ticket.Data);
-                    //}
-                    //await _printerContext.UpdateAsync(id, ticket.Data);
+                    await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
                 }
             }
         }
@@ -209,11 +205,7 @@ namespace Menoo.Printer.Builder.Tables
                     };
                     ticket.SetTableOpening("Apertura de mesa", tableOpeningFamilyDTO.TableNumberToShow, tableOpeningFamilyDTO.OpenedAt);
                     await _ticketRepository.SaveAsync(ticket);
-                    //using (var dbContext = new PrinterContext())
-                    //{
-                    //    await dbContext.UpdateAsync(id, ticket.Data);
-                    //}
-                    //await _printerContext.UpdateAsync(id, ticket.Data);
+                    await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
                 }
             }
         }
@@ -321,11 +313,7 @@ namespace Menoo.Printer.Builder.Tables
                 double total = tableOpeningFamilyDTO.TotalToTicket(store);
                 ticket.SetRequestPayment(title, tableOpeningFamilyDTO.TableNumberToShow, DateTime.Now.ToString("dd/MM/yyyy HH:mm"), total.ToString(), orderViewData.ToString());
                 await _ticketRepository.SaveAsync(ticket);
-                //using (var dbContext = new PrinterContext())
-                //{
-                //    await dbContext.UpdateAsync(id, ticket.Data);
-                //}
-                //await _printerContext.UpdateAsync(id, ticket.Data);
+                await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
             }
         }
 
