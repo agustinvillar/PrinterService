@@ -506,8 +506,8 @@ namespace Menoo.Printer.Builder.Orders
                 $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
                 $"Número de orden: {order.OrderNumber}{Environment.NewLine}" +
                 $"Tipo de orden: {order.OrderType.ToUpper().Trim()}{Environment.NewLine}" +
-                $"Estado de la orden: {order.Status.ToUpper()}" +
-               $"Id en colección printEvents: {id}");
+                $"Estado de la orden: {order.Status.ToUpper()}{Environment.NewLine}" +
+                $"Id en colección printEvents: {id}");
             await _ticketRepository.SaveAsync(ticket);
             await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
         }
