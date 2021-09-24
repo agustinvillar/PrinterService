@@ -14,9 +14,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
             _db = db;
         }
 
-        public async Task AddPropertyAsync(string id, string fieldName, string value, string collection)
+        public async Task AddPropertyAsync(string id, string fieldName, object value, string collection)
         {
-            await _db.Collection(collection).Document(id).UpdateAsync(fieldName, true);
+            await _db.Collection(collection).Document(id).UpdateAsync(fieldName, value);
         }
 
         public virtual async Task DeleteAsync(string id, string collection)
@@ -57,6 +57,11 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
         public virtual async Task SaveAsync<TEntity>(TEntity item, string collection)
         {
             await _db.Collection(collection).AddAsync(item);
+        }
+
+        public virtual async Task SaveAsync<TEntity>(string id, TEntity item, string collection)
+        {
+            await _db.Collection(collection).Document(id).CreateAsync(item);
         }
     }
 }

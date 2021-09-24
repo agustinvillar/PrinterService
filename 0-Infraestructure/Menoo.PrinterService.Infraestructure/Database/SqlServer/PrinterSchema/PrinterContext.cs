@@ -1,8 +1,7 @@
-﻿using Menoo.PrinterService.Infraestructure.Constants;
+﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
@@ -14,8 +13,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 {
     public class PrinterContext : DbContext
     {
-        public DbSet<TicketHistory> TicketHistory { get; set; }
-
         static PrinterContext()
         {
             System.Data.Entity.Database.SetInitializer<PrinterContext>(null);
@@ -26,10 +23,14 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
         {
         }
 
-        public PrinterContext(DbConnection dbConnection) 
-            : base(dbConnection, true) 
+        public PrinterContext(DbConnection dbConnection)
+            : base(dbConnection, true)
         {
         }
+
+        public DbSet<TicketHistory> TicketHistory { get; set; }
+
+        public DbSet<TicketHistoryDetail> TicketHistoryDetail { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -38,34 +39,42 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             modelBuilder.Configurations.AddFromAssembly(typeof(PrinterContext).Assembly);
         }
 
-        public List<Tuple<string, PrintMessage>> GetItemsToPrint(List<Tuple<string, PrintMessage>> tickets, DateTime now, string printEvent)
+        public bool IsTicketPrinted(Tuple<string, PrintMessage> message)
         {
-            var ticketsToPrint = new List<Tuple<string, PrintMessage>>();
-            var printedTickets = GetTicketsPrinted(now, printEvent);
-            foreach (var ticket in tickets)
+            string now = DateTime.Now.ToString("dd/MM/yyyy");
+            bool? isExists = TicketHistory.AnyAsync(f => f.Id == message.Item1).GetAwaiter().GetResult();
+            if (isExists.GetValueOrDefault()) 
             {
-                bool documentExists = printedTickets.Contains(ticket.Item1);
-                if (!documentExists) 
-                {
-                    ticketsToPrint.Add(ticket);
-                }
+                return true;
             }
-            return ticketsToPrint;
+            if (message.Item2.DocumentsId != null && message.Item2.DocumentsId.Count > 0)
+            {
+                var allTickets = TicketHistory.Where(f => f.PrintEvent == message.Item2.PrintEvent)
+                                        .Where(f => f.DayCreatedAt == now)
+                                        .ToListAsync()
+                                        .GetAwaiter()
+                                        .GetResult();
+                
+                isExists = allTickets?.Select(s => s.TicketHistoryDetail).FirstOrDefault()?.Select(s => s.EntityId).Intersect(message.Item2.DocumentsId).Any();
+            }
+            else
+            {
+                var queryResult = TicketHistory.Where(f => f.PrintEvent == message.Item2.PrintEvent)
+                                               .Where(f => f.DayCreatedAt == now)
+                                               .ToListAsync()
+                                               .GetAwaiter()
+                                               .GetResult();
+                isExists = queryResult?.Any(f => f.TicketHistoryDetail.Select(s => s.EntityId).Contains(message.Item2.DocumentId));
+            }
+            return isExists.GetValueOrDefault();
         }
 
-        public List<string> GetItemsToRePrint(List<string> tickets, DateTime now) 
+        public bool IsTicketPrinted(QuerySnapshot documentSnapshot)
         {
-            var ticketsToRePrint = new List<string>();
-            var printedTickets = GetTicketsRePrinted(now);
-            foreach (var ticket in tickets)
-            {
-                bool documentExists = printedTickets.Contains(ticket);
-                if (!documentExists)
-                {
-                    ticketsToRePrint.Add(ticket);
-                }
-            }
-            return ticketsToRePrint;
+            string now = DateTime.Now.ToString("dd/MM/yyyy");
+            var snapshot = documentSnapshot.Single();
+            bool isExists = TicketHistory.Any(f => f.Id == snapshot.Id);
+            return isExists;
         }
 
         public override int SaveChanges()
@@ -104,64 +113,54 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 
         public async Task SetPrintedAsync(Tuple<string, PrintMessage> message)
         {
-            string id = message.Item1;
-            if (TicketHistory.Any(f => f.Id == id))
+            bool isExists = await TicketHistory.AnyAsync(f => f.Id == message.Item1);
+            if (isExists)
             {
                 return;
             }
             var now = DateTime.Now;
             var history = new TicketHistory
             {
-                Id = id,
+                Id = message.Item1,
                 PrintEvent = message.Item2.PrintEvent,
-                CreatedAt = DateTime.Now,
-                DayCreatedAt = now.ToString("dd/MM/yyyy")
-        };
-            this.TicketHistory.Add(history);
-            await this.SaveChangesAsync();
-        }
-
-        public async Task SetRePrintedAsync(PrintMessage message, string documentId)
-        {
-            if (TicketHistory.Any(f => f.Id == documentId))
-            {
-                return;
-            }
-            var now = DateTime.Now;
-            var history = new TicketHistory
-            {
-                Id = documentId,
-                PrintEvent = message.PrintEvent,
                 CreatedAt = DateTime.Now,
                 DayCreatedAt = now.ToString("dd/MM/yyyy")
             };
             this.TicketHistory.Add(history);
+            if (message.Item2.DocumentsId != null && message.Item2.DocumentsId.Count > 0)
+            {
+                foreach (var document in message.Item2.DocumentsId)
+                {
+                    this.TicketHistoryDetail.Add(new Entities.TicketHistoryDetail
+                    {
+                        Id = Guid.NewGuid(),
+                        EntityId = document,
+                        TicketHistory = history
+                    });
+                }
+            }
+            else
+            {
+                this.TicketHistoryDetail.Add(new Entities.TicketHistoryDetail
+                {
+                    Id = Guid.NewGuid(),
+                    EntityId = message.Item2.DocumentId,
+                    TicketHistory = history
+                });
+            }
             await this.SaveChangesAsync();
         }
 
-        #region private methods
-        private List<string> GetTicketsPrinted(DateTime now, string printEvent)
+        public async Task UpdateAsync(string id, string documentHtml) 
         {
-            string dateTimeNow = now.ToString("dd/MM/yyyy");
-            List<string> ticketsPrinted = this.TicketHistory.ToList()
-                .Where(f => f.DayCreatedAt == dateTimeNow)
-                .Where(f => f.PrintEvent == printEvent)
-                .Select(s => s.Id)
-                .ToList();
-  
-            return ticketsPrinted;
+            bool isExists = await TicketHistory.AnyAsync(f => f.Id == id);
+            if (!isExists)
+            {
+                throw new DbEntityValidationException($"Registro con id {id} no se encuentra registrado en la base de datos.");
+            }
+            var history = await TicketHistory.FirstOrDefaultAsync(f => f.Id == id);
+            history.DocumentPrinted = documentHtml;
+            await this.SaveChangesAsync();
         }
-
-        private List<string> GetTicketsRePrinted(DateTime now)
-        {
-            string dateTimeNow = now.ToString("dd/MM/yyyy");
-            List<string> ticketsPrinted = this.TicketHistory.ToList()
-                .Where(f => f.DayCreatedAt == dateTimeNow)
-                .Where(f => f.PrintEvent == PrintEvents.REPRINT_ORDER)
-                .Select(s => s.Id )
-                .ToList();
-            return ticketsPrinted;
-        }
-        #endregion
     }
 }
