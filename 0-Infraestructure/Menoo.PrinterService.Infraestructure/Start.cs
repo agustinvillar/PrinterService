@@ -15,7 +15,7 @@ namespace Menoo.PrinterService.Infraestructure
             var dependencyResolver = GlobalConfig.DependencyResolver;
             string listenerLog = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerName");
             string builderLog = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderName");
-            if (!string.IsNullOrEmpty(listenerLog)) 
+            if (!string.IsNullOrEmpty(listenerLog))
             {
                 dependencyResolver.Register(() => {
                     var log = ConfigureListenerEventLog();

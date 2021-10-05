@@ -91,8 +91,8 @@
     <Reference Include="Grpc.Core.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d754f35622e28bad, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Grpc.Core.Api.1.22.1\lib\net45\Grpc.Core.Api.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -178,10 +178,12 @@
     <Compile Include="Database\Firebase\Entities\Item.cs" />
     <Compile Include="Database\Firebase\Entities\Orders.cs" />
     <Compile Include="Database\Firebase\Entities\Payment.cs" />
+    <Compile Include="Database\Firebase\Entities\PrintEventMessage.cs" />
     <Compile Include="Database\Firebase\Entities\PrintSettings.cs" />
     <Compile Include="Database\Firebase\Entities\Store.cs" />
     <Compile Include="Database\Firebase\Entities\TableOpeningFamily.cs" />
     <Compile Include="Database\Firebase\Entities\Ticket.cs" />
+    <Compile Include="Database\Firebase\Entities\TicketHistory.cs" />
     <Compile Include="Database\Firebase\Entities\User.cs" />
     <Compile Include="Database\Firebase\FirebaseContext.cs" />
     <Compile Include="Database\Firebase\FirebaseRepository.cs" />
@@ -201,6 +203,7 @@
     <Compile Include="Database\SqlServer\MainSchema\Entities\Refund.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\SmsVerification.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\Store.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistoryDetailTypeConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\CustomModelHistoryConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\MyHistoryContext.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistoryTypeConfiguration.cs" />
@@ -211,8 +214,10 @@
     <Compile Include="Enums\PrintStatus.cs" />
     <Compile Include="Enums\ProviderEnum.cs" />
     <Compile Include="Enums\TicketTypeEnum.cs" />
+    <Compile Include="Exceptions\UnifiedSectorException.cs" />
     <Compile Include="Extensions\PrintExtensions.cs" />
     <Compile Include="HandlerAttribute.cs" />
+    <Compile Include="Interceptors\OnActionRecieve.cs" />
     <Compile Include="Interfaces\IConfigurationManager.cs" />
     <Compile Include="Interfaces\IFirebaseListener.cs" />
     <Compile Include="Interfaces\IFirebaseRepository.cs" />
@@ -230,6 +235,10 @@
     <Compile Include="Migrations\202108191605450_DayCreateAtColumn.cs" />
     <Compile Include="Migrations\202108191605450_DayCreateAtColumn.designer.cs">
       <DependentUpon>202108191605450_DayCreateAtColumn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202108310144096_TicketHistoryDetail.cs" />
+    <Compile Include="Migrations\202108310144096_TicketHistoryDetail.designer.cs">
+      <DependentUpon>202108310144096_TicketHistoryDetail.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OnStartUpAttribute.cs" />
@@ -255,7 +264,11 @@
     <EmbeddedResource Include="Migrations\202108191605450_DayCreateAtColumn.resx">
       <DependentUpon>202108191605450_DayCreateAtColumn.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202108310144096_TicketHistoryDetail.resx">
+      <DependentUpon>202108310144096_TicketHistoryDetail.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Grpc.Core.1.22.1\build\net45\Grpc.Core.targets" Condition="Exists('..\..\packages\Grpc.Core.1.22.1\build\net45\Grpc.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

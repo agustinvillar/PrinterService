@@ -36,8 +36,12 @@ namespace Menoo.PrinterService.Infraestructure.Queues
             }
         }
 
-        public async Task PublishAsync(PrintMessage data, Dictionary<string, string> extras = null)
+        public async Task PublishAsync(string id, PrintMessage data)
         {
+            var extras = new Dictionary<string, string>()
+            {
+                { "id", id}
+            };
             string type = !string.IsNullOrEmpty(data.SubTypeDocument) ? $"{data.TypeDocument}-{data.SubTypeDocument}" : $"{data.TypeDocument}";
             await _adapter.Bus.Publish(data, extras);
             _logger.WriteEntry(

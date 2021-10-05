@@ -1,6 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
 using System;
 
 namespace Menoo.Printer.Builder.Orders
@@ -12,6 +13,7 @@ namespace Menoo.Printer.Builder.Orders
         {
             var dependencyResolver = GlobalConfig.DependencyResolver;
             var fireStore = dependencyResolver.Resolve<FirestoreDb>();
+            dependencyResolver.RegisterPerThread(() => { return new MenooContext(); });
             dependencyResolver.Register(() => {
                 var paymentRepository = new PaymentRepository(fireStore);
                 return paymentRepository;

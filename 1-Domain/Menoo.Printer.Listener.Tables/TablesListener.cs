@@ -4,9 +4,11 @@ using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities;
 using Menoo.PrinterService.Infraestructure.Extensions;
+using Menoo.PrinterService.Infraestructure.Interceptors;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,21 +21,21 @@ namespace Menoo.Printer.Listener.Tables
     [Handler]
     public class TablesListener : IFirebaseListener
     {
-        private readonly int _delayTask;
-
         private readonly FirestoreDb _firestoreDb;
+
+        private readonly OnActionRecieve _interceptor;
 
         private readonly EventLog _generalWriter;
 
         private readonly IPublisherService _publisherService;
 
-        private string _today;
+        private readonly int _delayTask;
 
         public TablesListener(
             FirestoreDb firestoreDb,
-            TableOpeningFamilyRepository tableOpeningFamilyRepository,
             IPublisherService publisherService) 
         {
+            _interceptor = new OnActionRecieve(PrintBuilder.TABLE_BUILDER);
             _firestoreDb = firestoreDb;
             _publisherService = publisherService;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
@@ -42,8 +44,8 @@ namespace Menoo.Printer.Listener.Tables
 
         public void Listen()
         {
-            _firestoreDb.Collection("printEvent")
-                  .Listen(OnRecieve);
+            //_firestoreDb.Collection("printEvent")
+            //      .Listen(OnRecieve);
         }
 
         public override string ToString()
@@ -52,138 +54,65 @@ namespace Menoo.Printer.Listener.Tables
         }
 
         #region listeners
-        private void OnClose(List<Tuple<string, PrintMessage>> tickets)
+        private void OnClose(Tuple<string, PrintMessage> ticket)
         {
             try
             {
-                var ticketsToPrint = GetItemsToPrint(tickets, PrintEvents.TABLE_CLOSED);
-                foreach (var ticket in ticketsToPrint)
-                {
-                    try
-                    {
-                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetItemPrintedAsync(ticket).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"TablesListener::OnClose(). No se envió el cierre de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                _publisherService.PublishAsync(ticket.Item1, ticket.Item2).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"TablesListener::OnClose(). Ha ocurrido un error al cerrar la mesa. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"TablesListener::OnClose(). No se envió el cierre de mesa a la cola de impresión. {Environment.NewLine} Detalles: {e}{Environment.NewLine} {JsonConvert.SerializeObject(ticket.Item2, Formatting.Indented)}", EventLogEntryType.Error);
             }
         }
 
-        private void OnOpenFamily(List<Tuple<string, PrintMessage>> tickets)
+        private void OnOpenFamily(Tuple<string, PrintMessage> ticket)
         {
             try
             {
-                var ticketsToPrint = GetItemsToPrint(tickets, PrintEvents.TABLE_OPENED);
-                foreach (var ticket in ticketsToPrint)
-                {
-                    try 
-                    {
-                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetItemPrintedAsync(ticket).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). No se envió la apertura de mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                _publisherService.PublishAsync(ticket.Item1, ticket.Item2).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"TablesListener::OnOpenFamily(). Ha ocurrido un error al abrir la mesa. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"TablesListener::OnTakeAwayCreated(). No se envió la apertura de mesa a la cola de impresión. {Environment.NewLine} Detalles: {e}{Environment.NewLine} {JsonConvert.SerializeObject(ticket.Item2, Formatting.Indented)}", EventLogEntryType.Error);
             }
         }
 
-        private void OnRequestPayment(List<Tuple<string, PrintMessage>> tickets) 
+        private void OnRequestPayment(Tuple<string, PrintMessage> ticket) 
         {
             try
             {
-                var ticketsToPrint = GetItemsToPrint(tickets, PrintEvents.REQUEST_PAYMENT);
-                foreach (var ticket in ticketsToPrint)
-                {
-                    try
-                    {
-                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetItemPrintedAsync(ticket).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"OrderListener::OnRequestPayment(). No se envió la solicitud de pago de la mesa [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                _publisherService.PublishAsync(ticket.Item1, ticket.Item2).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"TablesListener::OnRequestPayment(). Ha ocurrido un error en la solicitud de pago de la mesa. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"TablesListener::OnRequestPayment(). No se envió la solicitud de pago de la mesa a la cola de impresión. {Environment.NewLine} Detalles: {e}{Environment.NewLine} {JsonConvert.SerializeObject(ticket.Item2, Formatting.Indented)}", EventLogEntryType.Error);
             }
         }
 
         private void OnRecieve(QuerySnapshot snapshot)
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
-            if (snapshot.Documents.Count == 0)
+            bool isEntry =_interceptor.OnEntry(snapshot);
+            if (!isEntry) 
             {
                 return;
             }
-            var tickets = snapshot.Documents
-                                        .Where(filter => filter.Exists)
-                                        .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                        .OrderByDescending(o => o.CreateTime)
-                                        .Select(s => s.GetMessagePrintType())
-                                        .ToList();
-            var openTables = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.TABLE_OPENED);
-            var closeTables = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.TABLE_CLOSED);
-            var paymentsRequest = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.REQUEST_PAYMENT);
-            if (openTables.Count() > 0)
+            var documentReference = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
+            var message = PrintExtensions.GetMessagePrintType(documentReference);
+            if (message.Item2.PrintEvent == PrintEvents.TABLE_OPENED)
             {
-                OnOpenFamily(openTables);
+                OnOpenFamily(message);
             }
-            if (closeTables.Count() > 0)
+            else if (message.Item2.PrintEvent == PrintEvents.TABLE_CLOSED)
             {
-                OnClose(closeTables);
+                OnClose(message);
             }
-            if (paymentsRequest.Count > 0) 
+            else if (message.Item2.PrintEvent == PrintEvents.REQUEST_PAYMENT)
             {
-                OnRequestPayment(paymentsRequest);
+                OnRequestPayment(message);
             }
-        }
-        #endregion
-
-        #region private methods
-        private List<Tuple<string, PrintMessage>> GetItemsToPrint(List<Tuple<string, PrintMessage>> documents, string printEvent)
-        {
-            List<Tuple<string, PrintMessage>> ticketsToPrint = null;
-            using (var sqlServerContext = new PrinterContext())
-            {
-                ticketsToPrint = sqlServerContext.GetItemsToPrint(documents, DateTime.Now, printEvent);
-            }
-            return ticketsToPrint;
-        }
-
-        private async Task SetItemPrintedAsync(Tuple<string, PrintMessage> message)
-        {
-            using (var sqlServerContext = new PrinterContext())
-            {
-                await sqlServerContext.SetPrintedAsync(message);
-            }
+            _interceptor.OnExit(snapshot);
+            Thread.Sleep(_delayTask);
         }
         #endregion
     }

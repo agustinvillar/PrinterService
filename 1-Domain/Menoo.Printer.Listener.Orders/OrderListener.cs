@@ -1,17 +1,15 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Extensions;
+using Menoo.PrinterService.Infraestructure.Interceptors;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Menoo.Printer.Listener.Orders
 {
@@ -20,18 +18,19 @@ namespace Menoo.Printer.Listener.Orders
     {
         private readonly FirestoreDb _firestoreDb;
 
+        private readonly OnActionRecieve _interceptor;
+
         private readonly EventLog _generalWriter;
 
         private readonly IPublisherService _publisherService;
 
         private readonly int _delayTask;
 
-        private string _today;
-
         public OrderListener(
             FirestoreDb firestoreDb,
             IPublisherService publisherService)
         {
+            _interceptor = new OnActionRecieve(PrintBuilder.ORDER_BUILDER);
             _firestoreDb = firestoreDb;
             _publisherService = publisherService;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
@@ -44,8 +43,8 @@ namespace Menoo.Printer.Listener.Orders
             _firestoreDb.Collection("rePrint")
                 .Listen(RePrintOrder);
 
-            _firestoreDb.Collection("printEvent")
-                  .Listen(OnRecieve);
+            //_firestoreDb.Collection("printEvent")
+            //      .Listen(OnRecieve);
         }
 
         public override string ToString()
@@ -54,214 +53,85 @@ namespace Menoo.Printer.Listener.Orders
         }
 
         #region listeners
-        private void OnCancelled(List<Tuple<string, PrintMessage>> tickets)
+        private void OnCancelled(Tuple<string, PrintMessage> ticket)
         {
             try
             {
-                var ticketsToPrint = GetOrdersToPrint(tickets, PrintEvents.ORDER_CANCELLED);
-                foreach (var ticket in ticketsToPrint)
-                {
-                    try
-                    {
-                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(ticket).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"OrderListener::OnCancelled(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                _publisherService.PublishAsync(ticket.Item1, ticket.Item2).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"OrderListener::OnCancelled(). Ha ocurrido un error al cancelar órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"OrderListener::OnCancelled(). No se envió la orden a la cola de impresión.{Environment.NewLine} Detalles: {e}{JsonConvert.SerializeObject(ticket.Item2, Formatting.Indented)}", EventLogEntryType.Error);
             }
         }
 
-        private void OnOrderCreated(List<Tuple<string, PrintMessage>> tickets)
+        private void OnOrderCreated(Tuple<string, PrintMessage> ticket)
         {
             try
             {
-                var ticketsToPrint = GetOrdersToPrint(tickets, PrintEvents.NEW_TABLE_ORDER);
-                foreach (var ticket in ticketsToPrint)
-                {
-                    try
-                    {
-                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(ticket).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                _publisherService.PublishAsync(ticket.Item1, ticket.Item2).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). Ha ocurrido un error al capturar nuevas órdenes. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"OrderListener::OnOrderCreated(). No se envió la orden a la cola de impresión. {Environment.NewLine} Detalles: {e}{JsonConvert.SerializeObject(ticket.Item2, Formatting.Indented)}", EventLogEntryType.Error);
             }
         }
 
-        private void OnTakeAwayCreated(List<Tuple<string, PrintMessage>> tickets)
+        private void OnTakeAwayCreated(Tuple<string, PrintMessage> ticket)
         {
             try
             {
-                var ticketsToPrint = GetOrdersToPrint(tickets, PrintEvents.NEW_TAKE_AWAY);
-                foreach (var ticket in ticketsToPrint)
-                {
-                    try
-                    {
-                        _publisherService.PublishAsync(ticket.Item2).GetAwaiter().GetResult();
-                        SetOrderAsPrintedAsync(ticket).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). No se envió la orden TA [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                _publisherService.PublishAsync(ticket.Item1, ticket.Item2).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). Ha ocurrido un error al capturar nuevos TA. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"OrderListener::OnTakeAwayCreated(). No se envió la orden TA a la cola de impresión. {Environment.NewLine} Detalles: {e}{JsonConvert.SerializeObject(ticket.Item2, Formatting.Indented)}", EventLogEntryType.Error);
             }
         }
 
         private void RePrintOrder(QuerySnapshot snapshot)
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
+            bool isEntry = _interceptor.OnEntry(snapshot, true);
+            if (!isEntry)
+            {
+                return;
+            }
+            var documentReference = snapshot.Single();
+            var message = PrintExtensions.GetReprintMessage(documentReference);
             try
             {
-                if (snapshot.Documents.Count == 0)
-                {
-                    return;
-                }
-                var tickets = snapshot.Documents
-                                            .Where(filter => filter.Exists)
-                                            .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                            .OrderByDescending(o => o.CreateTime)
-                                            .Select(s => s.Id)
-                                            .ToList();
-                var ticketsToPrint = GetOrdersReToPrint(tickets);
-                if (ticketsToPrint == null || ticketsToPrint.Count == 0)
-                {
-                    return;
-                }
-                foreach (var ticket in ticketsToPrint)
-                {
-                    var documentReference = snapshot.Documents.FirstOrDefault(f => f.Id == ticket && f.Exists);
-                    if (documentReference == null) 
-                    {
-                        continue;
-                    }
-                    documentReference.ToDictionary().TryGetValue("orderId", out object orderId);
-                    var messageQueue = new PrintMessage
-                    {
-                        DocumentId = orderId.ToString(),
-                        PrintEvent = PrintEvents.REPRINT_ORDER,
-                        TypeDocument = PrintTypes.ORDER,
-                        SubTypeDocument = string.Empty,
-                        Builder = PrintBuilder.ORDER_BUILDER
-                    };
-                    try
-                    {
-                        _publisherService.PublishAsync(messageQueue).GetAwaiter().GetResult();
-                        SetOrderAsRePrintedAsync(messageQueue, ticket).GetAwaiter().GetResult();
-                    }
-                    catch (Exception e)
-                    {
-                        _generalWriter.WriteEntry($"OrderListener::RePrintOrder(). No se envió la orden [{ticket}], a la cola de impresión.{Environment.NewLine} Detalles: {e}", EventLogEntryType.Error);
-                    }
-                    finally
-                    {
-                        Thread.Sleep(_delayTask);
-                    }
-                }
+                _publisherService.PublishAsync(message.Item1, message.Item2).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"OrderListener::RePrintOrder(). Ha ocurrido un error al reimprimir una orden. {Environment.NewLine} Detalles: {e.ToString()}", EventLogEntryType.Error);
+                _generalWriter.WriteEntry($"OrderListener::RePrintOrder(). No se envió la orden a la cola de impresión. {Environment.NewLine} Detalles: {e}{Environment.NewLine} {JsonConvert.SerializeObject(message, Formatting.Indented)}", EventLogEntryType.Error);
             }
+            _interceptor.OnExit(snapshot, true);
         }
 
         private void OnRecieve(QuerySnapshot snapshot) 
         {
-            _today = DateTime.UtcNow.ToString("dd/MM/yyyy");
-            if (snapshot.Documents.Count == 0)
+            bool isEntry = _interceptor.OnEntry(snapshot);
+            if (!isEntry)
             {
                 return;
             }
-            var tickets = snapshot.Documents
-                                        .Where(filter => filter.Exists)
-                                        .Where(filter => filter.CreateTime.GetValueOrDefault().ToDateTime().ToString("dd/MM/yyyy") == _today)
-                                        .OrderByDescending(o => o.CreateTime)
-                                        .Select(s => s.GetMessagePrintType())
-                                        .ToList();
-            var newTableOrderTickets = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.NEW_TABLE_ORDER);
-            var newTakeAwayTickets = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.NEW_TAKE_AWAY);
-            var orderCancelledTickets = tickets.FindAll(f => f.Item2.PrintEvent == PrintEvents.ORDER_CANCELLED);
-            if (newTableOrderTickets.Count() > 0) 
+            var documentReference = snapshot.Documents.OrderByDescending(o => o.CreateTime).FirstOrDefault();
+            var message = PrintExtensions.GetMessagePrintType(documentReference);
+            if (message.Item2.PrintEvent == PrintEvents.NEW_TABLE_ORDER)
             {
-                OnOrderCreated(newTableOrderTickets);
+                OnOrderCreated(message);
             }
-            if (newTakeAwayTickets.Count() > 0) 
+            else if (message.Item2.PrintEvent == PrintEvents.NEW_TAKE_AWAY)
             {
-                OnTakeAwayCreated(newTakeAwayTickets);
+                OnTakeAwayCreated(message);
             }
-            if (orderCancelledTickets.Count() > 0) 
+            else if (message.Item2.PrintEvent == PrintEvents.ORDER_CANCELLED) 
             {
-                OnCancelled(orderCancelledTickets);
+                OnCancelled(message);
             }
-        }
-        #endregion
-
-        #region private methods
-
-        private List<Tuple<string, PrintMessage>> GetOrdersToPrint(List<Tuple<string, PrintMessage>> tickets, string printEvent) 
-        {
-            List<Tuple<string, PrintMessage>> ticketsToPrint = null;
-            using (var sqlServerContext = new PrinterContext())
-            {
-                ticketsToPrint = sqlServerContext.GetItemsToPrint(tickets, DateTime.Now, printEvent);
-            }
-            return ticketsToPrint;
-        }
-
-        private List<string> GetOrdersReToPrint(List<string> documentIds)
-        {
-            List<string> ticketsToRePrint = null;
-            using (var sqlServerContext = new PrinterContext())
-            {
-                ticketsToRePrint = sqlServerContext.GetItemsToRePrint(documentIds, DateTime.Now);
-            }
-            return ticketsToRePrint;
-        }
-
-        private async Task SetOrderAsPrintedAsync(Tuple<string, PrintMessage> message)
-        {
-            using (var sqlServerContext = new PrinterContext())
-            {
-                await sqlServerContext.SetPrintedAsync(message);
-            }
-        }
-
-        private async Task SetOrderAsRePrintedAsync(PrintMessage message, string documentId)
-        {
-            using (var sqlServerContext = new PrinterContext())
-            {
-                await sqlServerContext.SetRePrintedAsync(message, documentId);
-            }
+            _interceptor.OnExit(snapshot);
+            Thread.Sleep(_delayTask);
         }
         #endregion
     }

@@ -79,6 +79,15 @@ namespace Menoo.PrinterService.Infraestructure.DI
                 }));
         }
 
+        public void RegisterPerThread<TImplementation>(Func<TImplementation> constructor)
+        {
+            _unityContainer.RegisterType<TImplementation>(new PerThreadLifetimeManager(),
+                new InjectionFactory(c =>
+                {
+                    return constructor();
+                }));
+        }
+
         public T Resolve<T>()
         {
             return _unityContainer.Resolve<T>();

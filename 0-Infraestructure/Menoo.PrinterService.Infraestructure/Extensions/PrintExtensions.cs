@@ -1,6 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
+using Menoo.PrinterService.Infraestructure.Exceptions;
 using Menoo.PrinterService.Infraestructure.Queues;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
         {
             Tuple<string, PrintMessage> printMessage = null;
             var message = new PrintMessage();
-            var document = documentReference.ConvertTo<DocumentMessage>();
+            var document = documentReference.ConvertTo<PrintEventMessage>();
             switch (document.Event)
             {
                 #region orders
@@ -89,20 +90,42 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
                     break;
                 #endregion
                 default:
-                    printMessage = null;
-                    break;
+                    var documentToReprint = GetReprintMessage(documentReference);
+                    return documentToReprint;
             }
-            if (message != null) 
+            if (message != null)
             {
                 printMessage = new Tuple<string, PrintMessage>(documentReference.Id, message);
             }
             return printMessage;
         }
 
+        public static Tuple<string, PrintMessage> GetReprintMessage(this DocumentSnapshot documentReference) 
+        {
+            documentReference.ToDictionary().TryGetValue("orderId", out object orderId);
+            var messageQueue = new PrintMessage
+            {
+                DocumentId = orderId.ToString(),
+                PrintEvent = PrintEvents.REPRINT_ORDER,
+                TypeDocument = PrintTypes.ORDER,
+                SubTypeDocument = string.Empty,
+                Builder = PrintBuilder.ORDER_BUILDER
+            };
+            var printMessage = new Tuple<string, PrintMessage>(documentReference.Id, messageQueue);
+            return printMessage;
+        }
+
         public static PrintSettings SectorUnifiedTicket(this Store store) 
         {
-            var sector = store.Sectors.FirstOrDefault(f => f.Id == store.UnifiedTicket.UnifiedTicketSectorId);
-            return sector;
+            try
+            {
+                var sector = store.Sectors.FirstOrDefault(f => f.Id == store.UnifiedTicket.UnifiedTicketSectorId);
+                return sector;
+            }
+            catch (Exception e) 
+            {
+                throw new UnifiedSectorException($"El restaurante {store.Name}-{store.Id}, no tiene configurado el sector unificado.", e);
+            }
         }
     }
 }

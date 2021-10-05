@@ -17,6 +17,8 @@ namespace Menoo.PrinterService.Infraestructure.Interfaces
 
         void RegisterByName<TInterface, TImplementation>(string name) where TImplementation : TInterface;
 
+        void RegisterPerThread<TImplementation>(Func<TImplementation> constructor);
+
         void RegisterSingleton<TInterface, TImplementation>() where TImplementation : TInterface;
 
         void RegisterSingleton(Type type1, Type type2, string name);
