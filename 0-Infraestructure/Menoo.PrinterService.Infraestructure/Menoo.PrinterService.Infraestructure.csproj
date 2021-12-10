@@ -91,6 +91,9 @@
     <Reference Include="Grpc.Core.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d754f35622e28bad, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Grpc.Core.Api.1.22.1\lib\net45\Grpc.Core.Api.dll</HintPath>
     </Reference>
+    <Reference Include="HtmlRenderer, Version=1.5.0.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\HtmlRenderer.Core.1.5.0.6\lib\net45\HtmlRenderer.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -231,6 +234,7 @@
     <Compile Include="DI\UnityDependencyResolver.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="GlobalConfig.cs" />
+    <Compile Include="Interfaces\IFormaterService.cs" />
     <Compile Include="Interfaces\IPublisherService.cs" />
     <Compile Include="Interfaces\ISubscriptionService.cs" />
     <Compile Include="Interfaces\ITicketBuilder.cs" />
@@ -256,12 +260,21 @@
     <Compile Include="Repository\TableOpeningFamilyRepository.cs" />
     <Compile Include="Repository\TicketRepository.cs" />
     <Compile Include="Repository\UserRepository.cs" />
+    <Compile Include="Services\FormaterFactory.cs" />
+    <Compile Include="Services\HtmlFormatService.cs" />
+    <Compile Include="Services\PlainFormatService.cs" />
     <Compile Include="Start.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="Templates\Ticket_Table_Opened.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\Ticket_Table_Closed.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202108190505259_Intial.resx">
@@ -275,6 +288,11 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Content Include="Templates\assets\print.css">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Grpc.Core.1.22.1\build\net45\Grpc.Core.targets" Condition="Exists('..\..\packages\Grpc.Core.1.22.1\build\net45\Grpc.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -20,9 +20,9 @@ namespace Menoo.PrinterService.Infraestructure.Repository
             _firebaseDb = db;
         }
 
-        public override Task SaveAsync<TEntity>(TEntity item, string collection = "print")
+        public override async Task SaveAsync<TEntity>(TEntity item, string collection = "print")
         {
-            return base.SaveAsync(item, collection);
+            await base.SaveAsync(item, collection);
         }
 
         public async Task<bool> IsTicketPrinted(Tuple<string, PrintMessage> message)

@@ -78,14 +78,13 @@ namespace Menoo.Printer.Builder.BookingBuilder
                     {
                         TicketType = printEvent,
                         PrintBefore = Utils.BeforeAt(now, 10),
-                        StoreId = booking.Store.Id,
                         Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                         Copies = sector.Copies,
                         PrinterName = sector.Printer,
                         StoreName = store.Name
                     };
 
-                    ticket.SetBookingData(title, booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
+                    //ticket.SetBookingData(title, booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
                     _generalWriter.WriteEntry($"BookingBuilder::SaveTicketBooking(). Enviando a imprimir la reserva con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
                                 $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
                                 $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
@@ -95,7 +94,7 @@ namespace Menoo.Printer.Builder.BookingBuilder
                                 $"Estado de la reserva: {booking.BookingState.ToUpper()}" +
                                 $"Id en colección printEvents: {id}");
                     await _ticketRepository.SaveAsync(ticket);
-                    await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
+                    //await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
                 }
             }
         }

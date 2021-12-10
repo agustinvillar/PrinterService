@@ -1,0 +1,38 @@
+﻿.column {
+    float: left;
+    width: 50%;
+}
+
+.invoince-header {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 2%;
+    text-transform: uppercase;
+}
+
+.invoice-pos {
+    background: #FFF;
+    font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 2mm;
+    margin: 0 auto;
+    width: 70mm;
+}
+
+.logo {
+    width: 25%;
+    height: 25%;
+    margin-bottom: 2%;
+}
+
+.section-center {
+    text-align: center;
+}
+
+.section-left {
+    text-align: left;
+}
+
+.section-right {
+    text-align: right;
+}

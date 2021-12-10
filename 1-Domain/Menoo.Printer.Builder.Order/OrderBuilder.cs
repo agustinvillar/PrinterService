@@ -105,7 +105,6 @@ namespace Menoo.Printer.Builder.Orders
             var ordersByUsername = orders.GroupBy(g => g.UserName).FirstOrDefault();
             var ticket = new Ticket
             {
-                StoreId = store.Id,
                 StoreName = store.Name,
                 Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                 TicketType = TicketTypeEnum.ORDER.ToString(),
@@ -114,7 +113,7 @@ namespace Menoo.Printer.Builder.Orders
                 PrintBefore = Utils.BeforeAt(DateTime.Now.ToString("yyyy-MM-dd HH:mm"), 60)
             };
             string html = CreateUnifiedHtml(ordersByOrderNumber.ToList(), ordersByUsername.Key, ordersByAddress.Key, ordersByOrderNumber.Key);
-            ticket.SetOrder("Nueva orden de mesa", html);
+            //ticket.SetOrder("Nueva orden de mesa", html);
             _generalWriter.WriteEntry($"OrderBuilder::SaveOrderAsync(). Enviando a imprimir el ticket unificado con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
                 $"Nombre de la impresora: {ticket.PrinterName}{Environment.NewLine}" +
                 $"Sector de impresión: {unifiedSector.Name}{Environment.NewLine}" +
@@ -123,7 +122,7 @@ namespace Menoo.Printer.Builder.Orders
                 $"Número de orden: {ordersByOrderNumber.Key}{Environment.NewLine}" +
                 $"Id en colección printEvents: {id}");
             _ticketRepository.SaveAsync(ticket).GetAwaiter().GetResult();
-            _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data).GetAwaiter().GetResult();
+            //_ticketRepository.SetDocumentHtmlAsync(id, ticket.Data).GetAwaiter().GetResult();
             // Imprimir los tickets de forma individual
             foreach (var order in orders)
             {
@@ -327,7 +326,7 @@ namespace Menoo.Printer.Builder.Orders
                 builder.Append(line);
                 builder.Append(qrCode);
                 title = isCancelled ? "Orden de mesa <b>CANCELADA</b>" : "Nueva orden de mesa";
-                ticket.SetOrder(title, builder.ToString());
+                //ticket.SetOrder(title, builder.ToString());
             }
             else if (isOrderOk && order.OrderType.ToUpper().Trim() == OrderTypes.RESERVA)
             {
@@ -353,7 +352,7 @@ namespace Menoo.Printer.Builder.Orders
                 builder.Append(line);
                 builder.Append(qrCode);
                 title = isCancelled ? "Orden de reserva cancelada" : "Nueva orden de reserva";
-                ticket.SetOrder(title, builder.ToString());
+                //ticket.SetOrder(title, builder.ToString());
             }
             else if (isOrderOk && isTakeAway)
             {
@@ -405,7 +404,7 @@ namespace Menoo.Printer.Builder.Orders
                 }
                 builder.Append(qrCode);
                 title = isCancelled ? "TakeAway cancelado" : "Nuevo TakeAway";
-                ticket.SetOrder(title, builder.ToString());
+                //ticket.SetOrder(title, builder.ToString());
             }
             builder.Clear();
         }
@@ -488,7 +487,6 @@ namespace Menoo.Printer.Builder.Orders
             string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             var ticket = new Ticket
             {
-                StoreId = order.Store.Id,
                 StoreName = order.Store.Name,
                 Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                 TicketType = isCancelled ? TicketTypeEnum.CANCELLED_ORDER.ToString() : TicketTypeEnum.ORDER.ToString(),
@@ -509,7 +507,7 @@ namespace Menoo.Printer.Builder.Orders
                 $"Estado de la orden: {order.Status.ToUpper()}{Environment.NewLine}" +
                 $"Id en colección printEvents: {id}");
             await _ticketRepository.SaveAsync(ticket);
-            await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
+            //await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
         }
         #endregion
     }

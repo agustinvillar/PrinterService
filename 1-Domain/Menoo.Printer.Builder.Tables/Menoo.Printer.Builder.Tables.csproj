@@ -110,14 +110,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Templates\Ticket_Table_Closing.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Templates\Ticket_Table_Opening.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\0-Infraestructure\Menoo.PrinterService.Infraestructure\Menoo.PrinterService.Infraestructure.csproj">
       <Project>{ecdff8b6-85b2-4e11-9286-0213adc3494f}</Project>
       <Name>Menoo.PrinterService.Infraestructure</Name>
