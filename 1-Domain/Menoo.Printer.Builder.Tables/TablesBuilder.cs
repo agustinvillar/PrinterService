@@ -27,20 +27,16 @@ namespace Menoo.Printer.Builder.Tables
 
         private readonly StoreRepository _storeRepository;
 
-        private readonly TicketRepository _ticketRepository;
-
         private readonly OrderRepository _orderRepository;
 
         public TablesBuilder(
             PrinterContext printerContext,
             StoreRepository storeRepository,
-            TicketRepository ticketRepository,
             OrderRepository orderRepository,
             TableOpeningFamilyRepository tableOpeningFamilyRepository) 
         {
             _printerContext = printerContext;
             _storeRepository = storeRepository;
-            _ticketRepository = ticketRepository;
             _tableOpeningFamilyRepository = tableOpeningFamilyRepository;
             _orderRepository = orderRepository;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
@@ -51,78 +47,50 @@ namespace Menoo.Printer.Builder.Tables
             return PrintBuilder.TABLE_BUILDER;
         }
 
-        public async Task BuildAsync(string id, PrintMessage data)
+        public async Task<Tuple<string, string, Store>> BuildAsync(string id, PrintMessage data)
         {
             if (data.Builder != PrintBuilder.TABLE_BUILDER)
             {
-                return;
+                return null;
             }
+            string ticket = "";
             var tableOpeningFamilyDTO = await _tableOpeningFamilyRepository.GetById<TableOpeningFamily>(data.DocumentId, "tableOpeningFamily");
+            string printBefore = Utils.BeforeAt(tableOpeningFamilyDTO.ClosedAt, 10);
+            var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
             if (data.PrintEvent == PrintEvents.TABLE_OPENED)
             {
-                await BuildOpenTableOpeningFamilyAsync(id, tableOpeningFamilyDTO);
+                ticket = await BuildOpenTableOpeningFamilyAsync(id, tableOpeningFamilyDTO);
             }
             else if (data.PrintEvent == PrintEvents.TABLE_CLOSED)
             {
-                await BuildCloseTableOpeningFamilyAsync(id, tableOpeningFamilyDTO);
+                ticket = await BuildCloseTableOpeningFamilyAsync(id, tableOpeningFamilyDTO);
             }
             else if (data.PrintEvent == PrintEvents.REQUEST_PAYMENT) 
             {
-                await BuildRequestPaymentAsync(id, tableOpeningFamilyDTO, data.SubTypeDocument);
+                ticket = await BuildRequestPaymentAsync(id, tableOpeningFamilyDTO, data.SubTypeDocument);
             }
+            return new Tuple<string, string, Store>(ticket, printBefore, store);
         }
 
         #region private methods
-        private async Task BuildCloseTableOpeningFamilyAsync(string id, TableOpeningFamily tableOpeningFamilyDTO)
+        private async Task<string> BuildCloseTableOpeningFamilyAsync(string id, TableOpeningFamily tableOpeningFamilyDTO)
         {
-            var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
-            var sectors = store.GetPrintSettings(PrintEvents.TABLE_CLOSED);
-            if (sectors.Count > 0)
-            {
-                foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
-                {
-
-                }
-            }
+            return string.Empty;
         }
 
-        private async Task BuildOpenTableOpeningFamilyAsync(string id, TableOpeningFamily tableOpeningFamilyDTO)
+        private async Task<string> BuildOpenTableOpeningFamilyAsync(string id, TableOpeningFamily tableOpeningFamilyDTO)
         {
-            var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
-            var sectors = store.GetPrintSettings(PrintEvents.TABLE_OPENED);
-            if (sectors.Count > 0)
-            {
-                foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
-                {
-                    var date = Convert.ToDateTime(tableOpeningFamilyDTO.OpenedAt);
-                    var viewData = new Dictionary<string, string>() 
-                    {
-                        { "title", "APERTURA DE MESA" },
-                        { "tableNumber", tableOpeningFamilyDTO.TableNumberToShow },
-                        { "openedAt", tableOpeningFamilyDTO.OpenedAt }
-                    };
-                    var formatService = FormaterFactory.Resolve(sector.IsHTML, viewData, "Ticket_Table_Opened");
-                    await formatService.PrintAsync();
-                }
-            }
+            return string.Empty;
         }
 
-        private async Task BuildRequestPaymentAsync(string id, TableOpeningFamily tableOpeningFamilyDTO, string typeRequest)
+        private async Task<string> BuildRequestPaymentAsync(string id, TableOpeningFamily tableOpeningFamilyDTO, string typeRequest)
         {
-            var store = await _storeRepository.GetById<Store>(tableOpeningFamilyDTO.StoreId, "stores");
-            var sectors = store.GetPrintSettings(PrintEvents.REQUEST_PAYMENT);
-            if (sectors.Count > 0)
-            {
-                foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
-                {
-                    await SaveRequestPayment(id, tableOpeningFamilyDTO, typeRequest, store, sector);
-                }
-            }
+            return string.Empty;
         }
 
-        private async Task SaveRequestPayment(string id, TableOpeningFamily tableOpeningFamilyDTO, string typeRequest, Store store, PrintSettings sector)
+        private async Task<string> SaveRequestPayment(string id, TableOpeningFamily tableOpeningFamilyDTO, string typeRequest, Store store, PrintSettings sector)
         {
-            
+            return string.Empty;
         }
 
         private string SetTitleForCloseTable(TableOpeningFamily tableOpening)

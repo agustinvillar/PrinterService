@@ -1,6 +1,5 @@
 ﻿using Menoo.PrinterService.Infraestructure.Interfaces;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Infraestructure.Services
 {
@@ -21,7 +20,7 @@ namespace Menoo.PrinterService.Infraestructure.Services
             _viewData = viewData;
         }
 
-        public async Task PrintAsync()
+        public string Create()
         {
             throw new System.NotImplementedException();
         }

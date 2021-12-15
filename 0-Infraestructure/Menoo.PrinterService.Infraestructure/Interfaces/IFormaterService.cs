@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Menoo.PrinterService.Infraestructure.Interfaces
+﻿namespace Menoo.PrinterService.Infraestructure.Interfaces
 {
     public interface IFormaterService
     {
@@ -9,6 +6,6 @@ namespace Menoo.PrinterService.Infraestructure.Interfaces
 
         string Template { set; }
 
-        Task PrintAsync();
+        string Create();
     }
 }

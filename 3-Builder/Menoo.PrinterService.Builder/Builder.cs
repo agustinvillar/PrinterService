@@ -1,6 +1,10 @@
 ﻿using Menoo.PrinterService.Infraestructure;
+using Menoo.PrinterService.Infraestructure.Constants;
+using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
+using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
+using Menoo.PrinterService.Infraestructure.Repository;
 using Rebus.Activation;
 using Rebus.Config;
 using System;
@@ -28,6 +32,8 @@ namespace Menoo.PrinterService.Builder
 
         private Timer _timer;
 
+        private readonly TicketRepository _ticketRepository;
+
         public Builder()
         {
             InitializeService();
@@ -36,6 +42,7 @@ namespace Menoo.PrinterService.Builder
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
+            _ticketRepository = GlobalConfig.DependencyResolver.Resolve<TicketRepository>();
         }
 
         public async Task RecieveAsync(PrintMessage data, Dictionary<string, string> extras = null)
@@ -55,7 +62,8 @@ namespace Menoo.PrinterService.Builder
                         $"FirebaseId: {documentsId}{Environment.NewLine}", EventLogEntryType.Information);
                     try
                     {
-                        await builder.BuildAsync(extras["id"], data);
+                        var dataToPrint = await builder.BuildAsync(extras["id"], data);
+                        await PrintAsync(extras["id"], dataToPrint, data.PrintEvent);
                     }
                     catch (Exception e) 
                     {
@@ -113,6 +121,8 @@ namespace Menoo.PrinterService.Builder
             _adapter.Bus.Subscribe<PrintMessage>().GetAwaiter().GetResult();
         }
 
+        #region private methods
+
         private void ConfigureTimer()
         {
             double.TryParse(GlobalConfig.ConfigurationManager.GetSetting("serviceInternal"), out double interval);
@@ -147,6 +157,33 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
+        private async Task PrintAsync(string id, Tuple<string, string, Store> data, string printEvent) 
+        {
+            var sectors = new List<PrintSettings>();
+            if (printEvent == PrintEvents.NEW_TAKE_AWAY)
+            {
+                //TODO: Mover código para este caso especial.
+            }
+            else 
+            {
+                sectors = data.Item3.GetPrintSettings(printEvent);
+                foreach (var sector in sectors)
+                {
+                    var ticket = new Ticket
+                    {
+                        TicketType = printEvent,
+                        PrintBefore = data.Item2,
+                        Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                        Copies = sector.Copies,
+                        PrinterName = sector.Printer,
+                        TicketImage = data.Item1
+                    };
+                    await _ticketRepository.SaveAsync(ticket);
+                    await _ticketRepository.SetTicketImageAsync(id, data.Item1);
+                }
+            }
+        }
+
         private void ServiceTimer_Tick(object sender, ElapsedEventArgs e)
         {
             try
@@ -175,5 +212,7 @@ namespace Menoo.PrinterService.Builder
                 _generalWriter.WriteEntry("Builder::ServiceTimer_Tick()" + Environment.NewLine + ex, EventLogEntryType.Error);
             }
         }
+
+        #endregion
     }
 }

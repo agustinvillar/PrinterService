@@ -65,9 +65,9 @@ namespace Menoo.PrinterService.Infraestructure.Repository
             await base.SaveAsync(message.Item1, entity, TICKET_HISTORY);
         }
 
-        public async Task SetDocumentHtmlAsync(string id, string documentHTML) 
+        public async Task SetTicketImageAsync(string id, string ticketImage) 
         {
-            await AddPropertyAsync(id, "html", documentHTML, TICKET_HISTORY);
+            await AddPropertyAsync(id, "ticketImage", ticketImage, TICKET_HISTORY);
         }
     }
 }

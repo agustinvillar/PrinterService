@@ -24,7 +24,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
         [FirestoreProperty("printData")]
         [JsonProperty("printData")]
-        public string TicketImage { get; private set; }
+        public string TicketImage { get; set; }
 
         [FirestoreProperty("printed")]
         [JsonProperty("printed")]

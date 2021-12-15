@@ -1,0 +1,29 @@
+﻿@using System.Collections.Generic
+@model Dictionary<string, string>
+<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        @Model["style"]
+    </style>
+</head>
+<body>
+    <div class="invoice-pos">
+        <div class="section-center invoince-header">
+            <div class="section-center">
+                <img class="img-logo" src="@Model["logo"]" alt="MENOO">
+            </div>
+            <div class="section-center">
+                @Model["title"]
+            </div>
+        </div>
+        <div class="section-left">
+            <b>Número de Mesa:@Model["tableNumber"]</b>
+        </div>
+        <div class="column section-left"><b>Fecha:</b>  @Model["openedAt"]</div>
+        <div class="column section-right"><b>Hora:</b> @Model["timeAt"]</div>
+    </div>
+</body>
+</html>
