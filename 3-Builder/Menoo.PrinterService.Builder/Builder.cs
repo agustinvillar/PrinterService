@@ -5,6 +5,7 @@ using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
+using Menoo.PrinterService.Infraestructure.Services;
 using Rebus.Activation;
 using Rebus.Config;
 using System;
@@ -157,29 +158,36 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
-        private async Task PrintAsync(string id, Tuple<string, string, Store> data, string printEvent) 
+        private async Task PrintAsync(string id, PrintInfo data, string printEvent)
         {
             var sectors = new List<PrintSettings>();
             if (printEvent == PrintEvents.NEW_TAKE_AWAY)
             {
                 //TODO: Mover código para este caso especial.
             }
-            else 
+            else
             {
-                sectors = data.Item3.GetPrintSettings(printEvent);
+                if (data.Content == null || data.Content.Count == 0)
+                {
+                    return;
+                }
+                sectors = data.Store.GetPrintSettings(printEvent);
                 foreach (var sector in sectors)
                 {
+                    IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
+                    string image = formatterService.Create();
+                    //Se arma el objeto de ticket
                     var ticket = new Ticket
                     {
                         TicketType = printEvent,
-                        PrintBefore = data.Item2,
+                        PrintBefore = data.BeforeAt,
                         Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                         Copies = sector.Copies,
                         PrinterName = sector.Printer,
-                        TicketImage = data.Item1
+                        TicketImage = image
                     };
                     await _ticketRepository.SaveAsync(ticket);
-                    await _ticketRepository.SetTicketImageAsync(id, data.Item1);
+                    await _ticketRepository.SetTicketImageAsync(id, image);
                 }
             }
         }

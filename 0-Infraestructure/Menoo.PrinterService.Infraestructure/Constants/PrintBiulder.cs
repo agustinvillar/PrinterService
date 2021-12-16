@@ -2,10 +2,10 @@
 {
     public static class PrintBuilder
     {
-        public static string ORDER_BUILDER = "Order.Builder";
+        public const string ORDER_BUILDER = "Order.Builder";
 
-        public static string BOOKING_BUILDER = "Booking.Builder";
+        public const string BOOKING_BUILDER = "Booking.Builder";
 
-        public static string TABLE_BUILDER = "Table.Builder";
+        public const string TABLE_BUILDER = "Table.Builder";
     }
 }

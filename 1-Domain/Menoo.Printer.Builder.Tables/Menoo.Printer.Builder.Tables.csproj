@@ -126,10 +126,6 @@
       <Project>{ecdff8b6-85b2-4e11-9286-0213adc3494f}</Project>
       <Name>Menoo.PrinterService.Infraestructure</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Menoo.Printer.Builder.Order\Menoo.Printer.Builder.Orders.csproj">
-      <Project>{46EBC8AA-99EE-458D-A004-7F5E9BF6C608}</Project>
-      <Name>Menoo.Printer.Builder.Orders</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Templates\assets\menoo-logo.png">

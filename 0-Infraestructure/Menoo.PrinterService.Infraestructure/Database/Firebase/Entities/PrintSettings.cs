@@ -45,6 +45,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
         [FirestoreProperty("isHTML")]
         [JsonProperty("isHTML")]
-        public bool IsHTML { get; set; }
+        public bool? IsHTML { get; set; }
     }
 }
