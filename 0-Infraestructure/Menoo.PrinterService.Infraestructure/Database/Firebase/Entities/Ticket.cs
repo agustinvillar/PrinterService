@@ -45,5 +45,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("ticketType")]
         [JsonProperty("ticketType")]
         public string TicketType { get; set; }
+
+        [FirestoreProperty("storeId")]
+        [JsonProperty("storeId")]
+        public string StoreId { get; set; }
     }
 }

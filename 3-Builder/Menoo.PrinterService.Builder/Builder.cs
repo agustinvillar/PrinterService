@@ -184,7 +184,9 @@ namespace Menoo.PrinterService.Builder
                         Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                         Copies = sector.Copies,
                         PrinterName = sector.Printer,
-                        TicketImage = image
+                        TicketImage = image,
+                        StoreName = data.Store.Name,
+                        StoreId = data.Store.Id
                     };
                     await _ticketRepository.SaveAsync(ticket);
                     await _ticketRepository.SetTicketImageAsync(id, image);

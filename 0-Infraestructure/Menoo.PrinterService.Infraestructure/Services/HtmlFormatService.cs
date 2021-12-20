@@ -35,16 +35,16 @@ namespace Menoo.PrinterService.Infraestructure.Services
             };
             host.Start();
             SetLogoAndStyle();
-            string html = host.RenderTemplate($"~/{this.Template}.cshtml", _viewData);
+            string html = host.RenderTemplate($"~/{this.Template}", _viewData);
             var htmlToImageConv = new HtmlToImageConverter
             {
-                Width = 74,
-                Zoom = 100
+                Width = 300
             };
-            var jpegBytes = htmlToImageConv.GenerateImage(html, ImageFormat.Jpeg);
-            string htmlBase64 = Convert.ToBase64String(jpegBytes);
+            var bytes = htmlToImageConv.GenerateImage(html, ImageFormat.Png);
+            //File.WriteAllBytes(Path.Combine(fullPath, $"ticket_{Guid.NewGuid().ToString()}.png"), bytes);
+            string base64 = Convert.ToBase64String(bytes);
             host.Stop();
-            return htmlBase64;
+            return base64;
         }
 
         #region private methods
