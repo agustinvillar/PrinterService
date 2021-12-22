@@ -1,15 +1,12 @@
-﻿using Google.Cloud.Firestore;
-using Menoo.PrinterService.Infraestructure;
+﻿using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
-using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Menoo.Printer.Builder.BookingBuilder
@@ -17,8 +14,6 @@ namespace Menoo.Printer.Builder.BookingBuilder
     [Handler]
     public class BookingBuilder : ITicketBuilder
     {
-        private readonly PrinterContext _printerContext;
-
         private readonly EventLog _generalWriter;
 
         private readonly UserRepository _userRepository;
@@ -27,76 +22,53 @@ namespace Menoo.Printer.Builder.BookingBuilder
 
         private readonly StoreRepository _storeRepository;
 
-        private readonly TicketRepository _ticketRepository;
-
-        public BookingBuilder(
-            PrinterContext printerContext,
-            StoreRepository storeRepository,
-            TicketRepository ticketRepository,
-            BookingRepository bookingRepository,
-            UserRepository userRepository)
+        public BookingBuilder(BookingRepository bookingRepository, UserRepository userRepository, StoreRepository storeRepository)
         {
-            _printerContext = printerContext;
-            _storeRepository = storeRepository;
-            _ticketRepository = ticketRepository;
             _bookingRepository = bookingRepository;
             _userRepository = userRepository;
+            _storeRepository = storeRepository;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
-        public async Task BuildAsync(string id, PrintMessage data)
+        public async Task<PrintInfo> BuildAsync(string id, PrintMessage data)
         {
             if (data.Builder != PrintBuilder.BOOKING_BUILDER)
             {
-                return;
+                return null;
             }
             var bookingDTO = await _bookingRepository.GetById<Booking>(data.DocumentId);
+            var store = await _storeRepository.GetById<Store>(bookingDTO.Store.Id, "stores");
             var userDTO = await _userRepository.GetById<User>(bookingDTO.UserId);
-            await SaveTicketBooking(id, bookingDTO, userDTO, data.PrintEvent);
+            var dataToPrint = new PrintInfo
+            {
+                Store = store,
+                BeforeAt = Utils.BeforeAt(DateTime.Now.ToString("yyyy-MM-dd HH:mm"), 10),
+                Template = PrintTemplates.NEW_BOOKING
+            };
+            dataToPrint.Content = SaveTicketBooking(bookingDTO, userDTO, data.PrintEvent);
+            return dataToPrint;
         }
 
-        private async Task SaveTicketBooking(string id, Booking booking, User user, string printEvent)
+        private Dictionary<string, string> SaveTicketBooking(Booking booking, User user, string printEvent)
         {
-            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
-            var store = await _storeRepository.GetById<Store>(booking.Store.Id, "stores");
-            var sectors = store.GetPrintSettings(PrintEvents.NEW_BOOKING);
-            if (sectors.Count > 0)
+            string title = string.Empty;
+            var data = new Dictionary<string, string>();
+            var dateTime = DateTime.Now;
+            if (printEvent == PrintEvents.NEW_BOOKING)
             {
-                foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
-                {
-                    string title = string.Empty;
-                    if (printEvent == PrintEvents.NEW_BOOKING)
-                    {
-                        title = "Nueva reserva";
-                    }
-                    else if (printEvent == PrintEvents.CANCELED_BOOKING)
-                    {
-                        title = "Reserva cancelada";
-                    }
-
-                    var ticket = new Ticket
-                    {
-                        TicketType = printEvent,
-                        PrintBefore = Utils.BeforeAt(now, 10),
-                        Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
-                        Copies = sector.Copies,
-                        PrinterName = sector.Printer,
-                        StoreName = store.Name
-                    };
-
-                    //ticket.SetBookingData(title, booking.BookingNumber, booking.BookingDate, booking.GuestQuantity, user.Name);
-                    _generalWriter.WriteEntry($"BookingBuilder::SaveTicketBooking(). Enviando a imprimir la reserva con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
-                                $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
-                                $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
-                                $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
-                                $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
-                                $"Número de reserva: {booking.BookingNumber}{Environment.NewLine}" +
-                                $"Estado de la reserva: {booking.BookingState.ToUpper()}" +
-                                $"Id en colección printEvents: {id}");
-                    await _ticketRepository.SaveAsync(ticket);
-                    //await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
-                }
+                title = "Nueva reserva";
             }
+            else if (printEvent == PrintEvents.CANCELED_BOOKING)
+            {
+                title = "Reserva cancelada";
+            }
+            data.Add("title", title);
+            data.Add("bookingNumber", booking.BookingNumber.ToString());
+            data.Add("quantity", booking.GuestQuantity.ToString());
+            data.Add("openedAt", dateTime.ToString("dd/MM/yyyy"));
+            data.Add("timeAt", dateTime.ToString("HH:mm:ss"));
+            data.Add("clientName", user.Name);
+            return data;
         }
 
         public override string ToString()

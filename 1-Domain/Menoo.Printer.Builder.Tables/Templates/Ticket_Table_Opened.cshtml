@@ -19,11 +19,13 @@
                 @Model["title"]
             </div>
         </div>
-        <div class="section-left">
-            <b>Número de Mesa:@Model["tableNumber"]</b>
+        <div class="row section-left">
+            <b>Número de Mesa: </b>@Model["tableNumber"]
         </div>
-        <div class="column section-left"><b>Fecha:</b>  @Model["openedAt"]</div>
-        <div class="column section-right"><b>Hora:</b> @Model["timeAt"]</div>
+        <div class="row">
+            <div class="column section-left"><b>Fecha:</b> @Model["openedAt"]</div>
+            <div class="column section-right"><b>Hora: @Model["timeAt"]</b></div>
+        </div>
     </div>
 </body>
 </html>

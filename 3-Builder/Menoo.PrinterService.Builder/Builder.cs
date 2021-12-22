@@ -19,21 +19,21 @@ namespace Menoo.PrinterService.Builder
 {
     public partial class Builder : ServiceBase, ISubscriptionService
     {
+        private readonly TicketRepository _ticketRepository;
+
+        private readonly EventLog _generalWriter;
+
+        private readonly BuiltinHandlerActivator _adapter;
+
+        private Timer _timer;
+
         private readonly string _queueName;
 
         private readonly string _queueConnectionString;
 
         private readonly int _queueDelay;
 
-        private readonly EventLog _generalWriter;
-
-        private readonly BuiltinHandlerActivator _adapter;
-
         private long _tickCounter;
-
-        private Timer _timer;
-
-        private readonly TicketRepository _ticketRepository;
 
         public Builder()
         {
@@ -53,32 +53,35 @@ namespace Menoo.PrinterService.Builder
             {
                 if (builder.ToString() == data.Builder) 
                 {
-                    _generalWriter.WriteEntry($"Builder::RecieveAsync(). Activando el builder de: {builder.ToString()}", EventLogEntryType.Information);
+                    _generalWriter.WriteEntry($"Builder::RecieveAsync(). Activando el builder de: {builder}", EventLogEntryType.Information);
                     string type = !string.IsNullOrEmpty(data.SubTypeDocument) ? $"{data.TypeDocument}-{data.SubTypeDocument}" : $"{data.TypeDocument}";
                     string documentsId = data.DocumentsId != null && data.DocumentsId.Count > 0 ? string.Join(",", data.DocumentsId) : data.DocumentId;
                     _generalWriter.WriteEntry(
-                        $"{builder.ToString()}::BuildAsync(). Nuevo ticket de impresión recibido. {Environment.NewLine}" +
+                        $"{builder}::BuildAsync(). Nuevo ticket de impresión recibido. {Environment.NewLine}" +
                         $"Evento: {data.PrintEvent}{Environment.NewLine}" +
                         $"Tipo: {type}{Environment.NewLine}" +
                         $"FirebaseId: {documentsId}{Environment.NewLine}", EventLogEntryType.Information);
                     try
                     {
+                        await Task.Delay(_queueDelay);
                         var dataToPrint = await builder.BuildAsync(extras["id"], data);
+                        if (dataToPrint == null) 
+                        {
+                            break;
+                        }
                         await PrintAsync(extras["id"], dataToPrint, data.PrintEvent);
                     }
                     catch (Exception e) 
                     {
                         _generalWriter.WriteEntry(
-                            $"{builder.ToString()}::RecieveAsync(). NO se imprimió el ticket de impresión recibido. {Environment.NewLine}" +
+                            $"{builder}::RecieveAsync(). NO se imprimió el ticket de impresión recibido. {Environment.NewLine}" +
                             $"Evento: {data.PrintEvent}{Environment.NewLine}" +
                             $"Tipo: {type}{Environment.NewLine}" +
                             $"FirebaseId: {documentsId}{Environment.NewLine}" +
-                            $"Excepción: {e.ToString()}", EventLogEntryType.Error);
+                            $"Excepción: {e}", EventLogEntryType.Error);
                     }
-                    break;
                 }
             }
-            await Task.Delay(_queueDelay);
         }
 
         protected override void OnStart(string[] args)
@@ -123,7 +126,6 @@ namespace Menoo.PrinterService.Builder
         }
 
         #region private methods
-
         private void ConfigureTimer()
         {
             double.TryParse(GlobalConfig.ConfigurationManager.GetSetting("serviceInternal"), out double interval);
@@ -188,6 +190,13 @@ namespace Menoo.PrinterService.Builder
                         StoreName = data.Store.Name,
                         StoreId = data.Store.Id
                     };
+                    _generalWriter.WriteEntry($"Builder::PrintAsync(). Enviando a imprimir el ticket con la siguiente información." +
+                        $"{Environment.NewLine}Detalles:{Environment.NewLine}" +
+                        $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
+                        $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
+                        $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
+                        $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
+                        $"Id en colección printEvents: {id}");
                     await _ticketRepository.SaveAsync(ticket);
                     await _ticketRepository.SetTicketImageAsync(id, image);
                 }
@@ -222,7 +231,6 @@ namespace Menoo.PrinterService.Builder
                 _generalWriter.WriteEntry("Builder::ServiceTimer_Tick()" + Environment.NewLine + ex, EventLogEntryType.Error);
             }
         }
-
         #endregion
     }
 }
