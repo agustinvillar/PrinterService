@@ -61,13 +61,13 @@ namespace Menoo.Printer.Builder.Orders
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
-        public async Task BuildAsync(string id, PrintMessage data)
+        public async Task<List<PrintInfo>> BuildAsync(string id, PrintMessage data)
         {
             if (data.Builder != PrintBuilder.ORDER_BUILDER)
             {
-                return;
+                return null;
             }
-
+            var dataToPrint = new PrintInfo();
             if (data.DocumentsId?.Count > 0 && string.IsNullOrEmpty(data.DocumentId))
             {
                 var orders = new List<OrderV2>();
@@ -76,13 +76,14 @@ namespace Menoo.Printer.Builder.Orders
                     var order = await _orderRepository.GetOrderById(documentId);
                     orders.Add(order);
                 }
-                BuildMultipleOrderCreated(id, orders);
+                GetUnifiedOrderTicket(id, orders);
             }
             else
             {
                 var order = await _orderRepository.GetOrderById(data.DocumentId);
-                BuildSingleOrderCreated(id, order, data);
+                GetSingleOrderTicket(id, order, data);
             }
+            return new List<PrintInfo>() { dataToPrint };
         }
 
         public override string ToString()
@@ -91,7 +92,7 @@ namespace Menoo.Printer.Builder.Orders
         }
 
         #region private methods
-        private void BuildMultipleOrderCreated(string id, List<OrderV2> orders)
+        private void GetUnifiedOrderTicket(string id, List<OrderV2> orders)
         {
             var ordersByStore = orders.GroupBy(g => g.Store.Id).FirstOrDefault();
             var store = _storeRepository.GetById<Store>(ordersByStore.Key, "stores").GetAwaiter().GetResult();
@@ -114,14 +115,7 @@ namespace Menoo.Printer.Builder.Orders
             };
             string html = CreateUnifiedHtml(ordersByOrderNumber.ToList(), ordersByUsername.Key, ordersByAddress.Key, ordersByOrderNumber.Key);
             //ticket.SetOrder("Nueva orden de mesa", html);
-            _generalWriter.WriteEntry($"OrderBuilder::SaveOrderAsync(). Enviando a imprimir el ticket unificado con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
-                $"Nombre de la impresora: {ticket.PrinterName}{Environment.NewLine}" +
-                $"Sector de impresión: {unifiedSector.Name}{Environment.NewLine}" +
-                $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
-                $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
-                $"Número de orden: {ordersByOrderNumber.Key}{Environment.NewLine}" +
-                $"Id en colección printEvents: {id}");
-            _ticketRepository.SaveAsync(ticket).GetAwaiter().GetResult();
+            //_ticketRepository.SaveAsync(ticket).GetAwaiter().GetResult();
             //_ticketRepository.SetDocumentHtmlAsync(id, ticket.Data).GetAwaiter().GetResult();
             // Imprimir los tickets de forma individual
             foreach (var order in orders)
@@ -254,7 +248,7 @@ namespace Menoo.Printer.Builder.Orders
             BuildOrderCreated(id, orderDTO, orderDTO.OrderType);
         }
 
-        private void BuildSingleOrderCreated(string id, OrderV2 order, PrintMessage message)
+        private void GetSingleOrderTicket(string id, OrderV2 order, PrintMessage message)
         {
             if (message.PrintEvent == PrintEvents.NEW_ORDER || message.PrintEvent == PrintEvents.NEW_TAKE_AWAY)
             {
@@ -497,16 +491,7 @@ namespace Menoo.Printer.Builder.Orders
             ticket.PrintBefore = isTakeAway ? Utils.BeforeAt(now, 30) : Utils.BeforeAt(now, 60);
             var line = CreateHtmlFromLines(order);
             await CreateOrderTicket(order, ticket, line, isOrderOk, isCancelled, isTakeAway, printQR);
-            _generalWriter.WriteEntry($"OrderBuilder::SaveOrderAsync(). Enviando a imprimir la orden con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
-                $"Nombre de la impresora: {printerName}{Environment.NewLine}" +
-                $"Sector de impresión: {sectorName}{Environment.NewLine}" +
-                $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
-                $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
-                $"Número de orden: {order.OrderNumber}{Environment.NewLine}" +
-                $"Tipo de orden: {order.OrderType.ToUpper().Trim()}{Environment.NewLine}" +
-                $"Estado de la orden: {order.Status.ToUpper()}{Environment.NewLine}" +
-                $"Id en colección printEvents: {id}");
-            await _ticketRepository.SaveAsync(ticket);
+            //await _ticketRepository.SaveAsync(ticket);
             //await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
         }
         #endregion

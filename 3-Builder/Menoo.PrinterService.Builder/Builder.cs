@@ -65,7 +65,7 @@ namespace Menoo.PrinterService.Builder
                     {
                         await Task.Delay(_queueDelay);
                         var dataToPrint = await builder.BuildAsync(extras["id"], data);
-                        if (dataToPrint == null) 
+                        if (dataToPrint == null || dataToPrint.Count == 0) 
                         {
                             break;
                         }
@@ -160,45 +160,47 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
-        private async Task PrintAsync(string id, PrintInfo data, string printEvent)
+        private async Task PrintAsync(string id, List<PrintInfo> data, string printEvent)
         {
-            var sectors = new List<PrintSettings>();
             if (printEvent == PrintEvents.NEW_TAKE_AWAY)
             {
                 //TODO: Mover código para este caso especial.
             }
             else
             {
-                if (data.Content == null || data.Content.Count == 0)
+                if (data == null || data.Count == 0)
                 {
                     return;
                 }
-                sectors = data.Store.GetPrintSettings(printEvent);
-                foreach (var sector in sectors)
+                foreach (var item in data)
                 {
-                    IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
-                    string image = formatterService.Create();
-                    //Se arma el objeto de ticket
-                    var ticket = new Ticket
+                    var sectors = item.Store.GetPrintSettings(printEvent);
+                    foreach (var sector in sectors)
                     {
-                        TicketType = printEvent,
-                        PrintBefore = data.BeforeAt,
-                        Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
-                        Copies = sector.Copies,
-                        PrinterName = sector.Printer,
-                        TicketImage = image,
-                        StoreName = data.Store.Name,
-                        StoreId = data.Store.Id
-                    };
-                    _generalWriter.WriteEntry($"Builder::PrintAsync(). Enviando a imprimir el ticket con la siguiente información." +
-                        $"{Environment.NewLine}Detalles:{Environment.NewLine}" +
-                        $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
-                        $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
-                        $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
-                        $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
-                        $"Id en colección printEvents: {id}");
-                    await _ticketRepository.SaveAsync(ticket);
-                    await _ticketRepository.SetTicketImageAsync(id, image);
+                        IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), item.Content, item.Template);
+                        string image = formatterService.Create();
+                        //Se arma el objeto de ticket
+                        var ticket = new Ticket
+                        {
+                            TicketType = printEvent,
+                            PrintBefore = item.BeforeAt,
+                            Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                            Copies = sector.Copies,
+                            PrinterName = sector.Printer,
+                            TicketImage = image,
+                            StoreName = item.Store.Name,
+                            StoreId = item.Store.Id
+                        };
+                        _generalWriter.WriteEntry($"Builder::PrintAsync(). Enviando a imprimir el ticket con la siguiente información." +
+                            $"{Environment.NewLine}Detalles:{Environment.NewLine}" +
+                            $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
+                            $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
+                            $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
+                            $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
+                            $"Id en colección printEvents: {id}");
+                        await _ticketRepository.SaveAsync(ticket);
+                        await _ticketRepository.SetTicketImageAsync(id, image);
+                    }
                 }
             }
         }

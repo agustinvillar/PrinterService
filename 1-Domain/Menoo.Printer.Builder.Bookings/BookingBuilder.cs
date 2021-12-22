@@ -30,7 +30,7 @@ namespace Menoo.Printer.Builder.BookingBuilder
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
-        public async Task<PrintInfo> BuildAsync(string id, PrintMessage data)
+        public async Task<List<PrintInfo>> BuildAsync(string id, PrintMessage data)
         {
             if (data.Builder != PrintBuilder.BOOKING_BUILDER)
             {
@@ -46,7 +46,7 @@ namespace Menoo.Printer.Builder.BookingBuilder
                 Template = PrintTemplates.NEW_BOOKING
             };
             dataToPrint.Content = SaveTicketBooking(bookingDTO, userDTO, data.PrintEvent);
-            return dataToPrint;
+            return new List<PrintInfo>() { dataToPrint };
         }
 
         private Dictionary<string, string> SaveTicketBooking(Booking booking, User user, string printEvent)
