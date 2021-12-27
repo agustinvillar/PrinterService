@@ -1,7 +1,9 @@
-﻿using Menoo.PrinterService.Infraestructure.Interfaces;
+﻿using Menoo.PrinterService.Infraestructure.Exceptions;
+using Menoo.PrinterService.Infraestructure.Interfaces;
 using NReco.ImageGenerator;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Westwind.RazorHosting;
@@ -10,7 +12,9 @@ namespace Menoo.PrinterService.Infraestructure.Services
 {
     public class HtmlFormatService : IFormaterService
     {
-        private readonly Dictionary<string, string> _viewData;
+        private readonly Dictionary<string, object> _viewData;
+
+        private readonly EventLog _generalWriter;
 
         public bool AllowFormat
         {
@@ -19,10 +23,14 @@ namespace Menoo.PrinterService.Infraestructure.Services
 
         public string Template { private get; set; }
 
-
-        public HtmlFormatService(Dictionary<string, string> viewData)
+        public HtmlFormatService(Dictionary<string, object> viewData)
         {
+            if (viewData == null || viewData.Count == 0) 
+            {
+                throw new ArgumentException("viewData");
+            }
             _viewData = viewData;
+            _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
         public string Create()
@@ -33,9 +41,14 @@ namespace Menoo.PrinterService.Infraestructure.Services
                 TemplatePath = fullPath,
                 BaseBinaryFolder = AppDomain.CurrentDomain.BaseDirectory
             };
+            host.AddAssemblyFromType(typeof(PrintInfo));
             host.Start();
             SetLogoAndStyle();
             string html = host.RenderTemplate($"~/{this.Template}", _viewData);
+            if (string.IsNullOrEmpty(html)) 
+            {
+                throw new BadFormatTicketException($"HtmlFormatService::Create(). Error generando el HTML. Detalles: {host.ErrorMessage}");
+            }
             var htmlToImageConv = new HtmlToImageConverter
             {
                 Width = 300

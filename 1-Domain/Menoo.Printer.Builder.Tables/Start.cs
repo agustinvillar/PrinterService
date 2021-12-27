@@ -1,9 +1,10 @@
 ﻿using Menoo.PrinterService.Infraestructure;
+using Menoo.PrinterService.Infraestructure.Constants;
 using System;
 
 namespace Menoo.Printer.Builder.Tables
 {
-    [OnStartUp(Module = "Tables.Builder", Order = 3)]
+    [OnStartUp(Module = PrintBuilder.TABLE_BUILDER, Order = 3)]
     public class Start
     {
         public Start()

@@ -1,12 +1,13 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
+using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
 using System;
 
 namespace Menoo.Printer.Builder.Orders
 {
-    [OnStartUp(Module = "Order.Builder", Order = 1)]
+    [OnStartUp(Module = PrintBuilder.ORDER_BUILDER, Order = 1)]
     public class Start
     {
         public Start()

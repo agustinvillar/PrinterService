@@ -49,11 +49,11 @@ namespace Menoo.Printer.Builder.BookingBuilder
             return new List<PrintInfo>() { dataToPrint };
         }
 
-        private Dictionary<string, string> SaveTicketBooking(Booking booking, User user, string printEvent)
+        private Dictionary<string, object> SaveTicketBooking(Booking booking, User user, string printEvent)
         {
             string title = string.Empty;
-            var data = new Dictionary<string, string>();
-            var dateTime = DateTime.Now;
+            var data = new Dictionary<string, object>();
+            var dateTime = Convert.ToDateTime(booking.BookingDate);
             if (printEvent == PrintEvents.NEW_BOOKING)
             {
                 title = "Nueva reserva";
@@ -65,8 +65,8 @@ namespace Menoo.Printer.Builder.BookingBuilder
             data.Add("title", title);
             data.Add("bookingNumber", booking.BookingNumber.ToString());
             data.Add("quantity", booking.GuestQuantity.ToString());
-            data.Add("openedAt", dateTime.ToString("dd/MM/yyyy"));
-            data.Add("timeAt", dateTime.ToString("HH:mm:ss"));
+            data.Add("bookingDate", dateTime.ToString("dd/MM/yyyy"));
+            data.Add("bookingTime", dateTime.ToString("HH:mm:ss"));
             data.Add("clientName", user.Name);
             return data;
         }

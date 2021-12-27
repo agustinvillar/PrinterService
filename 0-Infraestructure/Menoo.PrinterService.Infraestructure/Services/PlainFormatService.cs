@@ -5,7 +5,7 @@ namespace Menoo.PrinterService.Infraestructure.Services
 {
     public class PlainFormatService : IFormaterService
     {
-        private readonly Dictionary<string, string> _viewData;
+        private readonly Dictionary<string, object> _viewData;
 
         public bool AllowFormat
         {
@@ -15,7 +15,7 @@ namespace Menoo.PrinterService.Infraestructure.Services
         public string Template { private get; set; }
 
 
-        public PlainFormatService(Dictionary<string, string> viewData)
+        public PlainFormatService(Dictionary<string, object> viewData)
         {
             _viewData = viewData;
         }

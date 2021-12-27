@@ -168,12 +168,9 @@ namespace Menoo.PrinterService.Builder
             }
             else
             {
-                if (data == null || data.Count == 0)
-                {
-                    return;
-                }
                 foreach (var item in data)
                 {
+                    printEvent = printEvent == PrintEvents.REPRINT_ORDER ? PrintEvents.NEW_TABLE_ORDER : printEvent;
                     var sectors = item.Store.GetPrintSettings(printEvent);
                     foreach (var sector in sectors)
                     {

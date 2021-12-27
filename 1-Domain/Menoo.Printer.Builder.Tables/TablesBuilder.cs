@@ -64,26 +64,26 @@ namespace Menoo.Printer.Builder.Tables
         }
 
         #region private methods
-        private Dictionary<string, string> GetInfoCloseTableOpeningFamily(TableOpeningFamily tableOpeningFamilyDTO)
+        private Dictionary<string, object> GetInfoCloseTableOpeningFamily(TableOpeningFamily tableOpeningFamilyDTO)
         {
-            var data = new Dictionary<string, string>();
+            var data = new Dictionary<string, object>();
             return data;
         }
 
-        private Dictionary<string, string> GetInfoTableOpeningFamily(TableOpeningFamily tableOpeningFamilyDTO)
+        private Dictionary<string, object> GetInfoTableOpeningFamily(TableOpeningFamily tableOpeningFamilyDTO)
         {
-            var data = new Dictionary<string, string>();
+            var data = new Dictionary<string, object>();
             var dateTime = Convert.ToDateTime(tableOpeningFamilyDTO.OpenedAt);
             data.Add("title", "Apertura de mesa");
-            data.Add("tableNumber", tableOpeningFamilyDTO.NumberToShow.ToString());
+            data.Add("tableNumber", tableOpeningFamilyDTO.TableNumberToShow.ToString());
             data.Add("openedAt", dateTime.ToString("dd/MM/yyyy"));
             data.Add("timeAt", dateTime.ToString("HH:mm:ss"));
             return data;
         }
 
-        private Dictionary<string, string> GetInfoRequestPayment(TableOpeningFamily tableOpeningFamilyDTO, string typeRequest)
+        private Dictionary<string, object> GetInfoRequestPayment(TableOpeningFamily tableOpeningFamilyDTO, string typeRequest)
         {
-            var data = new Dictionary<string, string>();
+            var data = new Dictionary<string, object>();
             return data;
         }
 

@@ -7,7 +7,7 @@ namespace Menoo.PrinterService.Infraestructure
     {
         public string BeforeAt { get; set; }
 
-        public Dictionary<string, string> Content { get; set; }
+        public Dictionary<string, object> Content { get; set; }
 
         public string Template { get; set; }
 

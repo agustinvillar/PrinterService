@@ -7,7 +7,7 @@ namespace Menoo.PrinterService.Infraestructure.Services
 {
     public static class FormaterFactory
     {
-        public static IFormaterService Resolve(bool allowFormat, Dictionary<string, string> viewData, string template = "")
+        public static IFormaterService Resolve(bool allowFormat, Dictionary<string, object> viewData, string template = "")
         {
             IFormaterService result = null;
             var services = TypeExtensions.GetTypesFormaterServices();

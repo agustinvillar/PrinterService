@@ -1,4 +1,12 @@
-﻿.column {
+﻿li {
+    list-style-type: none;
+}
+
+hr {
+    border-style: none none dashed none;
+}
+
+.column {
     float: left;
     width: 50%;
 }
@@ -31,8 +39,26 @@
     margin-bottom: 2%;
 }
 
+.item-detail {
+    margin-right: 4%;
+}
+
+.item-quantity {
+    margin-right: 2%;
+}
+
 .section-center {
     text-align: center;
+}
+
+.section-custom-header {
+    border-style: double;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    text-transform: uppercase;
+    height: 25px;
 }
 
 .section-left {
@@ -42,3 +68,4 @@
 .section-right {
     text-align: right;
 }
+
