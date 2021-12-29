@@ -1,4 +1,5 @@
 ﻿using Google.Cloud.Firestore;
+using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Queues;
@@ -20,31 +21,33 @@ namespace Menoo.PrinterService.Infraestructure.Repository
             _firebaseDb = db;
         }
 
-        public override Task SaveAsync<TEntity>(TEntity item, string collection = "print")
+        public override async Task SaveAsync<TEntity>(TEntity item, string collection = "print")
         {
-            return base.SaveAsync(item, collection);
+            await base.SaveAsync(item, collection);
         }
 
         public async Task<bool> IsTicketPrinted(Tuple<string, PrintMessage> message)
         {
             QuerySnapshot documentSnapshots;
+            bool isExists = false;
             if (message.Item2.DocumentsId != null && message.Item2.DocumentsId.Count > 0)
             {
                 documentSnapshots = await _firebaseDb.Collection(TICKET_HISTORY)
                     .WhereEqualTo("dayCreatedAt", DateTime.Now.ToString("dd/MM/yyyy"))
                     .WhereEqualTo("printEvent", message.Item2.PrintEvent)
                     .WhereArrayContainsAny("entityId", message.Item2.DocumentsId).GetSnapshotAsync();
+                isExists = documentSnapshots.Documents.Count > 0;
             }
-            else 
+            else if (message.Item2.PrintEvent != PrintEvents.REPRINT_ORDER)
             {
                 var filter = new List<string>() { message.Item2.DocumentId };
                 documentSnapshots = await _firebaseDb.Collection(TICKET_HISTORY)
                     .WhereEqualTo("dayCreatedAt", DateTime.Now.ToString("dd/MM/yyyy"))
                     .WhereEqualTo("printEvent", message.Item2.PrintEvent)
                     .WhereArrayContainsAny("entityId", filter).GetSnapshotAsync();
+                isExists = documentSnapshots.Documents.Count > 0;
             }
-            bool exists = documentSnapshots.Documents.Count > 0;
-            return exists;
+            return isExists;
         }
 
         public async Task SetPrintedAsync(Tuple<string, PrintMessage> message) 
@@ -65,9 +68,9 @@ namespace Menoo.PrinterService.Infraestructure.Repository
             await base.SaveAsync(message.Item1, entity, TICKET_HISTORY);
         }
 
-        public async Task SetDocumentHtmlAsync(string id, string documentHTML) 
+        public async Task SetTicketImageAsync(string id, string ticketImage) 
         {
-            await AddPropertyAsync(id, "html", documentHTML, TICKET_HISTORY);
+            await AddPropertyAsync(id, "ticketImage", ticketImage, TICKET_HISTORY);
         }
     }
 }

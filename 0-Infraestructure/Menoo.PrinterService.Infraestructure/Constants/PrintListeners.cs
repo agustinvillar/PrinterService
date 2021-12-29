@@ -2,12 +2,12 @@
 {
     public static class PrintListeners
     {
-        public static string ORDER_LISTENER = "Order.Listener";
+        public const string ORDER_LISTENER = "Order.Listener";
 
-        public static string BOOKING_LISTENER = "Booking.Listener";
+        public const string BOOKING_LISTENER = "Booking.Listener";
 
-        public static string TABLE_LISTENER = "Table.Listener";
+        public const string TABLE_LISTENER = "Table.Listener";
 
-        public static string GENERIC_LISTENER = "Generic.Listener";
+        public const string GENERIC_LISTENER = "Generic.Listener";
     }
 }

@@ -88,18 +88,6 @@ namespace Menoo.PrinterService.Infraestructure
             return bootstrapObjects;
         }
 
-        public static List<Type> GetFirebaseListerners()
-        {
-            string typeWithNamespace = typeof(IFirebaseListener).Namespace;
-            var type = typeof(IFirebaseListener);
-            var listeners = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(a => a.GetLoadableTypes())
-                .Where(filter => type.IsAssignableFrom(filter))
-                .AsParallel()
-                .ToList();
-            return listeners.FindAll(filter => filter.FullName != typeWithNamespace);
-        }
-
         public static List<Type> GetMenooTypes()
         {
             return (from a in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
@@ -116,19 +104,6 @@ namespace Menoo.PrinterService.Infraestructure
             });
             var result = JsonConvert.DeserializeObject<T>(json);
             return result;
-        }
-
-        public static string GetTicketTemplate(string fileTemplate)
-        {
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", fileTemplate + ".html");
-            string template = File.ReadAllText(path);
-            return template;
-        }
-
-        public static string GetTime(string dateTime)
-        {
-            var splitDateTime = dateTime.Split(' ');
-            return splitDateTime[1];
         }
 
         public static void PreloadAssemblies()
