@@ -19,13 +19,13 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("closedAt")]
         public string ClosedAt { get; set; }
 
-        [FirestoreProperty("numberId")]
-        [JsonProperty("numberId")]
-        public int NumberId { get; set; }
+        [FirestoreProperty("tableNumberId")]
+        [JsonProperty("tableNumberId")]
+        public int TableNumberId { get; set; }
 
-        [FirestoreProperty("numberToShow")]
-        [JsonProperty("numberToShow")]
-        public int? NumberToShow { get; set; }
+        [FirestoreProperty("tableNumberToShow")]
+        [JsonProperty("tableNumberToShow")]
+        public int NumberToShow { get; set; }
 
         [FirestoreProperty("closed")]
         public bool Closed { get; set; }
@@ -60,7 +60,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("requestPaymentCount")]
         public int RequestPaymentCount { get; set; }
 
-        public string TableNumberToShow => NumberToShow == 0 || NumberToShow == null ? NumberId.ToString() : NumberToShow.ToString();
+        public string TableNumberToShow => NumberToShow > 0 ? NumberToShow.ToString() : TableNumberId.ToString();
 
         public double TotalToTicket(Store store)
         {

@@ -2,29 +2,29 @@
 {
     public static class PrintTypes
     {
-        public const string ORDER = "Orden";
+        public static string ORDER = "Orden";
 
-        public const string BOOKING = "Reserva";
+        public static string BOOKING = "Reserva";
 
-        public const string TABLE = "Mesa";
+        public static string TABLE = "Mesa";
 
-        public const string REQUEST_PAYMENT = "Solicitud de pago";
+        public static string REQUEST_PAYMENT = "Solicitud de pago";
     }
 
     public static class SubOrderPrintTypes 
     {
-        public const string ORDER_TA = "TakeAway";
+        public static string ORDER_TA = "TakeAway";
 
-        public const string ORDER_TABLE = "Mesa";
+        public static string ORDER_TABLE = "Mesa";
 
-        public const string ORDER_BOOKING = "Reserva";
+        public static string ORDER_BOOKING = "Reserva";
 
-        public const string TABLE_OPENING = "Apertura de mesa";
+        public static string TABLE_OPENING = "Apertura de mesa";
 
-        public const string TABLE_CLOSE = "Cierre de mesa";
+        public static string TABLE_CLOSE = "Cierre de mesa";
 
-        public const string REQUEST_PAYMENT_POS = "POS";
+        public static string REQUEST_PAYMENT_POS = "POS";
 
-        public const string REQUEST_PAYMENT_CASH = "Efectivo";
+        public static string REQUEST_PAYMENT_CASH = "Efectivo";
     }
 }

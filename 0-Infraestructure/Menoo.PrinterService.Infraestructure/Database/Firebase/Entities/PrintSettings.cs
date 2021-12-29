@@ -42,9 +42,5 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("sectorName")]
         [JsonProperty("sectorName")]
         public string SectorName { get; set; }
-
-        [FirestoreProperty("isHTML")]
-        [JsonProperty("isHTML")]
-        public bool? IsHTML { get; set; }
     }
 }

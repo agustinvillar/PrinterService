@@ -26,14 +26,6 @@ namespace Menoo.Printer.Builder.Orders
     [Handler]
     public class OrderBuilder : ITicketBuilder
     {
-        private const int PRINT_MINUTES_ORDER_TABLE = 60;
-
-        private const int PRINT_MINUTES_ORDER_TA = 30;
-
-        private const int PRINT_MINUTES_ORDER_BOOKING = 60;
-
-        private const int PRINT_MINUTES_ORDER_REPRINT = 120;
-
         private readonly MenooContext _menooContext;
 
         private readonly PrinterContext _printerContext;
@@ -69,31 +61,28 @@ namespace Menoo.Printer.Builder.Orders
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
-        public async Task<List<PrintInfo>> BuildAsync(string id, PrintMessage message)
+        public async Task BuildAsync(string id, PrintMessage data)
         {
-            if (message.Builder != PrintBuilder.ORDER_BUILDER)
+            if (data.Builder != PrintBuilder.ORDER_BUILDER)
             {
-                return null;
+                return;
             }
-            var dataToPrint = new List<PrintInfo>();
-            bool isCancelled = message.PrintEvent == PrintEvents.ORDER_CANCELLED;
-            bool isReprint = message.PrintEvent == PrintEvents.REPRINT_ORDER;
-            if (message.DocumentsId?.Count > 0 && string.IsNullOrEmpty(message.DocumentId))
+
+            if (data.DocumentsId?.Count > 0 && string.IsNullOrEmpty(data.DocumentId))
             {
                 var orders = new List<OrderV2>();
-                foreach (var documentId in message.DocumentsId)
+                foreach (var documentId in data.DocumentsId)
                 {
                     var order = await _orderRepository.GetOrderById(documentId);
                     orders.Add(order);
                 }
-                await GetUnifiedOrderTicketAsync(orders, isCancelled, isReprint, dataToPrint);
+                BuildMultipleOrderCreated(id, orders);
             }
             else
             {
-                var order = await _orderRepository.GetOrderById(message.DocumentId);
-                await GetSingleOrderTicketAsync(order, isCancelled, isReprint, dataToPrint);
+                var order = await _orderRepository.GetOrderById(data.DocumentId);
+                BuildSingleOrderCreated(id, order, data);
             }
-            return dataToPrint;
         }
 
         public override string ToString()
@@ -102,7 +91,375 @@ namespace Menoo.Printer.Builder.Orders
         }
 
         #region private methods
-        private Tuple<string, string> GenerateOrderQR(OrderV2 order)
+        private void BuildMultipleOrderCreated(string id, List<OrderV2> orders)
+        {
+            var ordersByStore = orders.GroupBy(g => g.Store.Id).FirstOrDefault();
+            var store = _storeRepository.GetById<Store>(ordersByStore.Key, "stores").GetAwaiter().GetResult();
+            var unifiedSector = store.SectorUnifiedTicket();
+            if (unifiedSector == null)
+            {
+                return;
+            }
+            var ordersByOrderNumber = orders.GroupBy(g => g.OrderNumber).FirstOrDefault();
+            var ordersByAddress = orders.GroupBy(g => g.Address).FirstOrDefault();
+            var ordersByUsername = orders.GroupBy(g => g.UserName).FirstOrDefault();
+            var ticket = new Ticket
+            {
+                StoreId = store.Id,
+                StoreName = store.Name,
+                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                TicketType = TicketTypeEnum.ORDER.ToString(),
+                PrinterName = unifiedSector.Printer,
+                Copies = unifiedSector.Copies,
+                PrintBefore = Utils.BeforeAt(DateTime.Now.ToString("yyyy-MM-dd HH:mm"), 60)
+            };
+            string html = CreateUnifiedHtml(ordersByOrderNumber.ToList(), ordersByUsername.Key, ordersByAddress.Key, ordersByOrderNumber.Key);
+            ticket.SetOrder("Nueva orden de mesa", html);
+            _generalWriter.WriteEntry($"OrderBuilder::SaveOrderAsync(). Enviando a imprimir el ticket unificado con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
+                $"Nombre de la impresora: {ticket.PrinterName}{Environment.NewLine}" +
+                $"Sector de impresión: {unifiedSector.Name}{Environment.NewLine}" +
+                $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
+                $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
+                $"Número de orden: {ordersByOrderNumber.Key}{Environment.NewLine}" +
+                $"Id en colección printEvents: {id}");
+            _ticketRepository.SaveAsync(ticket).GetAwaiter().GetResult();
+            _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data).GetAwaiter().GetResult();
+            // Imprimir los tickets de forma individual
+            foreach (var order in orders)
+            {
+                BuildOrderBySector(id, order, OrderTypes.MESA);
+            }
+        }
+
+        private void BuildOrderCancelled(string id, OrderV2 order)
+        {
+            bool isTakeAway = order.OrderType.ToUpper().Trim() == OrderTypes.TAKEAWAY;
+            List<PrintSettings> sectors = GetSectorByEvent(order.Store.Id, PrintEvents.ORDER_CANCELLED);
+            if (sectors.Count > 0)
+            {
+                foreach (var sector in sectors.Where(f => f.AllowPrinting).OrderBy(o => o.Name))
+                {
+                    SaveOrderAsync(id, order, sector.Name, sector.Copies, sector.Printer, true, isTakeAway, sector.PrintQR).GetAwaiter().GetResult();
+                }
+            }
+        }
+
+        private void BuildOrderCreated(string id, OrderV2 order, string orderType, bool isSingleTicket = true)
+        {
+            if (!isSingleTicket) 
+            {
+                return;
+            }
+            List<PrintSettings> sectors = new List<PrintSettings>();
+            var sectorsByItems = ItemExtensions.GetPrintSector(order.Items, _itemRepository);
+            bool isTakeAway = !string.IsNullOrEmpty(orderType) && orderType.Contains("TakeAway");
+            string printEvent = string.Empty;
+            if (isTakeAway)
+            {
+                printEvent = PrintEvents.NEW_TAKE_AWAY;
+            }
+            else if (order.OrderType.ToUpper().Trim() == OrderTypes.RESERVA)
+            {
+                printEvent = PrintEvents.NEW_BOOKING;
+            }
+            else if (order.OrderType.ToUpper().Trim() == OrderTypes.MESA)
+            {
+                printEvent = PrintEvents.NEW_TABLE_ORDER;
+            }
+            if (sectorsByItems.Count > 0)
+            {
+                if (sectorsByItems.Select(s => s.Sectors).Count() > 0)
+                {
+                    foreach (var sector in sectorsByItems.Select(s => s.Sectors).FirstOrDefault())
+                    {
+                        bool isExists = sectors.Any(f => sector.Name == f.Name);
+                        if (!isExists && sector.AllowPrinting)
+                        {
+                            sectors.Add(sector);
+                        }
+                    }
+                }
+                if (isTakeAway)
+                {
+                    var sectorByEvents = GetSectorByEvent(order.Store.Id, printEvent);
+                    if (sectorByEvents.Count > 0)
+                    {
+                        foreach (var sector in sectorByEvents)
+                        {
+                            bool isExists = sectors.Any(f => sector.Name == f.Name);
+                            if (!isExists && sector.AllowPrinting)
+                            {
+                                sectors.Add(sector);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var sectorByEvent = GetSectorByEvent(order.Store.Id, printEvent);
+                sectors.AddRange(sectorByEvent);
+            }
+            if (sectors.Count > 0)
+            {
+                foreach (var sector in sectors.OrderBy(o => o.Name))
+                {
+                    SaveOrderAsync(id, order, sector.Name, sector.Copies, sector.Printer, false, isTakeAway, sector.PrintQR).GetAwaiter().GetResult();
+                }
+            }
+        }
+
+        private void BuildOrderBySector(string id, OrderV2 order, string orderType)
+        {
+            List<PrintSettings> sectors = new List<PrintSettings>();
+            var sectorsByItems = ItemExtensions.GetPrintSector(order.Items, _itemRepository);
+            bool isTakeAway = !string.IsNullOrEmpty(orderType) && orderType.Contains("TakeAway");
+            string printEvent = string.Empty;
+            if (isTakeAway)
+            {
+                printEvent = PrintEvents.NEW_TAKE_AWAY;
+            }
+            else if (order.OrderType.ToUpper().Trim() == OrderTypes.RESERVA)
+            {
+                printEvent = PrintEvents.NEW_BOOKING;
+            }
+            else if (order.OrderType.ToUpper().Trim() == OrderTypes.MESA)
+            {
+                printEvent = PrintEvents.NEW_TABLE_ORDER;
+            }
+            if (sectorsByItems.Count > 0)
+            {
+                if (sectorsByItems.Select(s => s.Sectors).Count() > 0)
+                {
+                    foreach (var sector in sectorsByItems.Select(s => s.Sectors).FirstOrDefault())
+                    {
+                        bool isExists = sectors.Any(f => sector.Name == f.Name);
+                        if (!isExists && sector.AllowPrinting)
+                        {
+                            sectors.Add(sector);
+                        }
+                    }
+                }
+            }
+            if (sectors.Count > 0)
+            {
+                foreach (var sector in sectors.OrderBy(o => o.Name))
+                {
+                    SaveOrderAsync(id, order, sector.Name, sector.Copies, sector.Printer, false, isTakeAway, sector.PrintQR).GetAwaiter().GetResult();
+                }
+            }
+        }
+
+        private void BuildOrderToReprint(string id, OrderV2 orderDTO)
+        {
+            BuildOrderCreated(id, orderDTO, orderDTO.OrderType);
+        }
+
+        private void BuildSingleOrderCreated(string id, OrderV2 order, PrintMessage message)
+        {
+            if (message.PrintEvent == PrintEvents.NEW_ORDER || message.PrintEvent == PrintEvents.NEW_TAKE_AWAY)
+            {
+                BuildOrderCreated(id, order, message.SubTypeDocument);
+            }
+            else if (message.PrintEvent == PrintEvents.ORDER_CANCELLED)
+            {
+                BuildOrderCancelled(id, order);
+            }
+            else if (message.PrintEvent == PrintEvents.REPRINT_ORDER)
+            {
+                BuildOrderToReprint(id, order);
+            }
+        }
+
+        private string CreateHtmlFromLines(OrderV2 order)
+        {
+            var lines = new List<string>();
+            if (order.Items == null)
+            {
+                return string.Empty;
+            }
+            foreach (var item in order.Items)
+            {
+                if (item != null)
+                {
+                    lines.Add($"<p style='font-size: 65px;'><b>--{item.Name}</b> x {item.Quantity}</p>");
+                }
+
+                if (item?.Options != null)
+                {
+                    lines.AddRange(item.Options.Select(option => option.Name));
+                }
+                if (!string.IsNullOrEmpty(item?.GuestComment))
+                {
+                    lines.Add($"Comentario: {item.GuestComment}");
+                }
+            }
+            string items = lines.Aggregate(string.Empty, (current, line) => current + ($"<p>{line}</p>"));
+            return items;
+        }
+
+        private async Task CreateOrderTicket(OrderV2 order, Ticket ticket, string line, bool isOrderOk, bool isCancelled = false, bool isTakeAway = false, bool printQR = false)
+        {
+            StringBuilder builder = new StringBuilder();
+            string qrCode = string.Empty;
+            bool isGuestComments = !string.IsNullOrEmpty(order.GuestComment) && order.IsMarket;
+            if (isTakeAway && printQR && !isCancelled)
+            {
+                qrCode = GenerateOrderQR(order);
+            }
+            string title;
+            if (isOrderOk && order.OrderType.ToUpper().Trim() == OrderTypes.MESA)
+            {
+                builder.Append(@"<table class=""top"">");
+                builder.Append("<tr>");
+                builder.Append("<td>Cliente: </td>");
+                builder.Append($"<td>{order.UserName}</td>");
+                builder.Append("</tr>");
+                builder.Append("<tr>");
+                builder.Append("<td>Servir en mesa: </td>");
+                builder.Append($"<td>{order.Address}</td>");
+                builder.Append("</tr>");
+                builder.Append("<tr>");
+                builder.Append("<td>Número de orden: </td>");
+                builder.Append($"<td>{order.OrderNumber}</td>");
+                builder.Append("</tr>");
+                builder.Append("</table>");
+                builder.Append(line);
+                builder.Append(qrCode);
+                title = isCancelled ? "Orden de mesa <b>CANCELADA</b>" : "Nueva orden de mesa";
+                ticket.SetOrder(title, builder.ToString());
+            }
+            else if (isOrderOk && order.OrderType.ToUpper().Trim() == OrderTypes.RESERVA)
+            {
+                var bookingData = await _bookingRepository.GetById<Booking>(order.BookingId);
+                builder.Append(@"<table class=""top"">");
+                builder.Append("<tr>");
+                builder.Append("<td>Número de reserva : </td>");
+                builder.Append($"<td>{bookingData.BookingNumber}</td>");
+                builder.Append("</tr>");
+                builder.Append("<tr>");
+                builder.Append("<td>Fecha: </td>");
+                builder.Append($"<td>{order.OrderDate}</td>");
+                builder.Append("</tr>");
+                builder.Append("<tr>");
+                builder.Append("<td>Cliente: </td>");
+                builder.Append($"<td>{order.UserName}</td>");
+                builder.Append("</tr>");
+                builder.Append("<tr>");
+                builder.Append("<td>Número de orden: </td>");
+                builder.Append($"<td>{order.OrderNumber}</td>");
+                builder.Append("</tr>");
+                builder.Append("</table>");
+                builder.Append(line);
+                builder.Append(qrCode);
+                title = isCancelled ? "Orden de reserva cancelada" : "Nueva orden de reserva";
+                ticket.SetOrder(title, builder.ToString());
+            }
+            else if (isOrderOk && isTakeAway)
+            {
+                var payment = _menooContext.Payments.FirstOrDefault(f => f.EntityId == order.Id);
+                builder.Append(@"<table class=""top"">");
+                builder.Append("<tr>");
+                builder.Append("<td>Cliente: </td>");
+                builder.Append($"<td>{order.UserName}</td>");
+                builder.Append("</tr>");
+                builder.Append("<tr>");
+                builder.Append("<td>Hora de retiro: </td>");
+                builder.Append($"<td><b>{order.TakeAwayHour}</b></td>");
+                builder.Append("</tr>");
+                builder.Append("<tr>");
+                builder.Append("<td>Número de orden: </td>");
+                builder.Append($"<td>{order.OrderNumber}</td>");
+                builder.Append("</tr>");
+                if (isGuestComments)
+                {
+                    builder.Append("<tr>");
+                    builder.Append("<td>NOTA: </td>");
+                    builder.Append($"<td>{order.GuestComment}</td>");
+                    builder.Append("</tr>");
+                }
+                builder.Append("</table>");
+                builder.Append(line);
+                if (payment != null)
+                {
+                    var paymentRenglon = payment.Renglones.FirstOrDefault(f => f.Type == PrinterService.Infraestructure.Database.SqlServer.MainSchema.Entities.PaymentRenglon.PaymentRenglonType.DISCOUNT);
+
+                    builder.Append($"<p>Método de Pago: {payment.CardBrand}</p>");
+                    builder.Append($"<p>--------------------------------------------------</p>");
+                    if (paymentRenglon != null)
+                    {
+                        builder.Append($"<p>{paymentRenglon.Description}</p>");
+                        builder.Append($"<p>--------------------------------------------------</p>");
+                    }
+                    if (!isCancelled)
+                    {
+                        builder.Append($"<p>Recuerde <b>ACEPTAR</b> el pedido.</p>");
+                        builder.Append($"<p>Pedido <b>YA PAGO</b>.</p>");
+                    }
+                    else
+                    {
+                        builder.Append($"<p>Pedido <b>CANCELADO</b>.</p>");
+                    }
+                    builder.Append($"<p>--------------------------------------------------</p>");
+                    builder.Append(@"<div class=""center""><b>TOTAL: $" + payment.TransactionAmount + "</b><br/><br/><br/><br/></div>");
+                }
+                builder.Append(qrCode);
+                title = isCancelled ? "TakeAway cancelado" : "Nuevo TakeAway";
+                ticket.SetOrder(title, builder.ToString());
+            }
+            builder.Clear();
+        }
+
+        private string CreateUnifiedHtml(List<OrderV2> orders, string userName, string address, string orderNumber)
+        {
+            var builder = new StringBuilder();
+            builder.Append(@"<table class=""top"">");
+            builder.Append("<tr>");
+            builder.Append("<td>Cliente: </td>");
+            builder.Append($"<td>{userName}</td>");
+            builder.Append("</tr>");
+            builder.Append("<tr>");
+            builder.Append("<td>Servir en mesa: </td>");
+            builder.Append($"<td>{address}</td>");
+            builder.Append("</tr>");
+            builder.Append("<tr>");
+            builder.Append("<td>Número de orden: </td>");
+            builder.Append($"<td>{orderNumber}</td>");
+            builder.Append("</tr>");
+            builder.Append("</table>");
+            foreach (var order in orders)
+            {
+                var line = new StringBuilder();
+                if (order.Items == null)
+                {
+                    line.Append("");
+                }
+                foreach (var item in order.Items)
+                {
+                    if (item != null)
+                    {
+                        line.Append($"<p style='font-size: 65px;'><b>--{item.Name}</b> x {item.Quantity}</p>");
+                    }
+
+                    if (item?.Options != null)
+                    {
+                        for (int i = 0; i < item?.Options.Length; i++)
+                        {
+                            line.Append(item?.Options[i].Name + "<br>");
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(item?.GuestComment))
+                    {
+                        line.AppendLine($"Comentario: {item.GuestComment} <br>");
+                    }
+                }
+                string html = $"<p>{line.ToString()}</p><br>";
+                builder.Append(html);
+            }
+            return builder.ToString();
+        }
+
+        private string GenerateOrderQR(OrderV2 order)
         {
             OrderQR orderInfoQR = new OrderQR
             {
@@ -115,81 +472,44 @@ namespace Menoo.Printer.Builder.Orders
             var imgType = Base64QRCode.ImageType.Jpeg;
             Base64QRCode qrCode = new Base64QRCode(qrCodeData);
             string qrCodeImageAsBase64 = qrCode.GetGraphic(20, Color.Black, Color.White, true, imgType);
-            //string htmlPictureTag = $"<img alt=\"Embedded QR Code\" src=\"data:image/{imgType.ToString().ToLower()};base64,{qrCodeImageAsBase64}\" style=\"width: 50%; height: 50%\"/>";
-            string imageType = imgType.ToString().ToLower();
-            return new Tuple<string, string>(qrCodeImageAsBase64, imageType);
+            string htmlPictureTag = $"<img alt=\"Embedded QR Code\" src=\"data:image/{imgType.ToString().ToLower()};base64,{qrCodeImageAsBase64}\" style=\"width: 50%; height: 50%\"/>";
+            return htmlPictureTag;
         }
 
-        private async Task GetSingleOrderTicketAsync(OrderV2 order, bool isCancelled, bool isReprint, List<PrintInfo> dataToPrint)
+        private List<PrintSettings> GetSectorByEvent(string storeId, string @event)
         {
-            bool isTakeAway = order.OrderType.ToUpper().Trim() == OrderTypes.TAKEAWAY;
-            var store = await _storeRepository.GetById<Store>(order.Store.Id, "stores");
-            var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
-            var viewBag = new Dictionary<string, object>();
-            var info = new PrintInfo
+            var storeData = _storeRepository.GetById<Store>(storeId, "stores").GetAwaiter().GetResult();
+            var sectors = storeData.GetPrintSettings(@event);
+            return sectors;
+        }
+
+        private async Task SaveOrderAsync(string id, OrderV2 order, string sectorName, int copies, string printerName, bool isCancelled, bool isTakeAway, bool printQR)
+        {
+            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+            var ticket = new Ticket
             {
-                Store = store
+                StoreId = order.Store.Id,
+                StoreName = order.Store.Name,
+                Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
+                TicketType = isCancelled ? TicketTypeEnum.CANCELLED_ORDER.ToString() : TicketTypeEnum.ORDER.ToString(),
+                PrinterName = printerName,
+                Copies = copies
             };
-            switch (order.OrderType.Trim().ToUpper())
-            {
-                case OrderTypes.MESA:
-                    viewBag.Add("clientName", order.UserName);
-                    viewBag.Add("tableNumber", order.Address);
-                    viewBag.Add("orderNumber", order.OrderNumber);
-                    viewBag.Add("title", "Nueva orden de mesa");
-                    viewBag.Add("extraData", order);
-                    int minutes = isReprint ? PRINT_MINUTES_ORDER_REPRINT : PRINT_MINUTES_ORDER_TABLE;
-                    info.BeforeAt = Utils.BeforeAt(now, minutes);
-                    info.Template = PrintTemplates.NEW_TABLE_ORDER;
-                    break;
-                case OrderTypes.RESERVA:
-                    var bookingData = await _bookingRepository.GetById<Booking>(order.BookingId);
-                    viewBag.Add("bookingNumber", bookingData?.BookingNumber.ToString());
-                    viewBag.Add("date", order.OrderDate);
-                    viewBag.Add("clientName", order.UserName);
-                    viewBag.Add("orderNumber", order.OrderNumber);
-                    viewBag.Add("title", "Nueva orden de reserva");
-                    info.BeforeAt = Utils.BeforeAt(now, PRINT_MINUTES_ORDER_BOOKING);
-                    info.Template = PrintTemplates.NEW_BOOKING_ORDER;
-                    break;
-                case OrderTypes.TAKEAWAY:
-                    var payment = _menooContext.Payments.FirstOrDefault(f => f.EntityId == order.Id);
-                    viewBag.Add("taTime", order.TakeAwayHour);
-                    viewBag.Add("clientName", order.UserName);
-                    viewBag.Add("orderNumber", order.OrderNumber);
-                    if (!isCancelled) 
-                    {
-                        var qrData = GenerateOrderQR(order);
-                        viewBag.Add("qrCode", qrData.Item1);
-                        viewBag.Add("qrCodeImgType", qrData.Item2);
-                    }
-                    viewBag.Add("title", "Nuevo TakeAway");
-                    info.BeforeAt = Utils.BeforeAt(now, PRINT_MINUTES_ORDER_TA);
-                    info.Template = PrintTemplates.NEW_TAKEAWAY_ORDER;
-                    break;
-            }
-            info.Content = viewBag;
-            dataToPrint.Add(info);
-        }
-
-        private async Task GetUnifiedOrderTicketAsync(List<OrderV2> orders, bool isCancelled, bool isReprint, List<PrintInfo> dataToPrint)
-        {
-            var orderUnified = new OrderV2();
-            var items = new List<ItemOrderV2>();
-            var ordersByStore = orders.GroupBy(g => g.Store.Id).FirstOrDefault();
-            var ordersByOrderNumber = orders.GroupBy(g => g.OrderNumber).FirstOrDefault();
-            var ordersByAddress = orders.GroupBy(g => g.Address).FirstOrDefault();
-            var ordersByUsername = orders.GroupBy(g => g.UserName).FirstOrDefault();
-            orderUnified.OrderNumber = ordersByOrderNumber.Key;
-            orderUnified.Address = ordersByAddress.Key;
-            orderUnified.UserName = ordersByUsername.Key;
-            orderUnified.Store = ordersByStore.ToList().FirstOrDefault().Store;
-            orderUnified.OrderType = ordersByStore.ToList().FirstOrDefault().OrderType;
-            orders.ForEach(item => {
-                items.AddRange(item.Items);
-            });
-            orderUnified.Items = items;
-            await GetSingleOrderTicketAsync(orderUnified, isCancelled, isCancelled, dataToPrint);
+            bool isOrderOk = order?.OrderType != null;
+            ticket.PrintBefore = isTakeAway ? Utils.BeforeAt(now, 30) : Utils.BeforeAt(now, 60);
+            var line = CreateHtmlFromLines(order);
+            await CreateOrderTicket(order, ticket, line, isOrderOk, isCancelled, isTakeAway, printQR);
+            _generalWriter.WriteEntry($"OrderBuilder::SaveOrderAsync(). Enviando a imprimir la orden con la siguiente información.{Environment.NewLine}Detalles:{Environment.NewLine}" +
+                $"Nombre de la impresora: {printerName}{Environment.NewLine}" +
+                $"Sector de impresión: {sectorName}{Environment.NewLine}" +
+                $"Hora de impresión: {ticket.PrintBefore}{Environment.NewLine}" +
+                $"Restaurante: {ticket.StoreName}{Environment.NewLine}" +
+                $"Número de orden: {order.OrderNumber}{Environment.NewLine}" +
+                $"Tipo de orden: {order.OrderType.ToUpper().Trim()}{Environment.NewLine}" +
+                $"Estado de la orden: {order.Status.ToUpper()}{Environment.NewLine}" +
+                $"Id en colección printEvents: {id}");
+            await _ticketRepository.SaveAsync(ticket);
+            await _ticketRepository.SetDocumentHtmlAsync(id, ticket.Data);
         }
         #endregion
     }

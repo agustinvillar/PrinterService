@@ -19,7 +19,7 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
             {
                 printSettings.AddRange(queryResult);
             }
-            return printSettings.OrderBy(o => o.Name).ToList();
+            return printSettings;
         }
 
         public static Tuple<string, PrintMessage> GetMessagePrintType(this DocumentSnapshot documentReference)
