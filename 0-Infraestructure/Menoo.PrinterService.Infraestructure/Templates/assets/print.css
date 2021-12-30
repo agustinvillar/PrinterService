@@ -6,6 +6,10 @@ hr {
     border-style: none none dashed none;
 }
 
+ul {
+    padding-inline-start: 1%;
+}
+
 .column {
     float: left;
     width: 50%;
@@ -39,12 +43,17 @@ hr {
     margin-bottom: 2%;
 }
 
+.img-order-qr {
+    width: 200px;
+    height: 200px;
+}
+
 .item-detail {
-    margin-right: 4%;
+    margin-left: 1%;
 }
 
 .item-quantity {
-    margin-right: 2%;
+    margin-left: 1%;
 }
 
 .section-center {

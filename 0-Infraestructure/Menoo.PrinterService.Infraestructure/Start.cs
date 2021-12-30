@@ -3,6 +3,7 @@ using Menoo.PrinterService.Infraestructure.Database.Firebase;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
+using Menoo.PrinterService.Infraestructure.Services;
 using System.Diagnostics;
 
 namespace Menoo.PrinterService.Infraestructure
@@ -51,6 +52,7 @@ namespace Menoo.PrinterService.Infraestructure
                 return tableOpeningRepository;
             });
             dependencyResolver.Register<IPublisherService, PublisherService>();
+            dependencyResolver.Register<IFirebaseStorage, FirebaseStorageService>();
         }
 
         static EventLog ConfigureListenerEventLog()

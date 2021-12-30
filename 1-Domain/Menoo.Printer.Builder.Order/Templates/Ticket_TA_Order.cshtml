@@ -1,18 +1,86 @@
-﻿<!DOCTYPE html>
+﻿@using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
+@model System.Collections.Generic.Dictionary<string, object>
+@{
+    OrderV2 orderData = (OrderV2)Model["orderData"];
+    bool printQR = Convert.ToBoolean(Model["printQR"]);
+    string htmlPictureTag = Model["qrCode"].ToString();
+}<!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8" />
-    <title></title>
-</head>
-<body>
-    <div class="title">
-        <b>MENOO</b>
-    </div>
-    <div class="title">
-        <b>@title</b>
-    </div>
-    <div class="content">
-        @codeQR
-    </div>
-</body>
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <style>
+            @Model["style"].ToString()
+        </style>
+    </head>
+    <body>
+        <div class="invoice-pos">
+            <div class="section-center invoince-header">
+                <div class="section-center">
+                    <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO">
+                </div>
+                <div class="section-center">
+                    @Model["title"].ToString()
+                </div>
+            </div>
+            <div class="row">
+                <div class="column section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
+                <div class="column section-right"><b>Hora retiro: @Model["taTime"].ToString()</b></div>
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <div class="section-left"><b>Cliente:</b> @Model["clientName"].ToString()</div>
+            </div>
+            <div class="row"><hr /></div>
+            <div class="row section-custom-header">
+                <div class="section-center"><b>Detalle del pedido</b></div>
+            </div>
+            @foreach (ItemOrderV2 item in orderData.Items)
+            {
+                <div class="row">
+                    <div class="column section-left">
+                        <span class="item-quantity section-left">@item.Quantity x </span><b>@item.Name</b>
+                    </div>
+                    <div class="column section-right">
+                        $@item.PriceWithDiscountTA
+                    </div>
+                </div>
+                <div class="row">&nbsp;</div>
+                @if (item.Options != null)
+                {
+                    <div class="row">
+                        <ul class="item-detail">
+                            @{
+                                foreach (ItemOptionV2 option in item.Options)
+                                {
+                                    string extra = option.Price == 0 ? option.Name : option.Quantity + " x " + option.Name;
+                                    <li class="row">
+                                        @if (option.Price > 0)
+                                        {
+                                            <span class="column section-left">@extra</span>
+                                            <span class="column section-right">$@option.Price.ToString("N0")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="section-left">@extra</span>
+                                        }
+                                    </li>
+                                    <li class="row">&nbsp;</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                }
+            }
+            <div class="row"><hr /></div>
+            @{
+                if (printQR)
+                {
+                    <div class="section-center">
+                        <img class="img-order-qr" src="@htmlPictureTag" alt="Orden Takeaway">
+                    </div>
+                }
+            }
+        </div>
+    </body>
 </html>

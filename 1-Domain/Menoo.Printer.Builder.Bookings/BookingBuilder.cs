@@ -14,8 +14,6 @@ namespace Menoo.Printer.Builder.BookingBuilder
     [Handler]
     public class BookingBuilder : ITicketBuilder
     {
-        private readonly EventLog _generalWriter;
-
         private readonly UserRepository _userRepository;
 
         private readonly BookingRepository _bookingRepository;
@@ -27,10 +25,9 @@ namespace Menoo.Printer.Builder.BookingBuilder
             _bookingRepository = bookingRepository;
             _userRepository = userRepository;
             _storeRepository = storeRepository;
-            _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
-        public async Task<List<PrintInfo>> BuildAsync(string id, PrintMessage data)
+        public async Task<PrintInfo> BuildAsync(string id, PrintMessage data)
         {
             if (data.Builder != PrintBuilder.BOOKING_BUILDER)
             {
@@ -46,7 +43,7 @@ namespace Menoo.Printer.Builder.BookingBuilder
                 Template = PrintTemplates.NEW_BOOKING
             };
             dataToPrint.Content = SaveTicketBooking(bookingDTO, userDTO, data.PrintEvent);
-            return new List<PrintInfo>() { dataToPrint };
+            return dataToPrint;
         }
 
         private Dictionary<string, object> SaveTicketBooking(Booking booking, User user, string printEvent)

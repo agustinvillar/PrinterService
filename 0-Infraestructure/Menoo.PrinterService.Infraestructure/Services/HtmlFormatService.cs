@@ -16,6 +16,8 @@ namespace Menoo.PrinterService.Infraestructure.Services
 
         private readonly EventLog _generalWriter;
 
+        private readonly IFirebaseStorage _storageService;
+
         public bool AllowFormat
         {
             get { return true; }
@@ -25,12 +27,13 @@ namespace Menoo.PrinterService.Infraestructure.Services
 
         public HtmlFormatService(Dictionary<string, object> viewData)
         {
-            if (viewData == null || viewData.Count == 0) 
+            if (viewData == null || viewData.Count == 0)
             {
                 throw new ArgumentException("viewData");
             }
             _viewData = viewData;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
+            _storageService = GlobalConfig.DependencyResolver.Resolve<IFirebaseStorage>();
         }
 
         public string Create()
@@ -45,23 +48,28 @@ namespace Menoo.PrinterService.Infraestructure.Services
             host.Start();
             SetLogoAndStyle();
             string html = host.RenderTemplate($"~/{this.Template}", _viewData);
-            if (string.IsNullOrEmpty(html)) 
+            if (string.IsNullOrEmpty(html))
             {
                 throw new BadFormatTicketException($"HtmlFormatService::Create(). Error generando el HTML. Detalles: {host.ErrorMessage}");
             }
-            var htmlToImageConv = new HtmlToImageConverter
-            {
-                Width = 300
-            };
-            var bytes = htmlToImageConv.GenerateImage(html, ImageFormat.Png);
-            //File.WriteAllBytes(Path.Combine(fullPath, $"ticket_{Guid.NewGuid().ToString()}.png"), bytes);
-            string base64 = Convert.ToBase64String(bytes);
+            string urlImage = GetImageUrlAsync(html).GetAwaiter().GetResult();
             host.Stop();
-            return base64;
+            return urlImage;
         }
 
         #region private methods
-        private void SetLogoAndStyle() 
+        private async Task<string> GetImageUrlAsync(string html) 
+        {
+            var htmlToImageConv = new HtmlToImageConverter
+            {
+               Width = 350
+            };
+            var bytes = htmlToImageConv.GenerateImage(html, ImageFormat.Png);
+            string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
+            return urlImage;
+        }
+        
+        private void SetLogoAndStyle()
         {
             string cssPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", "assets", "print.css");
             string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", "assets", "menoo-logo.png");

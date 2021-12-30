@@ -34,7 +34,7 @@ namespace Menoo.Printer.Builder.Tables
             return PrintBuilder.TABLE_BUILDER;
         }
 
-        public async Task<List<PrintInfo>> BuildAsync(string id, PrintMessage data)
+        public async Task<PrintInfo> BuildAsync(string id, PrintMessage data)
         {
             if (data.Builder != PrintBuilder.TABLE_BUILDER)
             {
@@ -60,7 +60,7 @@ namespace Menoo.Printer.Builder.Tables
             {
                 dataToPrint.Content = GetInfoRequestPayment(tableOpeningFamilyDTO, data.SubTypeDocument);
             }
-            return new List<PrintInfo>() { dataToPrint };
+            return dataToPrint;
         }
 
         #region private methods

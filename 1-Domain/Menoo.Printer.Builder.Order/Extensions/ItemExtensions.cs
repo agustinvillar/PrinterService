@@ -1,9 +1,7 @@
-﻿using Google.Cloud.Firestore;
-using Menoo.Printer.Builder.Orders.Repository;
+﻿using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Menoo.Printer.Builder.Orders.Extensions
 {
@@ -16,9 +14,9 @@ namespace Menoo.Printer.Builder.Orders.Extensions
             return result;
         }
 
-        public static List<SectorItem> GetPrintSector(this List<ItemOrderV2> items, ItemRepository repository)
+        public static List<SectorItem> GetPrintSectorByItems(this List<ItemOrderV2> items, ItemRepository repository)
         {
-            List<SectorItem> sectorItems = new List<SectorItem>();
+            var sectorItems = new List<SectorItem>();
             foreach (var item in items)
             {
                 var sectorByItem = repository.GetSectorItemById(item.Id).GetAwaiter().GetResult();

@@ -8,6 +8,8 @@ namespace Menoo.PrinterService.Infraestructure.Constants
 
         public const string NEW_TABLE_ORDER = "NEW_TABLE_ORDER";
 
+        public const string NEW_TABLE_ORDER_ITEM = "NEW_TABLE_ORDER_ITEM";
+
         public const string NEW_TAKE_AWAY = "NEW_TAKE_AWAY";
 
         public const string NEW_ORDER = "NEW_ORDER";

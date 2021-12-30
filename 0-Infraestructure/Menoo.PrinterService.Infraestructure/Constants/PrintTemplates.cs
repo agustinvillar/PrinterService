@@ -12,6 +12,8 @@
 
         public const string NEW_TABLE_ORDER = "Ticket_Table_Order.cshtml";
 
+        public const string NEW_ITEM_ORDER = "Ticket_Item_Order.cshtml";
+
         public const string NEW_BOOKING_ORDER = "Ticket_Booking_Order.cshtml";
     }
 }

@@ -1,13 +1,10 @@
 ﻿using Menoo.Printer.Builder.Orders.Constants;
-using Menoo.Printer.Builder.Orders.Extensions;
 using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
-using Menoo.PrinterService.Infraestructure.Enums;
-using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
@@ -18,7 +15,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Menoo.Printer.Builder.Orders
@@ -36,46 +32,32 @@ namespace Menoo.Printer.Builder.Orders
 
         private readonly MenooContext _menooContext;
 
-        private readonly PrinterContext _printerContext;
-
-        private readonly EventLog _generalWriter;
-
         private readonly BookingRepository _bookingRepository;
-
-        private readonly ItemRepository _itemRepository;
 
         private readonly OrderRepository _orderRepository;
 
         private readonly StoreRepository _storeRepository;
 
-        private readonly TicketRepository _ticketRepository;
-
         public OrderBuilder(
             MenooContext menooContext,
-            PrinterContext printerContext,
             StoreRepository storeRepository,
-            TicketRepository ticketRepository,
             BookingRepository bookingRepository,
             OrderRepository orderRepository,
-            ItemRepository itemRepository)
+            IFirebaseStorage storageService)
         {
             _menooContext = menooContext;
-            _printerContext = printerContext;
             _storeRepository = storeRepository;
-            _ticketRepository = ticketRepository;
             _bookingRepository = bookingRepository;
             _orderRepository = orderRepository;
-            _itemRepository = itemRepository;
-            _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
-        public async Task<List<PrintInfo>> BuildAsync(string id, PrintMessage message)
+        public async Task<PrintInfo> BuildAsync(string id, PrintMessage message)
         {
             if (message.Builder != PrintBuilder.ORDER_BUILDER)
             {
                 return null;
             }
-            var dataToPrint = new List<PrintInfo>();
+            var dataToPrint = new PrintInfo();
             bool isCancelled = message.PrintEvent == PrintEvents.ORDER_CANCELLED;
             bool isReprint = message.PrintEvent == PrintEvents.REPRINT_ORDER;
             if (message.DocumentsId?.Count > 0 && string.IsNullOrEmpty(message.DocumentId))
@@ -86,12 +68,12 @@ namespace Menoo.Printer.Builder.Orders
                     var order = await _orderRepository.GetOrderById(documentId);
                     orders.Add(order);
                 }
-                await GetUnifiedOrderTicketAsync(orders, isCancelled, isReprint, dataToPrint);
+                dataToPrint = await GetUnifiedOrderTicketAsync(orders, isCancelled, isReprint);
             }
             else
             {
                 var order = await _orderRepository.GetOrderById(message.DocumentId);
-                await GetSingleOrderTicketAsync(order, isCancelled, isReprint, dataToPrint);
+                dataToPrint = await GetSingleOrderTicketAsync(order, isCancelled, isReprint);
             }
             return dataToPrint;
         }
@@ -111,16 +93,22 @@ namespace Menoo.Printer.Builder.Orders
                 StoreId = order.Store.Id
             };
             QRCodeGenerator qrGenerator = new QRCodeGenerator();
-            QRCodeData qrCodeData = qrGenerator.CreateQrCode(JsonConvert.SerializeObject(orderInfoQR, Formatting.Indented), QRCodeGenerator.ECCLevel.Q);
-            var imgType = Base64QRCode.ImageType.Jpeg;
+            QRCodeData qrCodeData = qrGenerator.CreateQrCode(JsonConvert.SerializeObject(orderInfoQR, Formatting.Indented), QRCodeGenerator.ECCLevel.L);
+            var imgType = Base64QRCode.ImageType.Png;
             Base64QRCode qrCode = new Base64QRCode(qrCodeData);
             string qrCodeImageAsBase64 = qrCode.GetGraphic(20, Color.Black, Color.White, true, imgType);
-            //string htmlPictureTag = $"<img alt=\"Embedded QR Code\" src=\"data:image/{imgType.ToString().ToLower()};base64,{qrCodeImageAsBase64}\" style=\"width: 50%; height: 50%\"/>";
             string imageType = imgType.ToString().ToLower();
             return new Tuple<string, string>(qrCodeImageAsBase64, imageType);
         }
 
-        private async Task GetSingleOrderTicketAsync(OrderV2 order, bool isCancelled, bool isReprint, List<PrintInfo> dataToPrint)
+        private byte[] GenerateOrderQRBytes(OrderV2 order)
+        {
+            var qrBase64 = GenerateOrderQR(order);
+            byte[] imageBytes = Convert.FromBase64String(qrBase64.Item1);
+            return imageBytes;
+        }
+
+        private async Task<PrintInfo> GetSingleOrderTicketAsync(OrderV2 order, bool isCancelled, bool isReprint)
         {
             bool isTakeAway = order.OrderType.ToUpper().Trim() == OrderTypes.TAKEAWAY;
             var store = await _storeRepository.GetById<Store>(order.Store.Id, "stores");
@@ -136,8 +124,7 @@ namespace Menoo.Printer.Builder.Orders
                     viewBag.Add("clientName", order.UserName);
                     viewBag.Add("tableNumber", order.Address);
                     viewBag.Add("orderNumber", order.OrderNumber);
-                    viewBag.Add("title", "Nueva orden de mesa");
-                    viewBag.Add("extraData", order);
+                    viewBag.Add("title", isCancelled ? "orden de mesa cancelada" : "Nueva orden de mesa");
                     int minutes = isReprint ? PRINT_MINUTES_ORDER_REPRINT : PRINT_MINUTES_ORDER_TABLE;
                     info.BeforeAt = Utils.BeforeAt(now, minutes);
                     info.Template = PrintTemplates.NEW_TABLE_ORDER;
@@ -148,7 +135,7 @@ namespace Menoo.Printer.Builder.Orders
                     viewBag.Add("date", order.OrderDate);
                     viewBag.Add("clientName", order.UserName);
                     viewBag.Add("orderNumber", order.OrderNumber);
-                    viewBag.Add("title", "Nueva orden de reserva");
+                    viewBag.Add("title", isCancelled ? "orden de reserva cancelada" : "Nueva orden de reserva");
                     info.BeforeAt = Utils.BeforeAt(now, PRINT_MINUTES_ORDER_BOOKING);
                     info.Template = PrintTemplates.NEW_BOOKING_ORDER;
                     break;
@@ -160,19 +147,19 @@ namespace Menoo.Printer.Builder.Orders
                     if (!isCancelled) 
                     {
                         var qrData = GenerateOrderQR(order);
-                        viewBag.Add("qrCode", qrData.Item1);
-                        viewBag.Add("qrCodeImgType", qrData.Item2);
+                        viewBag.Add("qrCode", $"data:image/{qrData.Item2};base64, {qrData.Item1}");
                     }
-                    viewBag.Add("title", "Nuevo TakeAway");
+                    viewBag.Add("title", isCancelled ? "Takeaway cancelado" : "Nuevo TakeAway");
                     info.BeforeAt = Utils.BeforeAt(now, PRINT_MINUTES_ORDER_TA);
                     info.Template = PrintTemplates.NEW_TAKEAWAY_ORDER;
                     break;
             }
+            viewBag.Add("orderData", order);
             info.Content = viewBag;
-            dataToPrint.Add(info);
+            return info;
         }
 
-        private async Task GetUnifiedOrderTicketAsync(List<OrderV2> orders, bool isCancelled, bool isReprint, List<PrintInfo> dataToPrint)
+        private async Task<PrintInfo> GetUnifiedOrderTicketAsync(List<OrderV2> orders, bool isCancelled, bool isReprint)
         {
             var orderUnified = new OrderV2();
             var items = new List<ItemOrderV2>();
@@ -189,7 +176,8 @@ namespace Menoo.Printer.Builder.Orders
                 items.AddRange(item.Items);
             });
             orderUnified.Items = items;
-            await GetSingleOrderTicketAsync(orderUnified, isCancelled, isCancelled, dataToPrint);
+            var printInfo = await GetSingleOrderTicketAsync(orderUnified, isCancelled, isReprint);
+            return printInfo;
         }
         #endregion
     }
