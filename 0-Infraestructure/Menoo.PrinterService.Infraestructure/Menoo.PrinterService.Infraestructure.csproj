@@ -37,6 +37,9 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CoreHtmlToImage, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CoreHtmlToImage.1.0.6\lib\netstandard2.0\CoreHtmlToImage.dll</HintPath>
+    </Reference>
     <Reference Include="DataAnnotationsExtensions, Version=5.0.1.27, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DataAnnotationsExtensions.5.0.1.27\lib\NETFramework40\DataAnnotationsExtensions.dll</HintPath>
     </Reference>
@@ -355,11 +358,8 @@
     <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistoryTypeConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Entities\TicketHistory.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\PrinterContext.cs" />
-    <Compile Include="Enums\BookingEnum.cs" />
     <Compile Include="Enums\DiscountTypeEnum.cs" />
-    <Compile Include="Enums\PrintStatus.cs" />
     <Compile Include="Enums\ProviderEnum.cs" />
-    <Compile Include="Enums\TicketTypeEnum.cs" />
     <Compile Include="Exceptions\BadFormatTicketException.cs" />
     <Compile Include="Exceptions\UnifiedSectorException.cs" />
     <Compile Include="Extensions\PrintExtensions.cs" />

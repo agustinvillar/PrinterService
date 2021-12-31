@@ -95,15 +95,19 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
         [FirestoreProperty("surcharge")]
         [JsonProperty("surcharge")]
-        public int? Surcharge { get; set; }
+        public string Surcharge { get; set; }
 
         [FirestoreProperty("totalToPay")]
         [JsonProperty("totalToPay")]
         public double? TotalToPay { get; set; }
 
+        [FirestoreProperty("subTotal")]
+        [JsonProperty("subTotal")]
+        public double? SubTotal { get; set; }
+
         [FirestoreProperty("propina")]
         [JsonProperty("propina")]
-        public double? Tip { get; set; }
+        public string Tip { get; set; }
 
         [FirestoreProperty("discounts")]
         [JsonProperty("discounts")]
@@ -127,11 +131,11 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
         [FirestoreProperty("artisticCutleryNumber")]
         [JsonProperty("artisticCutleryNumber")]
-        public double? ArtisticCutleryQuantity { get; set; }
+        public int? ArtisticCutleryQuantity { get; set; }
 
         [FirestoreProperty("artisticCutleryTotal")]
         [JsonProperty("artisticCutleryTotal")]
-        public double? ArtisticCutleryTotal { get; set; }
+        public int? ArtisticCutleryTotal { get; set; }
 
         [FirestoreProperty("culteryPriceAmount")]
         [JsonProperty("culteryPriceAmount")]
@@ -155,27 +159,12 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
         public bool PagoPorElMismo => !PaidByOther && !PayingForAll;
 
-        public double TotalToTicket(Store store)
-        {
-            switch (store.PaymentProvider)
-            {
-                case ProviderEnum.Geopay:
-                    return TotalToPayWithSurcharge ?? 0;
-                case ProviderEnum.MercadoPago:
-                    return TotalPaidByClient ?? 0;
-                case ProviderEnum.None:
-                    return TotalToPayWithSurcharge ?? 0;
-                default:
-                    return 0.0;
-            }
-        }
-
         [FirestoreData]
         public class Discount
         {
             [FirestoreProperty("Amount")]
             [JsonProperty("Amount")]
-            public double Amount { get; set; }
+            public double? Amount { get; set; }
 
             [FirestoreProperty("Name")]
             [JsonProperty("Name")]
@@ -185,18 +174,5 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
             [JsonProperty("Type")]
             public DiscountTypeEnum? Type { get; set; }
         }
-    }
-
-    public class TableOpeningV2 : TableOpening
-    {
-        public string TableNumberToShow { get; set; }
-
-        public UserV2 User { get; set; }
-
-        public string UserId { get; set; }
-
-        public string CloseAt { get; set; }
-
-        public string StoreId { get; set; }
     }
 }

@@ -33,6 +33,10 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("totalToPay")]
         [JsonProperty("totalToPay")]
         public double TotalToPay { get; set; }
+
+        [FirestoreProperty("taOpening")]
+        [JsonProperty("taOpening")]
+        public TableOpening TaOpening { get; set; }
         
         public double TotalToPayTicket => TotalToPay +
             Discounts?.Where(d => d.DiscountType == DiscountTypeEnum.Iva)

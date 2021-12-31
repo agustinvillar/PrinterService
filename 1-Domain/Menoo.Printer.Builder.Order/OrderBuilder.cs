@@ -4,7 +4,6 @@ using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
-using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
@@ -12,8 +11,8 @@ using Newtonsoft.Json;
 using QRCoder;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,25 +29,28 @@ namespace Menoo.Printer.Builder.Orders
 
         private const int PRINT_MINUTES_ORDER_REPRINT = 120;
 
-        private readonly MenooContext _menooContext;
-
         private readonly BookingRepository _bookingRepository;
 
         private readonly OrderRepository _orderRepository;
 
+        private readonly PaymentRepository _paymentRepository;
+
         private readonly StoreRepository _storeRepository;
+
+        private readonly MenooContext _menooContext;
 
         public OrderBuilder(
             MenooContext menooContext,
             StoreRepository storeRepository,
             BookingRepository bookingRepository,
             OrderRepository orderRepository,
-            IFirebaseStorage storageService)
+            PaymentRepository paymentRepository)
         {
             _menooContext = menooContext;
             _storeRepository = storeRepository;
             _bookingRepository = bookingRepository;
             _orderRepository = orderRepository;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<PrintInfo> BuildAsync(string id, PrintMessage message)
@@ -101,15 +103,9 @@ namespace Menoo.Printer.Builder.Orders
             return new Tuple<string, string>(qrCodeImageAsBase64, imageType);
         }
 
-        private byte[] GenerateOrderQRBytes(OrderV2 order)
-        {
-            var qrBase64 = GenerateOrderQR(order);
-            byte[] imageBytes = Convert.FromBase64String(qrBase64.Item1);
-            return imageBytes;
-        }
-
         private async Task<PrintInfo> GetSingleOrderTicketAsync(OrderV2 order, bool isCancelled, bool isReprint)
         {
+            isCancelled = !isCancelled ? order.Status.ToLower().Contains("cancelado") || order.Status.ToLower().Contains("reembolsado") : isCancelled;
             bool isTakeAway = order.OrderType.ToUpper().Trim() == OrderTypes.TAKEAWAY;
             var store = await _storeRepository.GetById<Store>(order.Store.Id, "stores");
             var now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
@@ -140,7 +136,19 @@ namespace Menoo.Printer.Builder.Orders
                     info.Template = PrintTemplates.NEW_BOOKING_ORDER;
                     break;
                 case OrderTypes.TAKEAWAY:
-                    var payment = _menooContext.Payments.FirstOrDefault(f => f.EntityId == order.Id);
+                    long paymentId = _menooContext.Payments.FirstOrDefault(f => f.EntityId == order.Id)?.PaymentId ?? 0;
+                    if (paymentId > 0)
+                    {
+                        var paymentData = await _paymentRepository.GetPaymentByIdAsync(paymentId);
+                        var subtotal = paymentData.TaOpening.SubTotal;
+                        var total = paymentData.TaOpening.TotalToPay;
+                        viewBag.Add("subtotal", subtotal);
+                        viewBag.Add("total", total);
+                        if (paymentData.TaOpening.Surcharge != null) 
+                        {
+                            viewBag.Add("addons", paymentData.TaOpening.Surcharge);
+                        }
+                    }
                     viewBag.Add("taTime", order.TakeAwayHour);
                     viewBag.Add("clientName", order.UserName);
                     viewBag.Add("orderNumber", order.OrderNumber);

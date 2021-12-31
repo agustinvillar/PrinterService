@@ -1,4 +1,5 @@
-﻿using Menoo.PrinterService.Infraestructure.Exceptions;
+﻿using CoreHtmlToImage;
+using Menoo.PrinterService.Infraestructure.Exceptions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using NReco.ImageGenerator;
 using System;
@@ -13,8 +14,6 @@ namespace Menoo.PrinterService.Infraestructure.Services
     public class HtmlFormatService : IFormaterService
     {
         private readonly Dictionary<string, object> _viewData;
-
-        private readonly EventLog _generalWriter;
 
         private readonly IFirebaseStorage _storageService;
 
@@ -32,7 +31,6 @@ namespace Menoo.PrinterService.Infraestructure.Services
                 throw new ArgumentException("viewData");
             }
             _viewData = viewData;
-            _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
             _storageService = GlobalConfig.DependencyResolver.Resolve<IFirebaseStorage>();
         }
 
@@ -60,11 +58,15 @@ namespace Menoo.PrinterService.Infraestructure.Services
         #region private methods
         private async Task<string> GetImageUrlAsync(string html) 
         {
-            var htmlToImageConv = new HtmlToImageConverter
-            {
-               Width = 350
-            };
-            var bytes = htmlToImageConv.GenerateImage(html, ImageFormat.Png);
+            /* var htmlToImageConv = new HtmlToImageConverter
+             {
+                Width = 300
+             };
+             var bytes = htmlToImageConv.GenerateImage(html, ImageFormat.Png);
+             string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
+             return urlImage;*/
+            var converter = new HtmlConverter();
+            var bytes = converter.FromHtmlString(html, 300, CoreHtmlToImage.ImageFormat.Png, 100);
             string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
             return urlImage;
         }

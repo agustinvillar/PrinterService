@@ -15,10 +15,27 @@ ul {
     width: 50%;
 }
 
-.row:after {
-    content: "";
-    display: table;
-    clear: both;
+.header {
+    font-size: 18px;
+}
+
+.item-detail {
+    margin-left: 1%;
+}
+
+.img-logo {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 2%;
+}
+
+.img-order-qr {
+    width: 200px;
+    height: 200px;
+}
+
+.item-quantity {
+    margin-left: 1%;
 }
 
 .invoince-header {
@@ -37,23 +54,8 @@ ul {
     width: 80mm;
 }
 
-.img-logo {
-    width: 70px;
-    height: 70px;
-    margin-bottom: 2%;
-}
-
-.img-order-qr {
-    width: 200px;
-    height: 200px;
-}
-
-.item-detail {
-    margin-left: 1%;
-}
-
-.item-quantity {
-    margin-left: 1%;
+.invalid-text {
+    text-decoration: line-through;
 }
 
 .section-center {
@@ -78,3 +80,12 @@ ul {
     text-align: right;
 }
 
+.uppercase {
+    text-transform: uppercase;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}

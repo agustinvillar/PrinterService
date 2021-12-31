@@ -1,9 +1,16 @@
 ﻿@using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
+@using System.Globalization
 @model System.Collections.Generic.Dictionary<string, object>
 @{
     OrderV2 orderData = (OrderV2)Model["orderData"];
-    bool printQR = Convert.ToBoolean(Model["printQR"]);
-    string htmlPictureTag = Model["qrCode"].ToString();
+    string htmlPictureTag = "";
+    if (Model.ContainsKey("qrCode"))
+    {
+        htmlPictureTag = Model["qrCode"].ToString();
+    }
+    string subTotal = Model["subtotal"].ToString();
+    string total = Model["total"].ToString();
+    int addons = Model.ContainsKey("addons") ? Convert.ToInt32(Model["addons"]) : 0;
 }<!DOCTYPE html>
 <html>
     <head>
@@ -42,6 +49,12 @@
                         <span class="item-quantity section-left">@item.Quantity x </span><b>@item.Name</b>
                     </div>
                     <div class="column section-right">
+                        @{
+                            if (item.PriceWithDiscountTA != item.Price)
+                            {
+                                <span class="invalid-text">$@item.Price</span>
+                            }
+                        }
                         $@item.PriceWithDiscountTA
                     </div>
                 </div>
@@ -53,16 +66,22 @@
                             @{
                                 foreach (ItemOptionV2 option in item.Options)
                                 {
-                                    string extra = option.Price == 0 ? option.Name : option.Quantity + " x " + option.Name;
+                                    string extraName = option.Price == 0 ? option.Name : option.Quantity + " x " + option.Name;
                                     <li class="row">
                                         @if (option.Price > 0)
                                         {
-                                            <span class="column section-left">@extra</span>
-                                            <span class="column section-right">$@option.Price.ToString("N0")</span>
+                                            <span class="column section-left">
+                                                @extraName
+                                            </span>
+                                            <span class="column section-right">
+                                                $@option.Price
+                                            </span>
                                         }
                                         else
                                         {
-                                            <span class="section-left">@extra</span>
+                                            <span class="section-left">
+                                                @extraName
+                                            </span>
                                         }
                                     </li>
                                     <li class="row">&nbsp;</li>
@@ -73,8 +92,26 @@
                 }
             }
             <div class="row"><hr /></div>
+            <div class="row">
+                <div class="column section-left">Subtotal:</div>
+                <div class="column section-right">$@subTotal</div>
+            </div>
+            <div class="row">
+                <div class="column section-left header uppercase"><b>TOTAL:</b></div>
+                <div class="column section-right header uppercase"><b>$@total</b></div>
+            </div>
             @{
-                if (printQR)
+                if (addons > 0)
+                {
+                    <div class="row">
+                        <div class="column section-left">Adicional por servicio:</div>
+                        <div class="column section-right">@addons</div>
+                    </div>
+                }
+            }
+            <div class="row"><hr /></div>
+            @{
+                if (!string.IsNullOrEmpty(htmlPictureTag))
                 {
                     <div class="section-center">
                         <img class="img-order-qr" src="@htmlPictureTag" alt="Orden Takeaway">

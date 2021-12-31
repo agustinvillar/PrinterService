@@ -17,10 +17,17 @@ namespace Menoo.Printer.Builder.Orders.Repository
             _firebaseDb = firebaseDb;
         }
 
-        public async Task<Payment> GetPayment(string id, string type)
+        public async Task<Payment> GetPaymentAsync(string id, string type)
         {
             string filter = type == OrderTypes.MESA ? "tableOpening.id" : "taOpening.id";
             var documentSnapshots = await _firebaseDb.Collection("payments").WhereEqualTo(filter, id).GetSnapshotAsync();
+            var payments = documentSnapshots.Documents.Select(d => d.ConvertTo<Payment>()).ToList();
+            return payments.FirstOrDefault();
+        }
+
+        public async Task<Payment> GetPaymentByIdAsync(long id)
+        {
+            var documentSnapshots = await _firebaseDb.Collection("payments").WhereEqualTo("paymentId", id).GetSnapshotAsync();
             var payments = documentSnapshots.Documents.Select(d => d.ConvertTo<Payment>()).ToList();
             return payments.FirstOrDefault();
         }
