@@ -11,6 +11,7 @@
     string subTotal = Model["subtotal"].ToString();
     string total = Model["total"].ToString();
     int addons = Model.ContainsKey("addons") ? Convert.ToInt32(Model["addons"]) : 0;
+    bool printQR = Convert.ToBoolean(Model["printQR"]);
 }<!DOCTYPE html>
 <html>
     <head>
@@ -31,8 +32,8 @@
                 </div>
             </div>
             <div class="row">
-                <div class="column section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
-                <div class="column section-right"><b>Hora retiro: @Model["taTime"].ToString()</b></div>
+                <div class="column-50 section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
+                <div class="column-50 section-right"><b>Hora retiro: @Model["taTime"].ToString()</b></div>
             </div>
             <div class="row">&nbsp;</div>
             <div class="row">
@@ -45,10 +46,10 @@
             @foreach (ItemOrderV2 item in orderData.Items)
             {
                 <div class="row">
-                    <div class="column section-left">
+                    <div class="column-80 section-left">
                         <span class="item-quantity section-left">@item.Quantity x </span><b>@item.Name</b>
                     </div>
-                    <div class="column section-right">
+                    <div class="column-20 section-right">
                         @{
                             if (item.PriceWithDiscountTA != item.Price)
                             {
@@ -66,14 +67,14 @@
                             @{
                                 foreach (ItemOptionV2 option in item.Options)
                                 {
-                                    string extraName = option.Price == 0 ? option.Name : option.Quantity + " x " + option.Name;
+                                    string extraName = option.Price == 0 ? "Opción: " + option.Name : "Opción: " + option.Quantity + " x " + option.Name;
                                     <li class="row">
                                         @if (option.Price > 0)
                                         {
-                                            <span class="column section-left">
+                                            <span class="column-80 section-left">
                                                 @extraName
                                             </span>
-                                            <span class="column section-right">
+                                            <span class="column-20 section-right">
                                                 $@option.Price
                                             </span>
                                         }
@@ -86,38 +87,55 @@
                                     </li>
                                     <li class="row">&nbsp;</li>
                                 }
+                                if (!string.IsNullOrEmpty(item.GuestComment))
+                                {
+                                    <li class="row">* @item.GuestComment</li>
+                                    <li class="row">&nbsp;</li>
+                                }
                             }
+                        </ul>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(item.GuestComment))
+                {
+                    <div class="row">
+                        <ul class="item-detail">
+                            <li class="row">@item.GuestComment</li>
+                            <li class="row">&nbsp;</li>
                         </ul>
                     </div>
                 }
             }
             <div class="row"><hr /></div>
             <div class="row">
-                <div class="column section-left">Subtotal:</div>
-                <div class="column section-right">$@subTotal</div>
+                <div class="column-50 section-left">Subtotal:</div>
+                <div class="column-50 section-right">$@subTotal</div>
             </div>
             <div class="row">
-                <div class="column section-left header uppercase"><b>TOTAL:</b></div>
-                <div class="column section-right header uppercase"><b>$@total</b></div>
+                <div class="column-50 section-left header uppercase"><b>TOTAL:</b></div>
+                <div class="column-50 section-right header uppercase"><b>$@total</b></div>
             </div>
             @{
                 if (addons > 0)
                 {
                     <div class="row">
-                        <div class="column section-left">Adicional por servicio:</div>
-                        <div class="column section-right">@addons</div>
+                        <div class="column-50 section-left">Adicional por servicio:</div>
+                        <div class="column-50 section-right">@addons</div>
                     </div>
                 }
             }
+            <div class="row">&nbsp;</div>
             <div class="row"><hr /></div>
             @{
-                if (!string.IsNullOrEmpty(htmlPictureTag))
+                if (!string.IsNullOrEmpty(htmlPictureTag) && printQR)
                 {
-                    <div class="section-center">
-                        <img class="img-order-qr" src="@htmlPictureTag" alt="Orden Takeaway">
+                    <div class="row">
+                        <div class="section-center">
+                            <img class="img-order-qr" src="@htmlPictureTag" alt="Orden Takeaway">
+                        </div>
                     </div>
                 }
             }
         </div>
-    </body>
+</body>
 </html>

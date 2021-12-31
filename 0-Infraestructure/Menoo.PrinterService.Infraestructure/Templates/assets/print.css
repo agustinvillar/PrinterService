@@ -7,12 +7,22 @@ hr {
 }
 
 ul {
-    padding-inline-start: 1%;
+    padding-left: 2%;
 }
 
-.column {
+.column-50 {
     float: left;
     width: 50%;
+}
+
+.column-80 {
+    float: left;
+    width: 70%;
+}
+
+.column-20 {
+    float: left;
+    width: 30%;
 }
 
 .header {

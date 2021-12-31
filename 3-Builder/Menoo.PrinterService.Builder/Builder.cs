@@ -200,7 +200,7 @@ namespace Menoo.PrinterService.Builder
                 {
                     case PrintEvents.NEW_TAKE_AWAY:
                         sectors = data.Store.GetPrintSettings(PrintEvents.NEW_TAKE_AWAY);
-                        await PrintAsync(id, data, printEvent, sectors);
+                        await PrintAsync(id, data, printEvent, sectors, true);
                         var items = ItemExtensions.GetPrintSectorByItems(orderData.Items, _itemRepository);
                         await PrintAsync(id, data, clientName, items);
                         break;
@@ -224,8 +224,9 @@ namespace Menoo.PrinterService.Builder
                         break;
                     case PrintEvents.REPRINT_ORDER:
                         printEvent = orderData.OrderType == SubOrderPrintTypes.ORDER_TA ? PrintEvents.NEW_TAKE_AWAY : PrintEvents.NEW_TABLE_ORDER;
+                        bool isTakeAway = orderData.OrderType == SubOrderPrintTypes.ORDER_TA;
                         sectors = data.Store.GetPrintSettings(printEvent);
-                        await PrintAsync(id, data, printEvent, sectors);
+                        await PrintAsync(id, data, printEvent, sectors, isTakeAway);
                         break;
                     case PrintEvents.ORDER_CANCELLED:
                         sectors = data.Store.GetPrintSettings(PrintEvents.ORDER_CANCELLED);
@@ -235,10 +236,14 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
-        private async Task PrintAsync(string id, PrintInfo data, string printEvent, List<PrintSettings> sectors) 
+        private async Task PrintAsync(string id, PrintInfo data, string printEvent, List<PrintSettings> sectors, bool isTakeAway = false) 
         {
             foreach (var sector in sectors)
             {
+                if (isTakeAway) 
+                {
+                    data.Content.Add("printQR", sector.PrintQR);
+                }
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
                 string ticket = formatterService.Create();
                 var printDocument = new Ticket
@@ -268,15 +273,17 @@ namespace Menoo.PrinterService.Builder
 
         private async Task PrintAsync(string id, PrintInfo extraData, string clientName, List<SectorItem> sectorsByItems)
         {
+            var orderData = (OrderV2)extraData.Content["orderData"];
             foreach (var item in sectorsByItems)
             {
                 var itemData = await _itemRepository.GetById<ItemOrderV2>(item.ItemId, "items");
+                var orderItem = orderData.Items.FirstOrDefault(f => f.Id == itemData.Id);
                 var viewData = new Dictionary<string, object>() 
                 {
                     { "title", extraData.Content["title"] },
                     { "orderNumber", extraData.Content["orderNumber"] },
                     { "clientName", clientName},
-                    { "item", itemData }
+                    { "item", orderItem }
                 };
                 foreach (var sector in item.Sectors)
                 {

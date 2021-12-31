@@ -41,11 +41,17 @@
                         <ul class="item-detail">
                             @foreach (ItemOptionV2 option in item.Options)
                             {
-                                string extra = option.Price == 0 ? "Opción: " + option.Name : option.Quantity + " x " + option.Name;
-                                <li>@extra</li>
+                                string extraData = option.Quantity + " x " + option.Name;
+                                <li>@extraData</li>
+                            }
+                            @if (!string.IsNullOrEmpty(item.GuestComment))
+                            {
+                                <li class="row">* @item.GuestComment</li>
+                                <li class="row">&nbsp;</li>
                             }
                         </ul>
                     }
+
                 </div>
             </div>
             <div class="row"><hr /></div>

@@ -140,8 +140,8 @@ namespace Menoo.Printer.Builder.Orders
                     if (paymentId > 0)
                     {
                         var paymentData = await _paymentRepository.GetPaymentByIdAsync(paymentId);
-                        var subtotal = paymentData.TaOpening.SubTotal;
-                        var total = paymentData.TaOpening.TotalToPay;
+                        var subtotal = Convert.ToDecimal(paymentData.TaOpening.SubTotal).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+                        var total = Convert.ToDecimal(paymentData.TaOpening.TotalToPay).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
                         viewBag.Add("subtotal", subtotal);
                         viewBag.Add("total", total);
                         if (paymentData.TaOpening.Surcharge != null) 

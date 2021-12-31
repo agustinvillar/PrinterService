@@ -1,5 +1,7 @@
 ﻿using Menoo.PrinterService.Infraestructure;
+using System.Globalization;
 using System.ServiceProcess;
+using System.Threading;
 
 namespace Menoo.PrinterService.Builder
 {
