@@ -46,5 +46,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("isHTML")]
         [JsonProperty("isHTML")]
         public bool? IsHTML { get; set; }
+
+        [FirestoreProperty("allowLogo")]
+        [JsonProperty("allowLogo")]
+        public bool? AllowLogo { get; set; }
     }
 }

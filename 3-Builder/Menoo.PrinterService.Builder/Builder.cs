@@ -244,6 +244,7 @@ namespace Menoo.PrinterService.Builder
                 {
                     data.Content.Add("printQR", sector.PrintQR);
                 }
+                data.Content.Add("allowLogo", sector.AllowLogo);
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
                 string ticket = formatterService.Create();
                 var printDocument = new Ticket

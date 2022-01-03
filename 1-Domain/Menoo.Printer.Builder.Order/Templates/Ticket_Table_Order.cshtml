@@ -3,8 +3,8 @@
 @model System.Collections.Generic.Dictionary<string, object>
 @{
     OrderV2 orderData = (OrderV2)Model["orderData"];
-}
-<!DOCTYPE html>
+    bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
+}<!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8" />
@@ -16,8 +16,20 @@
     <body>
         <div class="invoice-pos">
             <div class="section-center invoince-header">
-                <div class="section-center">
-                    <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO">
+                <div class="section-center invoince-header">
+                    <div class="section-center">
+                        @if (allowLogo)
+                        {
+                            <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO" />
+                        }
+                        else
+                        {
+                            <span>MENOO</span>
+                        }
+                    </div>
+                    <div class="section-center">
+                        @Model["title"].ToString()
+                    </div>
                 </div>
                 <div class="section-center">
                     @Model["title"].ToString()
