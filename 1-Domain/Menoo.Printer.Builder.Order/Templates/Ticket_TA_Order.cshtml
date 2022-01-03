@@ -12,6 +12,7 @@
     string total = Model["total"].ToString();
     int addons = Model.ContainsKey("addons") ? Convert.ToInt32(Model["addons"]) : 0;
     bool printQR = Convert.ToBoolean(Model["printQR"]);
+    bool isCancelled = Convert.ToBoolean(Model["isCancelled"]);
 }<!DOCTYPE html>
 <html>
     <head>
@@ -40,7 +41,7 @@
                 <div class="section-left"><b>Cliente:</b> @Model["clientName"].ToString()</div>
             </div>
             <div class="row"><hr /></div>
-            <div class="row section-custom-header">
+            <div class="row section-custom-header uppercase">
                 <div class="section-center"><b>Detalle del pedido</b></div>
             </div>
             @foreach (ItemOrderV2 item in orderData.Items)
@@ -125,6 +126,10 @@
                 }
             }
             <div class="row">&nbsp;</div>
+            <div class="row">
+                <div class="section-left"><b>Medio de Pago</b></div>
+                <div class="section-left">@Model["paymentMethod"].ToString()</div>
+            </div>
             <div class="row"><hr /></div>
             @{
                 if (!string.IsNullOrEmpty(htmlPictureTag) && printQR)
@@ -135,6 +140,24 @@
                         </div>
                     </div>
                 }
+            }
+            <div class="row">&nbsp;</div>
+            @if (!isCancelled)
+            {
+                <div class="row section-custom-header">
+                    <div class="section-center">
+                        <span>Recuerde <b>ACEPTAR</b> el pedido</span>
+                        <span>Pedido <b>YA PAGO</b></span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row section-custom-header">
+                    <div class="section-center">
+                        <span>Pedido <b>CANCELADO</b></span>
+                    </div>
+                </div>
             }
         </div>
 </body>

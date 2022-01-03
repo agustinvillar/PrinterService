@@ -19,12 +19,12 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("closedAt")]
         public string ClosedAt { get; set; }
 
-        [FirestoreProperty("numberId")]
-        [JsonProperty("numberId")]
+        [FirestoreProperty("tableNumberId")]
+        [JsonProperty("tableNumberId")]
         public int NumberId { get; set; }
 
-        [FirestoreProperty("numberToShow")]
-        [JsonProperty("numberToShow")]
+        [FirestoreProperty("tableNumberToShow")]
+        [JsonProperty("tableNumberToShow")]
         public int? NumberToShow { get; set; }
 
         [FirestoreProperty("closed")]

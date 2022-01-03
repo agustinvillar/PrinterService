@@ -144,6 +144,7 @@ namespace Menoo.Printer.Builder.Orders
                         var total = Convert.ToDecimal(paymentData.TaOpening.TotalToPay).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
                         viewBag.Add("subtotal", subtotal);
                         viewBag.Add("total", total);
+                        viewBag.Add("paymentMethod", $"{paymentData.PaymentType}: {paymentData.PaymentMethod}");
                         if (paymentData.TaOpening.Surcharge != null) 
                         {
                             viewBag.Add("addons", paymentData.TaOpening.Surcharge);
@@ -152,11 +153,9 @@ namespace Menoo.Printer.Builder.Orders
                     viewBag.Add("taTime", order.TakeAwayHour);
                     viewBag.Add("clientName", order.UserName);
                     viewBag.Add("orderNumber", order.OrderNumber);
-                    if (!isCancelled) 
-                    {
-                        var qrData = GenerateOrderQR(order);
-                        viewBag.Add("qrCode", $"data:image/{qrData.Item2};base64, {qrData.Item1}");
-                    }
+                    viewBag.Add("isCancelled", isCancelled);
+                    var qrData = GenerateOrderQR(order);
+                    viewBag.Add("qrCode", $"data:image/{qrData.Item2};base64, {qrData.Item1}");
                     viewBag.Add("title", isCancelled ? "Takeaway cancelado" : "Nuevo TakeAway");
                     info.BeforeAt = Utils.BeforeAt(now, PRINT_MINUTES_ORDER_TA);
                     info.Template = PrintTemplates.NEW_TAKEAWAY_ORDER;
@@ -175,11 +174,13 @@ namespace Menoo.Printer.Builder.Orders
             var ordersByOrderNumber = orders.GroupBy(g => g.OrderNumber).FirstOrDefault();
             var ordersByAddress = orders.GroupBy(g => g.Address).FirstOrDefault();
             var ordersByUsername = orders.GroupBy(g => g.UserName).FirstOrDefault();
+            var ordersStatus = orders.GroupBy(g => g.Status).FirstOrDefault();
             orderUnified.OrderNumber = ordersByOrderNumber.Key;
             orderUnified.Address = ordersByAddress.Key;
             orderUnified.UserName = ordersByUsername.Key;
             orderUnified.Store = ordersByStore.ToList().FirstOrDefault().Store;
             orderUnified.OrderType = ordersByStore.ToList().FirstOrDefault().OrderType;
+            orderUnified.Status = ordersStatus.Key;
             orders.ForEach(item => {
                 items.AddRange(item.Items);
             });
