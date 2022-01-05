@@ -1,6 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Enums;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
@@ -109,10 +110,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("propina")]
         public string Tip { get; set; }
 
-        [FirestoreProperty("discounts")]
-        [JsonProperty("discounts")]
-        public Discount[] Discounts { get; set; }
-
         [FirestoreProperty("totalToPayWithSurcharge")]
         [JsonProperty("totalToPayWithSurcharge")]
         public double? TotalToPayWithSurcharge { get; set; }
@@ -152,27 +149,89 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("payMethod")]
         [JsonProperty("payMethod")]
         public string PayMethod { get; set; }
+    }
 
-        public bool PagoPorTodos => PayingForAll;
+    [FirestoreData]
+    public class TakeAwayOpening
+    {
+        [FirestoreProperty("id")]
+        [JsonProperty("id")]
+        public string Id { get; set; }
 
-        public bool AlguienLePago => PaidByOther;
+        [FirestoreProperty("userId")]
+        [JsonProperty("userId")]
+        public string UserId { get; set; }
 
-        public bool PagoPorElMismo => !PaidByOther && !PayingForAll;
+        [FirestoreProperty("storeId")]
+        [JsonProperty("storeId")]
+        public string StoreId { get; set; }
 
-        [FirestoreData]
-        public class Discount
-        {
-            [FirestoreProperty("Amount")]
-            [JsonProperty("Amount")]
-            public double? Amount { get; set; }
+        [FirestoreProperty("observations")]
+        [JsonProperty("observations")]
+        public string Observations { get; set; }
 
-            [FirestoreProperty("Name")]
-            [JsonProperty("Name")]
-            public string Name { get; set; }
+        [FirestoreProperty("takeAwayHour")]
+        [JsonProperty("takeAwayHour")]
+        public string TakeAwayHour { get; set; }
 
-            [FirestoreProperty("Type")]
-            [JsonProperty("Type")]
-            public DiscountTypeEnum? Type { get; set; }
-        }
+        [FirestoreProperty("orders")]
+        [JsonProperty("orders")]
+        public List<Order> Orders { get; set; }
+
+        [FirestoreProperty("totalToPay")]
+        [JsonProperty("totalToPay")]
+        public double? TotalToPay { get; set; }
+
+        [FirestoreProperty("offerCupon")]
+        [JsonProperty("offerCupon")]
+        public OfferCoupon OfferCoupon { get; set; }
+
+        [FirestoreProperty("credit")]
+        [JsonProperty("credit")]
+        public Credit Credit { get; set; }
+
+        [FirestoreProperty("payMethod")]
+        [JsonProperty("payMethod")]
+        public string PayMethod { get; set; }
+
+        [FirestoreProperty("subTotal")]
+        [JsonProperty("subTotal")]
+        public double? SubTotal { get; set; }
+
+        [FirestoreProperty("extras")]
+        [JsonProperty("extras")]
+        public List<Extra> Extras { get; set; }
+
+        [FirestoreProperty("userName")]
+        [JsonProperty("userName")]
+        public string UserName { get; set; }
+
+        [FirestoreProperty("userPhone")]
+        [JsonProperty("userPhone")]
+        public string UserPhone { get; set; }
+
+        [FirestoreProperty("discountAmmount")]
+        [JsonProperty("discountAmmount")]
+        public double? DiscountAmmount { get; set; }
+
+        [FirestoreProperty("discountByCouponAmount")]
+        [JsonProperty("discountByCouponAmount")]
+        public double? DiscountByCouponAmount { get; set; }
+
+        [FirestoreProperty("discountByCreditAmount")]
+        [JsonProperty("discountByCreditAmount")]
+        public double? DiscountByCreditAmount { get; set; }
+
+        [FirestoreProperty("paySurcharge")]
+        [JsonProperty("paySurcharge")]
+        public bool? PaySurcharge { get; set; }
+
+        [FirestoreProperty("storeLogoImage")]
+        [JsonProperty("storeLogoImage")]
+        public string StoreLogoImage { get; set; }
+
+        [FirestoreProperty("paymentId")]
+        [JsonProperty("paymentId")]
+        public int PaymentId { get; set; }
     }
 }

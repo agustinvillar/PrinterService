@@ -1,4 +1,4 @@
-﻿namespace Menoo.Printer.Builder.Orders.Constants
+﻿namespace Menoo.PrinterService.Infraestructure.Constants
 {
     public static class OrderTypes
     {

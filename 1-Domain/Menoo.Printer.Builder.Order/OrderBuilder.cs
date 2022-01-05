@@ -1,5 +1,4 @@
-﻿using Menoo.Printer.Builder.Orders.Constants;
-using Menoo.Printer.Builder.Orders.Repository;
+﻿using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
@@ -15,6 +14,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using OrderTypes = Menoo.PrinterService.Infraestructure.Constants.OrderTypes;
 
 namespace Menoo.Printer.Builder.Orders
 {
@@ -136,20 +136,6 @@ namespace Menoo.Printer.Builder.Orders
                     info.Template = PrintTemplates.NEW_BOOKING_ORDER;
                     break;
                 case OrderTypes.TAKEAWAY:
-                    long paymentId = _menooContext.Payments.FirstOrDefault(f => f.EntityId == order.Id)?.PaymentId ?? 0;
-                    if (paymentId > 0)
-                    {
-                        var paymentData = await _paymentRepository.GetPaymentByIdAsync(paymentId);
-                        var subtotal = Convert.ToDecimal(paymentData.TaOpening.SubTotal).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
-                        var total = Convert.ToDecimal(paymentData.TaOpening.TotalToPay).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
-                        viewBag.Add("subtotal", subtotal);
-                        viewBag.Add("total", total);
-                        viewBag.Add("paymentMethod", $"{paymentData.PaymentType}: {paymentData.PaymentMethod}");
-                        if (paymentData.TaOpening.Surcharge != null) 
-                        {
-                            viewBag.Add("addons", paymentData.TaOpening.Surcharge);
-                        }
-                    }
                     viewBag.Add("taTime", order.TakeAwayHour);
                     viewBag.Add("clientName", order.UserName);
                     viewBag.Add("orderNumber", order.OrderNumber);
@@ -157,6 +143,30 @@ namespace Menoo.Printer.Builder.Orders
                     var qrData = GenerateOrderQR(order);
                     viewBag.Add("qrCode", $"data:image/{qrData.Item2};base64, {qrData.Item1}");
                     viewBag.Add("title", isCancelled ? "Takeaway cancelado" : "Nuevo TakeAway");
+                    long paymentId = _menooContext.Payments.FirstOrDefault(f => f.EntityId == order.Id)?.PaymentId ?? 0;
+                    if (paymentId > 0)
+                    {
+                        var paymentData = await _paymentRepository.GetPaymentByIdAsync(paymentId);
+                        var takeAwayOpening = paymentData.TaOpening;
+                        viewBag.Add("paymentMethod", $"{paymentData.PaymentType}: {paymentData.PaymentMethod}");
+                        if (paymentData.Surcharge != null && paymentData.Surcharge > 0) 
+                        {
+                            viewBag.Add("sucharge", $"${paymentData.Surcharge.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))}");
+                        }
+                        if (takeAwayOpening.DiscountByCouponAmount != null && takeAwayOpening.OfferCoupon != null) 
+                        {
+                            viewBag.Add("couponName", "Descuento " + takeAwayOpening.OfferCoupon.Code);
+                            viewBag.Add("couponAmount", $"-${takeAwayOpening.DiscountByCouponAmount.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))}");
+                        }
+                        if (paymentData.Discounts != null && paymentData.Discounts.Count > 0) 
+                        {
+                            viewBag.Add("discounts", paymentData.Discounts);
+                        }
+                        var subtotal = Convert.ToDecimal(takeAwayOpening.SubTotal).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+                        var total = Convert.ToDecimal(takeAwayOpening.TotalToPay).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+                        viewBag.Add("subtotal", $"${subtotal}");
+                        viewBag.Add("total", $"${total}");
+                    }
                     info.BeforeAt = Utils.BeforeAt(now, PRINT_MINUTES_ORDER_TA);
                     info.Template = PrintTemplates.NEW_TAKEAWAY_ORDER;
                     break;

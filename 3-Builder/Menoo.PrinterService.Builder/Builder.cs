@@ -242,9 +242,23 @@ namespace Menoo.PrinterService.Builder
             {
                 if (isTakeAway) 
                 {
-                    data.Content.Add("printQR", sector.PrintQR);
+                    if (!data.Content.ContainsKey("printQR"))
+                    {
+                        data.Content.Add("printQR", sector.PrintQR);
+                    }
+                    else 
+                    {
+                        data.Content["printQR"] = sector.PrintQR;
+                    }
                 }
-                data.Content.Add("allowLogo", sector.AllowLogo);
+                if (!data.Content.ContainsKey("allowLogo"))
+                {
+                    data.Content.Add("allowLogo", sector.AllowLogo);
+                }
+                else
+                {
+                    data.Content["allowLogo"] = sector.AllowLogo;
+                }
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
                 string ticket = formatterService.Create();
                 var printDocument = new Ticket

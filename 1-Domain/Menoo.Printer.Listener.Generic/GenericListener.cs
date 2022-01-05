@@ -192,7 +192,7 @@ namespace Menoo.Printer.Listener.Generic
             //{
             //    return;
             //}
-            var documentReference = snapshot.LastOrDefault();
+            var documentReference = snapshot.OrderByDescending(o => o.CreateTime).FirstOrDefault();
             var message = PrintExtensions.GetReprintMessage(documentReference);
             try
             {

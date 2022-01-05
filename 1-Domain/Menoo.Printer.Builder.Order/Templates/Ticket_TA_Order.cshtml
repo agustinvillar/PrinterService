@@ -3,6 +3,9 @@
 @model System.Collections.Generic.Dictionary<string, object>
 @{
     OrderV2 orderData = (OrderV2)Model["orderData"];
+    bool printQR = Convert.ToBoolean(Model["printQR"]);
+    bool isCancelled = Convert.ToBoolean(Model["isCancelled"]);
+    bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
     string htmlPictureTag = "";
     if (Model.ContainsKey("qrCode"))
     {
@@ -10,10 +13,7 @@
     }
     string subTotal = Model["subtotal"].ToString();
     string total = Model["total"].ToString();
-    int addons = Model.ContainsKey("addons") ? Convert.ToInt32(Model["addons"]) : 0;
-    bool printQR = Convert.ToBoolean(Model["printQR"]);
-    bool isCancelled = Convert.ToBoolean(Model["isCancelled"]);
-    bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
+    int sucharge = Model.ContainsKey("sucharge") ? Convert.ToInt32(Model["sucharge"]) : 0;
 }<!DOCTYPE html>
 <html>
     <head>
@@ -34,7 +34,7 @@
                         }
                         else
                         {
-                            <span>MENOO</span>
+                            <span class="title">MENOO</span>
                         }
                     </div>
                 </div>
@@ -120,21 +120,42 @@
             <div class="row"><hr /></div>
             <div class="row">
                 <div class="column-50 section-left">Subtotal:</div>
-                <div class="column-50 section-right">$@subTotal</div>
-            </div>
-            <div class="row">
-                <div class="column-50 section-left header uppercase"><b>TOTAL:</b></div>
-                <div class="column-50 section-right header uppercase"><b>$@total</b></div>
+                <div class="column-50 section-right">@subTotal</div>
             </div>
             @{
-                if (addons > 0)
+                if (sucharge > 0)
                 {
                     <div class="row">
                         <div class="column-50 section-left">Adicional por servicio:</div>
-                        <div class="column-50 section-right">@addons</div>
+                        <div class="column-50 section-right">@sucharge</div>
                     </div>
+                    <div class="row">&nbsp;</div>
+                }
+                if (Model.ContainsKey("couponName") && Model.ContainsKey("couponAmount"))
+                {
+                    <div class="row">
+                        <div class="column-80 section-left">@Model["couponName"].ToString()</div>
+                        <div class="column-20 section-right">@Model["couponAmount"].ToString()</div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                }
+                if (Model.ContainsKey("discounts"))
+                {
+                    List<Discount> discounts = (List<Discount>)Model["discounts"];
+                    foreach (Discount discount in discounts)
+                    {
+                        <div class="row">
+                            <div class="column-50 section-left">@discount.Name</div>
+                            <div class="column-50 section-right">@discount.Amount.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</div>
+                        </div>
+                        <div class="row">&nbsp;</div>
+                    }
                 }
             }
+            <div class="row">
+                <div class="column-50 section-left header uppercase"><b>TOTAL:</b></div>
+                <div class="column-50 section-right header uppercase"><b>@total</b></div>
+            </div>
             <div class="row">&nbsp;</div>
             <div class="row">
                 <div class="section-left"><b>Medio de Pago</b></div>

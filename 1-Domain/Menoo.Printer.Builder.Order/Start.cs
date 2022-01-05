@@ -16,10 +16,6 @@ namespace Menoo.Printer.Builder.Orders
             var fireStore = dependencyResolver.Resolve<FirestoreDb>();
             dependencyResolver.RegisterPerThread(() => { return new MenooContext(); });
             dependencyResolver.Register(() => {
-                var paymentRepository = new PaymentRepository(fireStore);
-                return paymentRepository;
-            });
-            dependencyResolver.Register(() => {
                 var orderRepository = new OrderRepository(fireStore);
                 return orderRepository;
             });

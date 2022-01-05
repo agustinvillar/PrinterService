@@ -9,13 +9,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("name")]
         [JsonProperty("name")]
         public string Name { get; set; }
-    }
 
-    public class UserV2 
-    {
+        [FirestoreProperty("email")]
+        [JsonProperty("email")]
         public string Email { get; set; }
-
-        public string Name { get; set; }
-        
     }
 }

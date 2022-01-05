@@ -10,6 +10,11 @@ ul {
     padding-left: 2%;
 }
 
+.column {
+    float: left;
+    width: 100%;
+}
+
 .column-50 {
     float: left;
     width: 50%;
@@ -78,7 +83,7 @@ ul {
     padding-bottom: 2%;
     margin-top: 2%;
     margin-bottom: 2%;
-    height: 25px;
+    height: 100%;
 }
 
 .section-left {
@@ -87,6 +92,10 @@ ul {
 
 .section-right {
     text-align: right;
+}
+
+.title {
+    font-size: 22px;
 }
 
 .uppercase {

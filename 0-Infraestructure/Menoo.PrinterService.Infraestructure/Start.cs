@@ -16,6 +16,7 @@ namespace Menoo.PrinterService.Infraestructure
             var dependencyResolver = GlobalConfig.DependencyResolver;
             string listenerLog = GlobalConfig.ConfigurationManager.GetSetting("serviceListenerName");
             string builderLog = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderName");
+            var firebaseDb = GetInstanceFirebase();
             if (!string.IsNullOrEmpty(listenerLog))
             {
                 dependencyResolver.Register(() => {
@@ -32,24 +33,25 @@ namespace Menoo.PrinterService.Infraestructure
             }
             dependencyResolver.Register(GetInstanceFirebase);
             dependencyResolver.Register(() => {
-                var firebaseDb = GetInstanceFirebase();
                 var storeRepository = new StoreRepository(firebaseDb);
                 return storeRepository;
             });
             dependencyResolver.Register(() => {
-                var firebaseDb = GetInstanceFirebase();
                 var ticketRepository = new TicketRepository(firebaseDb);
                 return ticketRepository;
             });
             dependencyResolver.Register(() => {
-                var firebaseDb = GetInstanceFirebase();
                 var userRepository = new UserRepository(firebaseDb);
                 return userRepository;
             });
             dependencyResolver.Register(() => {
-                var firebaseDb = GetInstanceFirebase();
+
                 var tableOpeningRepository = new TableOpeningFamilyRepository(firebaseDb);
                 return tableOpeningRepository;
+            });
+            dependencyResolver.Register(() => {
+                var paymentRepository = new PaymentRepository(firebaseDb);
+                return paymentRepository;
             });
             dependencyResolver.Register<IPublisherService, PublisherService>();
             dependencyResolver.Register<IFirebaseStorage, FirebaseStorageService>();
