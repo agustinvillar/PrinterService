@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Westwind.RazorHosting;
+using ImageFormat = NReco.ImageGenerator.ImageFormat;
 
 namespace Menoo.PrinterService.Infraestructure.Services
 {
@@ -16,6 +17,8 @@ namespace Menoo.PrinterService.Infraestructure.Services
         private readonly Dictionary<string, object> _viewData;
 
         private readonly IFirebaseStorage _storageService;
+
+        private const int TICKET_WIDTH = 300;
 
         public bool AllowFormat
         {
@@ -58,17 +61,17 @@ namespace Menoo.PrinterService.Infraestructure.Services
         #region private methods
         private async Task<string> GetImageUrlAsync(string html) 
         {
-            /* var htmlToImageConv = new HtmlToImageConverter
+             var htmlToImageConv = new HtmlToImageConverter
              {
-                Width = 300
+                Width = TICKET_WIDTH
              };
              var bytes = htmlToImageConv.GenerateImage(html, ImageFormat.Png);
              string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
-             return urlImage;*/
-            var converter = new HtmlConverter();
+             return urlImage;
+            /*var converter = new HtmlConverter();
             var bytes = converter.FromHtmlString(html, 300, CoreHtmlToImage.ImageFormat.Png, 100);
             string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
-            return urlImage;
+            return urlImage;*/
         }
         
         private void SetLogoAndStyle()
