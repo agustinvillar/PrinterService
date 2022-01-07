@@ -302,6 +302,14 @@ namespace Menoo.PrinterService.Builder
                 };
                 foreach (var sector in item.Sectors)
                 {
+                    if (!viewData.ContainsKey("allowLogo"))
+                    {
+                        viewData.Add("allowLogo", sector.AllowLogo);
+                    }
+                    else
+                    {
+                        viewData["allowLogo"] = sector.AllowLogo;
+                    }
                     IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), viewData, PrintTemplates.NEW_ITEM_ORDER);
                     string ticket = formatterService.Create();
                     var printDocument = new Ticket
