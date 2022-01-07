@@ -61,17 +61,17 @@ namespace Menoo.PrinterService.Infraestructure.Services
         #region private methods
         private async Task<string> GetImageUrlAsync(string html) 
         {
-             var htmlToImageConv = new HtmlToImageConverter
+             /*var htmlToImageConv = new HtmlToImageConverter
              {
                 Width = TICKET_WIDTH
              };
              var bytes = htmlToImageConv.GenerateImage(html, ImageFormat.Png);
              string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
-             return urlImage;
-            /*var converter = new HtmlConverter();
-            var bytes = converter.FromHtmlString(html, 300, CoreHtmlToImage.ImageFormat.Png, 100);
+             return urlImage;*/
+            var converter = new HtmlConverter();
+            var bytes = converter.FromHtmlString(html, TICKET_WIDTH, CoreHtmlToImage.ImageFormat.Png, 100);
             string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
-            return urlImage;*/
+            return urlImage;
         }
         
         private void SetLogoAndStyle()
