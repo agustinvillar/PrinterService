@@ -5,7 +5,6 @@ using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interceptors;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Queues;
-using Menoo.PrinterService.Infraestructure.Repository;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
@@ -27,7 +26,6 @@ namespace Menoo.Printer.Listener.Generic
         public GenericListener(
             OnActionRecieve interceptor,
             FirestoreDb firestoreDb,
-            TicketRepository ticketRepository,
             IPublisherService publisherService)
         {
             _firestoreDb = firestoreDb;
@@ -187,11 +185,6 @@ namespace Menoo.Printer.Listener.Generic
 
         private void RePrintOrder(QuerySnapshot snapshot)
         {
-            //bool isEntry = _interceptor.OnEntry(snapshot, true);
-            //if (!isEntry)
-            //{
-            //    return;
-            //}
             var documentReference = snapshot.OrderByDescending(o => o.CreateTime).FirstOrDefault();
             var message = PrintExtensions.GetReprintMessage(documentReference);
             try

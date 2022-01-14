@@ -1,14 +1,11 @@
 ﻿using CoreHtmlToImage;
 using Menoo.PrinterService.Infraestructure.Exceptions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
-using NReco.ImageGenerator;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Westwind.RazorHosting;
-using ImageFormat = NReco.ImageGenerator.ImageFormat;
 
 namespace Menoo.PrinterService.Infraestructure.Services
 {
@@ -61,13 +58,6 @@ namespace Menoo.PrinterService.Infraestructure.Services
         #region private methods
         private async Task<string> GetImageUrlAsync(string html) 
         {
-             /*var htmlToImageConv = new HtmlToImageConverter
-             {
-                Width = TICKET_WIDTH
-             };
-             var bytes = htmlToImageConv.GenerateImage(html, ImageFormat.Png);
-             string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
-             return urlImage;*/
             var converter = new HtmlConverter();
             var bytes = converter.FromHtmlString(html, TICKET_WIDTH, CoreHtmlToImage.ImageFormat.Png, 100);
             string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
