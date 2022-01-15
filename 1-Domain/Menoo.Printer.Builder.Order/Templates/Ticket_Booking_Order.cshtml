@@ -2,7 +2,7 @@
 @using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 @model System.Collections.Generic.Dictionary<string, object>
 @{
-    OrderV2 orderData = (OrderV2)Model["orderData"];
+    Order orderData = (Order)Model["orderData"];
     bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
 }
 <!DOCTYPE html>
@@ -53,15 +53,15 @@
                 </div>
             </div>
             <div class="row">
-                @foreach (ItemOrderV2 item in orderData.Items)
+                @foreach (ItemOrder item in orderData.Items)
                 {
                     <div class="section-left">
-                        <span class="item-quantity">@item.Quantity x </span><b>@item.Name</b>
+                        <span class="item-quantity">@item.Quantity.GetValueOrDefault() x </span><b>@item.Name</b>
                         @if (item.Options != null)
                         {
                             <ul class="item-detail">
                                 @{
-                                    foreach (ItemOptionV2 option in item.Options)
+                                    foreach (ItemOption option in item.Options)
                                     {
                                         string extra = option.Price == 0 ? "Opción: " + option.Name : option.Quantity + " x " + option.Name;
                                         <li>@extra</li>

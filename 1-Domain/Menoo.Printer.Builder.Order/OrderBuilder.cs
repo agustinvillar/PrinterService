@@ -64,7 +64,7 @@ namespace Menoo.Printer.Builder.Orders
             bool isReprint = message.PrintEvent == PrintEvents.REPRINT_ORDER;
             if (message.DocumentsId?.Count > 0 && string.IsNullOrEmpty(message.DocumentId))
             {
-                var orders = new List<OrderV2>();
+                var orders = new List<Order>();
                 foreach (var documentId in message.DocumentsId)
                 {
                     var order = await _orderRepository.GetOrderById(documentId);
@@ -86,7 +86,7 @@ namespace Menoo.Printer.Builder.Orders
         }
 
         #region private methods
-        private Tuple<string, string> GenerateOrderQR(OrderV2 order)
+        private Tuple<string, string> GenerateOrderQR(Order order)
         {
             OrderQR orderInfoQR = new OrderQR
             {
@@ -103,7 +103,7 @@ namespace Menoo.Printer.Builder.Orders
             return new Tuple<string, string>(qrCodeImageAsBase64, imageType);
         }
 
-        private async Task<PrintInfo> GetSingleOrderTicketAsync(OrderV2 order, bool isCancelled, bool isReprint)
+        private async Task<PrintInfo> GetSingleOrderTicketAsync(Order order, bool isCancelled, bool isReprint)
         {
             isCancelled = !isCancelled ? order.Status.ToLower().Contains("cancelado") || order.Status.ToLower().Contains("reembolsado") : isCancelled;
             bool isTakeAway = order.OrderType.ToUpper().Trim() == OrderTypes.TAKEAWAY;
@@ -176,10 +176,10 @@ namespace Menoo.Printer.Builder.Orders
             return info;
         }
 
-        private async Task<PrintInfo> GetUnifiedOrderTicketAsync(List<OrderV2> orders, bool isCancelled, bool isReprint)
+        private async Task<PrintInfo> GetUnifiedOrderTicketAsync(List<Order> orders, bool isCancelled, bool isReprint)
         {
-            var orderUnified = new OrderV2();
-            var items = new List<ItemOrderV2>();
+            var orderUnified = new Order();
+            var items = new List<ItemOrder>();
             var ordersByStore = orders.GroupBy(g => g.Store.Id).FirstOrDefault();
             var ordersByOrderNumber = orders.GroupBy(g => g.OrderNumber).FirstOrDefault();
             var ordersByAddress = orders.GroupBy(g => g.Address).FirstOrDefault();

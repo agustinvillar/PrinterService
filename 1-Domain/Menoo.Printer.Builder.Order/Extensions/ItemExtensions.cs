@@ -14,7 +14,7 @@ namespace Menoo.Printer.Builder.Orders.Extensions
             return result;
         }
 
-        public static List<SectorItem> GetPrintSectorByItems(this List<ItemOrderV2> items, ItemRepository repository)
+        public static List<SectorItem> GetPrintSectorByItems(this List<ItemOrder> items, ItemRepository repository)
         {
             var sectorItems = new List<SectorItem>();
             foreach (var item in items)

@@ -300,7 +300,7 @@ namespace Menoo.PrinterService.Builder
                     { "clientName", clientName},
                     { "item", orderItem }
                 };
-                foreach (var sector in item.Sectors)
+                foreach (var sector in item.Sectors.FindAll(f => f.AllowPrinting))
                 {
                     if (!viewData.ContainsKey("allowLogo"))
                     {

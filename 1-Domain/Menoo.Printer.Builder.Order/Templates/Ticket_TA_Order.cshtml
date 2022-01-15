@@ -2,7 +2,7 @@
 @using System.Globalization
 @model System.Collections.Generic.Dictionary<string, object>
 @{
-    OrderV2 orderData = (OrderV2)Model["orderData"];
+    Order orderData = (Order)Model["orderData"];
     bool printQR = Convert.ToBoolean(Model["printQR"]);
     bool isCancelled = Convert.ToBoolean(Model["isCancelled"]);
     bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
@@ -54,17 +54,17 @@
             <div class="row section-custom-header uppercase">
                 <div class="section-center"><b>Detalle del pedido</b></div>
             </div>
-            @foreach (ItemOrderV2 item in orderData.Items)
+            @foreach (ItemOrder item in orderData.Items)
             {
                 <div class="row">
                     <div class="column-80 section-left">
-                        <span class="item-quantity section-left">@item.Quantity x </span><b>@item.Name</b>
+                        <span class="item-quantity section-left">@item.Quantity.GetValueOrDefault() x </span><b>@item.Name</b>
                     </div>
                     <div class="column-20 section-right">
                         @{
-                            if (item.PriceWithDiscountTA != item.Price)
+                            if (item.PriceWithDiscountTA.GetValueOrDefault() != item.Price.GetValueOrDefault())
                             {
-                                <span class="invalid-text">$@item.Price</span>
+                                <span class="invalid-text">$@item.Price.GetValueOrDefault()</span>
                             }
                         }
                         $@item.PriceWithDiscountTA
@@ -76,7 +76,7 @@
                     <div class="row">
                         <ul class="item-detail">
                             @{
-                                foreach (ItemOptionV2 option in item.Options)
+                                foreach (ItemOption option in item.Options)
                                 {
                                     string extraName = option.Price == 0 ? "Opción: " + option.Name : "Opción: " + option.Quantity + " x " + option.Name;
                                     <li class="row">

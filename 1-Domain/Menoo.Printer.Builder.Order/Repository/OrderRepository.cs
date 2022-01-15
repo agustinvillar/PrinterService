@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Menoo.Printer.Builder.Orders.Repository
 {
-    public sealed class OrderRepository : FirebaseRepository<OrderV2>
+    public sealed class OrderRepository : FirebaseRepository<Order>
     {
         private readonly FirestoreDb _firebaseDb;
 
@@ -19,9 +19,9 @@ namespace Menoo.Printer.Builder.Orders.Repository
             _firebaseDb = firebaseDb;
         }
 
-        public async Task<OrderV2> GetOrderById(string documentId)
+        public async Task<Order> GetOrderById(string documentId)
         {
-            var orderDTO = await base.GetById<OrderV2>(documentId, "orders");
+            var orderDTO = await base.GetById<Order>(documentId, "orders");
             string orderJson = JsonConvert.SerializeObject(orderDTO);
             try
             {

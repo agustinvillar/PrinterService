@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Google.Cloud.Firestore;
-using Menoo.PrinterService.Infraestructure.Enums;
+﻿using Google.Cloud.Firestore;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
@@ -24,6 +22,10 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("taOpening")]
         [JsonProperty("taOpening")]
         public TakeAwayOpening TaOpening { get; set; }
+
+        [FirestoreProperty("tableOpening")]
+        [JsonProperty("tableOpening")]
+        public TableOpening TableOpening { get; set; }
 
         [FirestoreProperty("totalToPay")]
         [JsonProperty("totalToPay")]
