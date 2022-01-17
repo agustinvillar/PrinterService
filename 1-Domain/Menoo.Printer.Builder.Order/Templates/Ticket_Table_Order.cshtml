@@ -85,17 +85,6 @@
                         </ul>
                     </div>
                 }
-                if (orderData.Extras.Count > 0)
-                {
-                    <div class="row">
-                        @foreach (Extra extra in orderData.Extras)
-                        {
-                            <div class="section-left">
-                                <span class="item-quantity">1 x </span><b>@extra.Name</b>
-                            </div>
-                        }
-                    </div>
-                }
             }
             <div class="row">&nbsp;</div>
             <div class="row"><hr /></div>

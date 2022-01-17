@@ -116,7 +116,9 @@
                         </ul>
                     </div>
                 }
-                if (orderData.Extras.Count > 0)
+            }
+            @{
+                if (orderData.Extras != null && orderData.Extras.Count > 0)
                 {
                     <div class="row">
                         @foreach (Extra extra in orderData.Extras)

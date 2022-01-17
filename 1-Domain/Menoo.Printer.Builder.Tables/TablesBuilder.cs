@@ -80,7 +80,8 @@ namespace Menoo.Printer.Builder.Tables
             {
                 var tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault();
                 data.Add("userName", tableOpeningInfo.UserName);
-                data.Add("orderData", GetOrderData(tableOpeningInfo.Orders));
+                var ordersActive = tableOpeningInfo.Orders.FindAll(f => f.Status.ToLower().Contains("cancelado"));
+                data.Add("orderData", GetOrderData(ordersActive));
             }
             else if (tableOpeningFamilyDTO.TableOpenings.Count > 1)
             {
