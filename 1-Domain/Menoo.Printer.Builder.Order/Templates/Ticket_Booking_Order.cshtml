@@ -66,12 +66,39 @@
                                         string extra = option.Price == 0 ? "Opción: " + option.Name : option.Quantity + " x " + option.Name;
                                         <li>@extra</li>
                                     }
+                                    if (!string.IsNullOrEmpty(item.GuestComment))
+                                    {
+                                        <li class="row">* @item.GuestComment</li>
+                                        <li class="row">&nbsp;</li>
+                                    }
                                 }
                             </ul>
+                        }
+                        else if (!string.IsNullOrEmpty(item.GuestComment))
+                        {
+                            <div class="row">
+                                <ul class="item-detail">
+                                    <li class="row">@item.GuestComment</li>
+                                    <li class="row">&nbsp;</li>
+                                </ul>
+                            </div>
                         }
                     </div>
                 }
             </div>
+            @{
+                if (orderData.Extras.Count > 0)
+                {
+                    <div class="row">
+                        @foreach (Extra extra in orderData.Extras)
+                        {
+                            <div class="section-left">
+                                <span class="item-quantity">1 x </span><b>@extra.Name</b>
+                            </div>
+                        }
+                    </div>
+                }
+            }
             <div class="row"><hr /></div>
         </div>
     </body>

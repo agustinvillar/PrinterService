@@ -96,5 +96,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("isMarket")]
         [JsonProperty("isMarket")]
         public bool IsMarket { get; set; }
+
+        [FirestoreProperty("extras")]
+        [JsonProperty("extras")]
+        public List<Extra> Extras { get; set; }
     }
 }

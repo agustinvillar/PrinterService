@@ -194,7 +194,7 @@ namespace Menoo.PrinterService.Builder
             }
             else 
             {
-                var orderData = (OrderV2)data.Content["orderData"];
+                var orderData = (Order)data.Content["orderData"];
                 string clientName = orderData.UserName;
                 switch (printEvent)
                 {
@@ -288,10 +288,10 @@ namespace Menoo.PrinterService.Builder
 
         private async Task PrintAsync(string id, PrintInfo extraData, string clientName, List<SectorItem> sectorsByItems)
         {
-            var orderData = (OrderV2)extraData.Content["orderData"];
+            var orderData = (Order)extraData.Content["orderData"];
             foreach (var item in sectorsByItems)
             {
-                var itemData = await _itemRepository.GetById<ItemOrderV2>(item.ItemId, "items");
+                var itemData = await _itemRepository.GetById<ItemOrder>(item.ItemId, "items");
                 var orderItem = orderData.Items.FirstOrDefault(f => f.Id == itemData.Id);
                 var viewData = new Dictionary<string, object>() 
                 {
