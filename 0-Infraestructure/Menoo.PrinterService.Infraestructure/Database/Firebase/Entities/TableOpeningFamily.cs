@@ -196,7 +196,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
         [FirestoreProperty("surcharge")]
         [JsonProperty("surcharge")]
-        public string Surcharge { get; set; }
+        public int? Surcharge { get; set; }
 
         [FirestoreProperty("discounts")]
         [JsonProperty("discounts")]
@@ -221,6 +221,10 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("totalToPayWithSurcharge")]
         [JsonProperty("totalToPayWithSurcharge")]
         public double? TotalToPayWithSurcharge { get; set; }
+
+        [FirestoreProperty("paymentId")]
+        [JsonProperty("paymentId")]
+        public int? PaymentId { get; set; }
     }
 
     [FirestoreData]

@@ -272,14 +272,13 @@ namespace Menoo.PrinterService.Builder
                     StoreName = data.Store.Name,
                     StoreId = data.Store.Id
                 };
-                int sizeTicketImage = System.Text.ASCIIEncoding.Unicode.GetByteCount(ticket);
                 _generalWriter.WriteEntry($"Builder::SendToFirebaseAsync(). Enviando a imprimir el ticket con la siguiente información. {Environment.NewLine}" +
                     $"Detalles:{Environment.NewLine}" +
                     $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
                     $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
                     $"Hora de impresión: {printDocument.PrintBefore}{Environment.NewLine}" +
                     $"Restaurante: {printDocument.StoreName}{Environment.NewLine}" +
-                    $"Tamaño en bytes ticket: {sizeTicketImage / 1024 / 1024 }MB {Environment.NewLine}" +
+                    $"URL Ticket: {ticket} {Environment.NewLine}" +
                     $"Id en colección printEvents: {id}", EventLogEntryType.Information);
                 await _ticketRepository.SaveAsync(printDocument);
                 await _ticketRepository.SetTicketImageAsync(id, ticket);

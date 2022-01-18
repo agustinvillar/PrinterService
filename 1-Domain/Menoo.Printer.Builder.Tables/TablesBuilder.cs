@@ -7,6 +7,7 @@ using Menoo.PrinterService.Infraestructure.Repository;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,18 +18,24 @@ namespace Menoo.Printer.Builder.Tables
     {
         private const int PRINT_MINUTES = 10;
 
+        private const int MIN_SHARED_TABLES_OPENING = 2;
+
         private readonly EventLog _generalWriter;
 
         private readonly TableOpeningFamilyRepository _tableOpeningFamilyRepository;
 
         private readonly StoreRepository _storeRepository;
 
+        private readonly PaymentRepository _paymentRepository;
+
         public TablesBuilder(
             StoreRepository storeRepository,
-            TableOpeningFamilyRepository tableOpeningFamilyRepository)
+            TableOpeningFamilyRepository tableOpeningFamilyRepository,
+            PaymentRepository paymentRepository)
         {
             _storeRepository = storeRepository;
             _tableOpeningFamilyRepository = tableOpeningFamilyRepository;
+            _paymentRepository = paymentRepository;
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
@@ -57,7 +64,7 @@ namespace Menoo.Printer.Builder.Tables
             }
             else if (data.PrintEvent == PrintEvents.TABLE_CLOSED)
             {
-                dataToPrint.Content = GetInfoCloseTableOpeningFamily(tableOpeningFamilyDTO);
+                dataToPrint.Content = await GetInfoCloseTableOpeningFamilyAsync(tableOpeningFamilyDTO);
                 dataToPrint.BeforeAt = Utils.BeforeAt(tableOpeningFamilyDTO.ClosedAt, PRINT_MINUTES);
                 dataToPrint.Template = PrintTemplates.TABLE_CLOSED;
             }
@@ -69,21 +76,33 @@ namespace Menoo.Printer.Builder.Tables
         }
 
         #region private methods
-        private Dictionary<string, object> GetInfoCloseTableOpeningFamily(TableOpeningFamily tableOpeningFamilyDTO)
+        private async Task<Dictionary<string, object>> GetInfoCloseTableOpeningFamilyAsync(TableOpeningFamily tableOpeningFamilyDTO)
         {
             var data = new Dictionary<string, object>();
             var dateTime = Convert.ToDateTime(tableOpeningFamilyDTO.ClosedAt);
+            bool isOnlyUser = tableOpeningFamilyDTO.TableOpenings.Count > 0 && tableOpeningFamilyDTO.TableOpenings.Count < MIN_SHARED_TABLES_OPENING;
             data.Add("title", SetTitleForCloseTable(tableOpeningFamilyDTO));
             data.Add("tableNumber", tableOpeningFamilyDTO.TableNumberToShow.ToString());
             data.Add("closedAt", dateTime.ToString("dd/MM/yyyy HH:mm:ss"));
-            if (tableOpeningFamilyDTO.TableOpenings.Count == 1)
+            data.Add("isOnlyUser", isOnlyUser);
+            if (isOnlyUser)
             {
                 var tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault();
+                var ordersActive = tableOpeningInfo.Orders.FindAll(f => !f.Status.ToLower().Contains("cancelado"));
+                var paymentData = await _paymentRepository.GetPaymentByIdAsync(tableOpeningInfo.PaymentId.GetValueOrDefault());
+                var orderUnified = GetOrderData(ordersActive);
+                var subTotal = GetSubtotal(orderUnified);
+                var propina = tableOpeningInfo.Propina != null && tableOpeningInfo.Propina.GetValueOrDefault() > 0 ? Convert.ToDecimal(tableOpeningInfo.Propina).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")) : string.Empty;
+                var paymentSurcharge = paymentData.Surcharge != null && paymentData.Surcharge.GetValueOrDefault() > 0 ? Convert.ToDecimal(paymentData.Surcharge.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")) : string.Empty;
                 data.Add("userName", tableOpeningInfo.UserName);
-                var ordersActive = tableOpeningInfo.Orders.FindAll(f => f.Status.ToLower().Contains("cancelado"));
-                data.Add("orderData", GetOrderData(ordersActive));
+                data.Add("orderData", orderUnified);
+                data.Add("subTotal", subTotal);
+                data.Add("paymentData", paymentData);
+                data.Add("propina", propina);
+                data.Add("paymentSurcharge", paymentSurcharge);
+
             }
-            else if (tableOpeningFamilyDTO.TableOpenings.Count > 1)
+            else
             {
                 data.Add("userName", string.Empty);
             }
@@ -111,21 +130,26 @@ namespace Menoo.Printer.Builder.Tables
         {
             var orderUnified = new Order();
             var items = new List<ItemOrder>();
+            var extras = new List<Extra>();
             var ordersByStore = orders.GroupBy(g => g.Store.Id).FirstOrDefault();
-            var ordersByOrderNumber = orders.GroupBy(g => g.OrderNumber).FirstOrDefault();
             var ordersByAddress = orders.GroupBy(g => g.Address).FirstOrDefault();
             var ordersByUsername = orders.GroupBy(g => g.UserName).FirstOrDefault();
-            var ordersStatus = orders.GroupBy(g => g.Status).FirstOrDefault();
-            orderUnified.OrderNumber = ordersByOrderNumber.Key;
             orderUnified.Address = ordersByAddress.Key;
             orderUnified.UserName = ordersByUsername.Key;
             orderUnified.Store = ordersByStore.ToList().FirstOrDefault().Store;
             orderUnified.OrderType = ordersByStore.ToList().FirstOrDefault().OrderType;
-            orderUnified.Status = ordersStatus.Key;
             orders.ForEach(item => {
-                items.AddRange(item.Items);
+                if (item.Items != null && item.Items.Count > 0) 
+                {
+                    items.AddRange(item.Items);
+                }
+                if (item.Extras != null && item.Extras.Count > 0) 
+                {
+                    extras.AddRange(item.Extras);
+                }
             });
             orderUnified.Items = items;
+            orderUnified.Extras = extras;
             return orderUnified;
         }
 
@@ -141,6 +165,17 @@ namespace Menoo.Printer.Builder.Tables
                 title = "Mesa cerrada";
             }
             return title;
+        }
+
+        private string GetSubtotal(Order orderData) 
+        {
+            double result = 0d;
+            foreach (var item in orderData.Items)
+            {
+                result += item.Total.GetValueOrDefault();
+            }
+            var subtotal = Convert.ToDecimal(result).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+            return subtotal;
         }
         #endregion
     }

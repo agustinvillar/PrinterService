@@ -16,195 +16,195 @@
     int sucharge = Model.ContainsKey("sucharge") ? Convert.ToInt32(Model["sucharge"]) : 0;
 }<!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <title></title>
-        <style>
-            @Model["style"].ToString()
-        </style>
-    </head>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        @Model["style"].ToString()
+    </style>
+</head>
     <body>
-        <div class="invoice-pos">
+    <div class="invoice-pos">
+        <div class="section-center invoince-header">
             <div class="section-center invoince-header">
-                <div class="section-center invoince-header">
-                    <div class="section-center">
-                        @if (allowLogo)
-                        {
-                            <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO" />
-                        }
-                        else
-                        {
-                            <span class="title">MENOO</span>
-                        }
-                    </div>
-                </div>
                 <div class="section-center">
-                    @Model["title"].ToString()
+                    @if (allowLogo)
+                    {
+                        <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO" />
+                    }
+                    else
+                    {
+                        <span class="title">MENOO</span>
+                    }
                 </div>
             </div>
+            <div class="section-center">
+                @Model["title"].ToString()
+            </div>
+        </div>
+        <div class="row">
+            <div class="column-50 section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
+            <div class="column-50 section-right"><b>Hora retiro: @Model["taTime"].ToString()</b></div>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="section-left"><b>Cliente:</b> @Model["clientName"].ToString()</div>
+        </div>
+        <div class="row"><hr /></div>
+        <div class="row section-custom-header uppercase">
+            <div class="section-center"><b>Detalle del pedido</b></div>
+        </div>
+        @foreach (ItemOrder item in orderData.Items)
+        {
             <div class="row">
-                <div class="column-50 section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
-                <div class="column-50 section-right"><b>Hora retiro: @Model["taTime"].ToString()</b></div>
+                <div class="column-80 section-left">
+                    <span class="item-quantity section-left">@item.Quantity.GetValueOrDefault() x </span><b>@item.Name</b>
+                </div>
+                <div class="column-20 section-right">
+                    @{
+                        if (item.PriceWithDiscountTA.GetValueOrDefault() != item.Price.GetValueOrDefault())
+                        {
+                            <span class="invalid-text">$@Convert.ToDecimal(item.Price.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")</span>
+                        }
+                    }
+                    $@Convert.ToDecimal(item.PriceWithDiscountTA).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")
+                </div>
             </div>
             <div class="row">&nbsp;</div>
-            <div class="row">
-                <div class="section-left"><b>Cliente:</b> @Model["clientName"].ToString()</div>
-            </div>
-            <div class="row"><hr /></div>
-            <div class="row section-custom-header uppercase">
-                <div class="section-center"><b>Detalle del pedido</b></div>
-            </div>
-            @foreach (ItemOrder item in orderData.Items)
+            @if (item.Options != null)
             {
                 <div class="row">
-                    <div class="column-80 section-left">
-                        <span class="item-quantity section-left">@item.Quantity.GetValueOrDefault() x </span><b>@item.Name</b>
-                    </div>
-                    <div class="column-20 section-right">
+                    <ul class="item-detail">
                         @{
-                            if (item.PriceWithDiscountTA.GetValueOrDefault() != item.Price.GetValueOrDefault())
+                            foreach (ItemOption option in item.Options)
                             {
-                                <span class="invalid-text">$@item.Price.GetValueOrDefault()</span>
+                                string extraName = option.Price == 0 ? "Opción: " + option.Name : "Opción: " + option.Quantity + " x " + option.Name;
+                                <li class="row">
+                                    @if (option.Price > 0)
+                                    {
+                                        <span class="column-80 section-left">
+                                            @extraName
+                                        </span>
+                                        <span class="column-20 section-right">
+                                            $@option.Price.ToString("N2", CultureInfo.CreateSpecificCulture("en-US")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="section-left">
+                                            @extraName
+                                        </span>
+                                    }
+                                </li>
+                                <li class="row">&nbsp;</li>
+                            }
+                            if (!string.IsNullOrEmpty(item.GuestComment))
+                            {
+                                <li class="row">* @item.GuestComment</li>
+                                <li class="row">&nbsp;</li>
                             }
                         }
-                        $@item.PriceWithDiscountTA
-                    </div>
+                    </ul>
                 </div>
-                <div class="row">&nbsp;</div>
-                @if (item.Options != null)
-                {
-                    <div class="row">
-                        <ul class="item-detail">
-                            @{
-                                foreach (ItemOption option in item.Options)
-                                {
-                                    string extraName = option.Price == 0 ? "Opción: " + option.Name : "Opción: " + option.Quantity + " x " + option.Name;
-                                    <li class="row">
-                                        @if (option.Price > 0)
-                                        {
-                                            <span class="column-80 section-left">
-                                                @extraName
-                                            </span>
-                                            <span class="column-20 section-right">
-                                                $@option.Price
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="section-left">
-                                                @extraName
-                                            </span>
-                                        }
-                                    </li>
-                                    <li class="row">&nbsp;</li>
-                                }
-                                if (!string.IsNullOrEmpty(item.GuestComment))
-                                {
-                                    <li class="row">* @item.GuestComment</li>
-                                    <li class="row">&nbsp;</li>
-                                }
-                            }
-                        </ul>
-                    </div>
-                }
-                else if (!string.IsNullOrEmpty(item.GuestComment))
-                {
-                    <div class="row">
-                        <ul class="item-detail">
-                            <li class="row">@item.GuestComment</li>
-                            <li class="row">&nbsp;</li>
-                        </ul>
-                    </div>
-                }
             }
-            @{
-                if (orderData.Extras != null && orderData.Extras.Count > 0)
-                {
-                    <div class="row">
-                        @foreach (Extra extra in orderData.Extras)
-                        {
-                            <div class="row">
-                                <div class="column-50 section-left">@extra.Name</div>
-                                <div class="column-50 section-right">@extra.Price.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</div>
-                            </div>
-                        }
-                    </div>
-                    <div class="row">&nbsp;</div>
-                }
+            else if (!string.IsNullOrEmpty(item.GuestComment))
+            {
+                <div class="row">
+                    <ul class="item-detail">
+                        <li class="row">@item.GuestComment</li>
+                        <li class="row">&nbsp;</li>
+                    </ul>
+                </div>
             }
-            <div class="row"><hr /></div>
-            <div class="row">
-                <div class="column-50 section-left">Subtotal:</div>
-                <div class="column-50 section-right">@subTotal</div>
-            </div>
-            @{
-                if (sucharge > 0)
-                {
-                    <div class="row">
-                        <div class="column-50 section-left">Adicional por servicio:</div>
-                        <div class="column-50 section-right">@sucharge</div>
-                    </div>
-                    <div class="row">&nbsp;</div>
-                }
-                if (Model.ContainsKey("couponName") && Model.ContainsKey("couponAmount"))
-                {
-                    <div class="row">
-                        <div class="column-80 section-left">@Model["couponName"].ToString()</div>
-                        <div class="column-20 section-right">@Model["couponAmount"].ToString()</div>
-                    </div>
-                    <div class="row">&nbsp;</div>
-                }
-                if (Model.ContainsKey("discounts"))
-                {
-                    List<Discount> discounts = (List<Discount>)Model["discounts"];
-                    foreach (Discount discount in discounts)
+        }
+        @{
+            if (orderData.Extras != null && orderData.Extras.Count > 0)
+            {
+                <div class="row">
+                    @foreach (Extra extra in orderData.Extras)
                     {
                         <div class="row">
-                            <div class="column-50 section-left">@discount.Name</div>
-                            <div class="column-50 section-right">@discount.Amount.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</div>
+                            <div class="column-50 section-left">@extra.Name</div>
+                            <div class="column-50 section-right">@extra.Price.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</div>
                         </div>
-                        <div class="row">&nbsp;</div>
                     }
-                }
+                </div>
+                <div class="row">&nbsp;</div>
             }
-            <div class="row">
-                <div class="column-50 section-left header uppercase"><b>TOTAL:</b></div>
-                <div class="column-50 section-right header uppercase"><b>@total</b></div>
-            </div>
-            <div class="row">&nbsp;</div>
-            <div class="row">
-                <div class="section-left"><b>Medio de Pago</b></div>
-                <div class="section-left">@Model["paymentMethod"].ToString()</div>
-            </div>
-            <div class="row"><hr /></div>
-            @{
-                if (!string.IsNullOrEmpty(htmlPictureTag) && printQR)
+        }
+        <div class="row"><hr /></div>
+        <div class="row">
+            <div class="column-50 section-left">Subtotal:</div>
+            <div class="column-50 section-right">@subTotal</div>
+        </div>
+        @{
+            if (sucharge > 0)
+            {
+                <div class="row">
+                    <div class="column-50 section-left">Adicional por servicio:</div>
+                    <div class="column-50 section-right">@sucharge</div>
+                </div>
+                <div class="row">&nbsp;</div>
+            }
+            if (Model.ContainsKey("couponName") && Model.ContainsKey("couponAmount"))
+            {
+                <div class="row">
+                    <div class="column-80 section-left">@Model["couponName"].ToString()</div>
+                    <div class="column-20 section-right">@Model["couponAmount"].ToString()</div>
+                </div>
+                <div class="row">&nbsp;</div>
+            }
+            if (Model.ContainsKey("discounts"))
+            {
+                List<Discount> discounts = (List<Discount>)Model["discounts"];
+                foreach (Discount discount in discounts)
                 {
                     <div class="row">
-                        <div class="section-center">
-                            <img class="img-order-qr" src="@htmlPictureTag" alt="Orden Takeaway">
-                        </div>
+                        <div class="column-50 section-left">@discount.Name</div>
+                        <div class="column-50 section-right">-@discount.Amount.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</div>
                     </div>
+                    <div class="row">&nbsp;</div>
                 }
             }
-            <div class="row">&nbsp;</div>
-            @if (!isCancelled)
-            {
-                <div class="row section-custom-header">
-                    <div class="section-center">
-                        <span>Recuerde <b>ACEPTAR</b> el pedido</span>
-                        <span>Pedido <b>YA PAGO</b></span>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="row section-custom-header">
-                    <div class="section-center">
-                        <span>Pedido <b>CANCELADO</b></span>
-                    </div>
-                </div>
-            }
+        }
+        <div class="row">
+            <div class="column-50 section-left header uppercase"><b>TOTAL:</b></div>
+            <div class="column-50 section-right header uppercase"><b>@total</b></div>
         </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="section-left"><b>Medio de Pago</b></div>
+            <div class="section-left">@Model["paymentMethod"].ToString()</div>
+        </div>
+        <div class="row"><hr /></div>
+        @{
+            if (!string.IsNullOrEmpty(htmlPictureTag) && printQR)
+            {
+                <div class="row">
+                    <div class="section-center">
+                        <img class="img-order-qr" src="@htmlPictureTag" alt="Orden Takeaway">
+                    </div>
+                </div>
+            }
+        }
+        <div class="row">&nbsp;</div>
+        @if (!isCancelled)
+        {
+            <div class="row section-custom-header">
+                <div class="section-center">
+                    <span>Recuerde <b>ACEPTAR</b> el pedido</span>
+                    <span>Pedido <b>YA PAGO</b></span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row section-custom-header">
+                <div class="section-center">
+                    <span>Pedido <b>CANCELADO</b></span>
+                </div>
+            </div>
+        }
+    </div>
 </body>
 </html>
