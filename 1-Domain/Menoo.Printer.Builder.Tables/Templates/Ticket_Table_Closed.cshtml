@@ -10,7 +10,7 @@
         <meta charset="utf-8" />
         <title></title>
         <style>
-        @Model["style"].ToString()
+    @Model["style"].ToString()
         </style>
     </head>
     <body>
@@ -37,7 +37,7 @@
                 {
                     <div class="row">
                         <div class="column-50 section-left"><b>N° mesa:</b> @Model["tableNumber"].ToString()</div>
-                        <div class="column-50 section-right"><b>Fecha: @Model["closedAt"].ToString()</b></div>
+                        <div class="column-50 section-right"><b>Fecha:</b> @Model["closedAt"].ToString()</div>
                     </div>
                     <div class="row">
                         <div class="section-left"><b>Cliente:</b> @Model["userName"].ToString()</div>
@@ -47,7 +47,7 @@
                 {
                     <div class="row">
                         <div class="column-50 section-left"><b>N° mesa:</b> @Model["tableNumber"].ToString()</div>
-                        <div class="column-50 section-right"><b>Hora retiro: @Model["closedAt"].ToString()</b></div>
+                        <div class="column-50 section-right"><b>Fecha:</b> @Model["closedAt"].ToString()</div>
                     </div>
                 }
             }
@@ -57,25 +57,26 @@
             </div>
             @if (isOnlyUser)
             {
-                @BuildTicketContent(isOnlyUser)
+                @BuildOnlyUserContent()
             }
             else
             {
-
+                @BuildOnlyUserPayForAllContent()
             }
+            <div class="row">&nbsp;</div>
         </div>
     </body>
 </html>
 
-@helper BuildTicketContent(bool onlyUser)
+@helper BuildOnlyUserContent()
 {
     var order = (Order)Model["orderData"];
     var paymentData = (Payment)Model["paymentData"];
-    string subTotal = "$" + Model["subTotal"].ToString();
-    var culteryPriceAmount = Convert.ToDecimal(paymentData.TableOpening.CutleryPriceTotal.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
-    var artisticCutleryTotal = Convert.ToDecimal(paymentData.TableOpening.ArtisticCutleryTotal.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+    string subTotal = GetSubtotal(order);
     string propina = Model["propina"].ToString();
     string paymentSurcharge = Model["paymentSurcharge"].ToString();
+    var culteryPriceAmount = Convert.ToDecimal(paymentData.TableOpening.CutleryPriceTotal.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+    var artisticCutleryTotal = Convert.ToDecimal(paymentData.TableOpening.ArtisticCutleryTotal.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
     bool specialConditionCoupon = paymentData.TableOpening.DiscountAmmount.GetValueOrDefault() > 0 && paymentData.TableOpening.DiscountByCouponAmount.GetValueOrDefault() == 0;
     string discountAmount = Convert.ToDecimal(paymentData.TableOpening.DiscountAmmount.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
     @foreach (ItemOrder item in order.Items)
@@ -135,7 +136,7 @@
         {
             <div class="row">
                 <ul class="item-detail">
-                    <li class="row">@item.GuestComment</li>
+                    <li class="row">* @item.GuestComment</li>
                     <li class="row">&nbsp;</li>
                 </ul>
             </div>
@@ -206,6 +207,15 @@
             </div>
         </div>
     }
+    if (paymentData.TableOpening.DiscountByCreditAmount != null && paymentData.TableOpening.DiscountByCreditAmount.GetValueOrDefault() > 0)
+    {
+        <div class="row">
+            <div class="column-80 section-left">Crédito Menoo</div>
+            <div class="column-20 section-right">
+                -$@Convert.ToDecimal(paymentData.TableOpening.DiscountByCreditAmount.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+            </div>
+        </div>
+    }
     if (paymentData.TableOpening.Discounts != null && paymentData.TableOpening.Discounts.Count > 0)
     {
         foreach (var discount in paymentData.Discounts)
@@ -227,11 +237,32 @@
         </div>
     </div>
     <div class="row">
-        <div class="column-50 section-left header uppercase"><b>TOTAL:</b></div>
-        <div class="column-50 section-right header uppercase">
-            <b>
-                -$@Convert.ToDecimal(paymentData.TableOpening.TotalPaidByClient.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
-            </b>
+        <div class="column-80 section-left">Pagado por cliente:</div>
+        <div class="column-20 section-right">
+            -$@Convert.ToDecimal(paymentData.TableOpening.TotalPaidByClient.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
         </div>
     </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="section-left"><b>Medio de Pago</b></div>
+        <div class="section-left">@paymentData.TableOpening.PayMethod</div>
+    </div>
+}
+
+@helper BuildOnlyUserPayForAllContent()
+{
+
+}
+
+@functions {
+    public string GetSubtotal(Order orderData)
+    {
+        double result = 0d;
+        foreach (ItemOrder item in orderData.Items)
+        {
+            result += item.Total.GetValueOrDefault();
+        }
+        string subtotal = Convert.ToDecimal(result).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+        return "$" + subtotal;
+    }
 }

@@ -91,20 +91,16 @@ namespace Menoo.Printer.Builder.Tables
                 var ordersActive = tableOpeningInfo.Orders.FindAll(f => !f.Status.ToLower().Contains("cancelado"));
                 var paymentData = await _paymentRepository.GetPaymentByIdAsync(tableOpeningInfo.PaymentId.GetValueOrDefault());
                 var orderUnified = GetOrderData(ordersActive);
-                var subTotal = GetSubtotal(orderUnified);
                 var propina = tableOpeningInfo.Propina != null && tableOpeningInfo.Propina.GetValueOrDefault() > 0 ? Convert.ToDecimal(tableOpeningInfo.Propina).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")) : string.Empty;
                 var paymentSurcharge = paymentData.Surcharge != null && paymentData.Surcharge.GetValueOrDefault() > 0 ? Convert.ToDecimal(paymentData.Surcharge.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")) : string.Empty;
                 data.Add("userName", tableOpeningInfo.UserName);
                 data.Add("orderData", orderUnified);
-                data.Add("subTotal", subTotal);
                 data.Add("paymentData", paymentData);
                 data.Add("propina", propina);
                 data.Add("paymentSurcharge", paymentSurcharge);
-
             }
             else
             {
-                data.Add("userName", string.Empty);
             }
             return data;
         }
@@ -165,17 +161,6 @@ namespace Menoo.Printer.Builder.Tables
                 title = "Mesa cerrada";
             }
             return title;
-        }
-
-        private string GetSubtotal(Order orderData) 
-        {
-            double result = 0d;
-            foreach (var item in orderData.Items)
-            {
-                result += item.Total.GetValueOrDefault();
-            }
-            var subtotal = Convert.ToDecimal(result).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
-            return subtotal;
         }
         #endregion
     }
