@@ -216,7 +216,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
         [FirestoreProperty("artisticCutleryNumber")]
         [JsonProperty("artisticCutleryNumber")]
-        public int? ArtisticCutleryQuantity { get; set; }
+        public double? ArtisticCutleryQuantity { get; set; }
 
         [FirestoreProperty("totalToPayWithSurcharge")]
         [JsonProperty("totalToPayWithSurcharge")]

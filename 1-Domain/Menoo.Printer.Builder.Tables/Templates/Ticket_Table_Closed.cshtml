@@ -312,6 +312,7 @@
                         <div class="column item-detail">* @item.GuestComment</div>
                     </div>
                 }
+                <div class="row">&nbsp;</div>
             }
             preSubTotal += GetPreSubtotal(order);
         }
@@ -435,9 +436,10 @@
     <div class="row">&nbsp;</div>
     if (!string.IsNullOrEmpty(paymentData.TableOpening.PayMethod))
     {
+        string paymentMethod = PaymentMethod(paymentData.TableOpening.PayMethod);
         <div class="row">
             <div class="section-left"><b>Medio de Pago</b></div>
-            <div class="section-left">@paymentData.TableOpening.PayMethod</div>
+            <div class="section-left">@paymentMethod</div>
         </div>
     }
 }
@@ -495,5 +497,14 @@
             message = "Le pagaron su cuenta";
         }
         return message;
+    }
+
+    public string PaymentMethod(string typeMethod) 
+    {
+        if (typeMethod.ToLower().Contains("tarjeta"))
+        {
+            return "Pago en línea";
+        }
+        return typeMethod;
     }
 }

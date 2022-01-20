@@ -6,6 +6,8 @@
 
         public const string TABLE_CLOSED = "Ticket_Table_Closed.cshtml";
 
+        public const string TABLE_REQUEST_PAYMENT = "Ticket_Request_Payment.cshtml";
+
         public const string NEW_BOOKING = "Ticket_Booking.cshtml";
 
         public const string NEW_TAKEAWAY_ORDER = "Ticket_TA_Order.cshtml";

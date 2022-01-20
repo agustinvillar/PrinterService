@@ -70,7 +70,10 @@ namespace Menoo.Printer.Builder.Tables
             }
             else if (data.PrintEvent == PrintEvents.REQUEST_PAYMENT)
             {
-                dataToPrint.Content = GetInfoRequestPayment(tableOpeningFamilyDTO, data.SubTypeDocument);
+                string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+                dataToPrint.Content = GetInfoRequestPayment(tableOpeningFamilyDTO);
+                dataToPrint.BeforeAt = Utils.BeforeAt(now, PRINT_MINUTES);
+                dataToPrint.Template = PrintTemplates.TABLE_REQUEST_PAYMENT;
             }
             return dataToPrint;
         }
@@ -129,9 +132,22 @@ namespace Menoo.Printer.Builder.Tables
             return data;
         }
 
-        private Dictionary<string, object> GetInfoRequestPayment(TableOpeningFamily tableOpeningFamilyDTO, string typeRequest)
+        private Dictionary<string, object> GetInfoRequestPayment(TableOpeningFamily tableOpeningFamilyDTO)
         {
             var data = new Dictionary<string, object>();
+            string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+            var tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault(f => f.PayWithPOS);
+            tableOpeningFamilyDTO.TableOpenings.ForEach(i =>
+            {
+                var queryResult = i.Orders.FindAll(f => f.Status.ToLower() != "cancelado");
+                var onlyActiveOrders = new List<Order>(queryResult);
+                i.Orders.Clear();
+                i.Orders.AddRange(onlyActiveOrders);
+            });
+            data.Add("title", SetTitleForRequestPayment(tableOpeningFamilyDTO));
+            data.Add("requestPaymentTimeAt", now);
+            data.Add("userName", tableOpeningInfo.UserName);
+            data.Add("tableOpeningFamilyData", tableOpeningFamilyDTO);
             return data;
         }
 
@@ -172,6 +188,20 @@ namespace Menoo.Printer.Builder.Tables
             else
             {
                 title = "Mesa cerrada";
+            }
+            return title;
+        }
+
+        private string SetTitleForRequestPayment(TableOpeningFamily tableOpeningFamilyDTO) 
+        {
+            string title = string.Empty;
+            if (tableOpeningFamilyDTO.TableOpenings.Any(f => f.PayWithPOS))
+            {
+                title = "Solicitud de pago POS";
+            }
+            else
+            {
+                title = "Solicitud de pago efectivo";
             }
             return title;
         }
