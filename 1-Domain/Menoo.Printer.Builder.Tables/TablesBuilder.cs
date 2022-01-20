@@ -148,6 +148,7 @@ namespace Menoo.Printer.Builder.Tables
             data.Add("requestPaymentTimeAt", now);
             data.Add("userName", tableOpeningInfo.UserName);
             data.Add("tableOpeningFamilyData", tableOpeningFamilyDTO);
+            data.Add("tableNumber", tableOpeningFamilyDTO.TableNumberToShow.ToString());
             return data;
         }
 

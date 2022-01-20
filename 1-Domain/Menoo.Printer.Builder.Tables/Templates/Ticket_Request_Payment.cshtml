@@ -3,14 +3,13 @@
 @model System.Collections.Generic.Dictionary<string, object>
 @{
     bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
-    bool isOnlyUser = Convert.ToBoolean(Model["isOnlyUser"].ToString());
 }<!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8" />
         <title></title>
         <style>
-    @Model["style"].ToString()
+        @Model["style"].ToString()
         </style>
     </head>
     <body>
@@ -35,7 +34,7 @@
             @{
                 <div class="row">
                     <div class="column-50 section-left"><b>N° mesa:</b> @Model["tableNumber"].ToString()</div>
-                    <div class="column-50 section-right"><b>Fecha:</b> @Model["closedAt"].ToString()</div>
+                    <div class="column-50 section-right"><b>Fecha:</b> @Model["requestPaymentTimeAt"].ToString()</div>
                 </div>
                 <div class="row">
                     <div class="section-left"><b>Cliente:</b> @Model["userName"].ToString()</div>
@@ -110,6 +109,10 @@
                     <div class="row">
                         <div class="column item-detail">* @item.GuestComment</div>
                     </div>
+                }
+                else 
+                {
+                    <div class="row">&nbsp;</div>
                 }
                 <div class="row">&nbsp;</div>
             }

@@ -67,11 +67,11 @@
                             <span class="invalid-text">$@Convert.ToDecimal(item.Price.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")</span>
                         }
                     }
-                    $@Convert.ToDecimal(item.PriceWithDiscountTA).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")
+                    $@Convert.ToDecimal(item.PriceWithDiscountTA).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
                 </div>
             </div>
             <div class="row">&nbsp;</div>
-            @if (item.Options != null)
+            @if (item.Options != null && item.Options.Count > 0)
             {
                 <div class="row">
                     <ul class="item-detail">

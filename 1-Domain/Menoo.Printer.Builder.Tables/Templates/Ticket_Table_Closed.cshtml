@@ -132,6 +132,10 @@
                 <div class="column item-detail">* @item.GuestComment</div>
             </div>
         }
+        else
+        {
+            <div class="row">&nbsp;</div>
+        }
         <div class="row">&nbsp;</div>
     }
     <div class="row">&nbsp;</div>
@@ -311,6 +315,10 @@
                     <div class="row">
                         <div class="column item-detail">* @item.GuestComment</div>
                     </div>
+                }
+                else
+                {
+                    <div class="row">&nbsp;</div>
                 }
                 <div class="row">&nbsp;</div>
             }
@@ -499,7 +507,7 @@
         return message;
     }
 
-    public string PaymentMethod(string typeMethod) 
+    public string PaymentMethod(string typeMethod)
     {
         if (typeMethod.ToLower().Contains("tarjeta"))
         {
