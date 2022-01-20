@@ -78,6 +78,8 @@ namespace Menoo.Printer.Builder.Tables
         #region private methods
         private async Task<Dictionary<string, object>> GetInfoCloseTableOpeningFamilyAsync(TableOpeningFamily tableOpeningFamilyDTO)
         {
+            Payment paymentData = null;
+            TableOpening tableOpeningInfo = null;
             var data = new Dictionary<string, object>();
             var dateTime = Convert.ToDateTime(tableOpeningFamilyDTO.ClosedAt);
             bool isOnlyUser = tableOpeningFamilyDTO.TableOpenings.Count > 0 && tableOpeningFamilyDTO.TableOpenings.Count < MIN_SHARED_TABLES_OPENING;
@@ -87,21 +89,32 @@ namespace Menoo.Printer.Builder.Tables
             data.Add("isOnlyUser", isOnlyUser);
             if (isOnlyUser)
             {
-                var tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault();
+                tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault();
                 var ordersActive = tableOpeningInfo.Orders.FindAll(f => !f.Status.ToLower().Contains("cancelado"));
-                var paymentData = await _paymentRepository.GetPaymentByIdAsync(tableOpeningInfo.PaymentId.GetValueOrDefault());
+                paymentData = await _paymentRepository.GetPaymentByIdAsync(tableOpeningInfo.PaymentId.GetValueOrDefault());
                 var orderUnified = GetOrderData(ordersActive);
-                var propina = tableOpeningInfo.Propina != null && tableOpeningInfo.Propina.GetValueOrDefault() > 0 ? Convert.ToDecimal(tableOpeningInfo.Propina).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")) : string.Empty;
-                var paymentSurcharge = paymentData.Surcharge != null && paymentData.Surcharge.GetValueOrDefault() > 0 ? Convert.ToDecimal(paymentData.Surcharge.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")) : string.Empty;
                 data.Add("userName", tableOpeningInfo.UserName);
                 data.Add("orderData", orderUnified);
-                data.Add("paymentData", paymentData);
-                data.Add("propina", propina);
-                data.Add("paymentSurcharge", paymentSurcharge);
             }
             else
             {
+                tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault(f => f.PayingForAll);
+                int paymentId = tableOpeningInfo.PaymentId.GetValueOrDefault();
+                paymentData = await _paymentRepository.GetPaymentByIdAsync(paymentId);
+                tableOpeningFamilyDTO.TableOpenings.ForEach(i => 
+                {
+                    var queryResult = i.Orders.FindAll(f => f.Status.ToLower() != "cancelado");
+                    var onlyActiveOrders = new List<Order>(queryResult);
+                    i.Orders.Clear();
+                    i.Orders.AddRange(onlyActiveOrders);
+                });
+                data.Add("tableOpeningFamilyData", tableOpeningFamilyDTO);
             }
+            string propina = tableOpeningInfo.Propina != null && tableOpeningInfo.Propina.GetValueOrDefault() > 0 ? Convert.ToDecimal(tableOpeningInfo.Propina).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")) : string.Empty;
+            string paymentSurcharge = paymentData.Surcharge != null && paymentData.Surcharge.GetValueOrDefault() > 0 ? Convert.ToDecimal(paymentData.Surcharge.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")) : string.Empty;
+            data.Add("paymentData", paymentData);
+            data.Add("propina", propina);
+            data.Add("paymentSurcharge", paymentSurcharge);
             return data;
         }
 

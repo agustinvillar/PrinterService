@@ -225,6 +225,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("paymentId")]
         [JsonProperty("paymentId")]
         public int? PaymentId { get; set; }
+
+        public bool PaidForIt => !PaidByOther && !PayingForAll;
     }
 
     [FirestoreData]

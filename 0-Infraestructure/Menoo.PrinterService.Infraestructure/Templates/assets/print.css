@@ -15,9 +15,24 @@ ul {
     width: 100%;
 }
 
+.column-20 {
+    float: left;
+    width: 30%;
+}
+
+.column-35 {
+    float: left;
+    width: 35%;
+}
+
 .column-50 {
     float: left;
     width: 50%;
+}
+
+.column-65 {
+    float: left;
+    width: 65%;
 }
 
 .column-80 {
@@ -25,17 +40,12 @@ ul {
     width: 70%;
 }
 
-.column-20 {
-    float: left;
-    width: 30%;
-}
-
 .header {
     font-size: 18px;
 }
 
 .item-detail {
-    margin-left: 1%;
+    margin-left: 5%;
 }
 
 .img-logo {

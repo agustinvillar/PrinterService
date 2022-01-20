@@ -10,7 +10,7 @@
         <meta charset="utf-8" />
         <title></title>
         <style>
-    @Model["style"].ToString()
+        @Model["style"].ToString()
         </style>
     </head>
     <body>
@@ -49,6 +49,7 @@
                         <div class="column-50 section-left"><b>N° mesa:</b> @Model["tableNumber"].ToString()</div>
                         <div class="column-50 section-right"><b>Fecha:</b> @Model["closedAt"].ToString()</div>
                     </div>
+                    <div class="row">&nbsp;</div>
                 }
             }
             <div class="row"><hr /></div>
@@ -82,14 +83,14 @@
     @foreach (ItemOrder item in order.Items)
     {
         <div class="row">
-            <div class="column-80 section-left">
+            <div class="column-50 section-left">
                 <span class="item-quantity section-left">@item.Quantity.GetValueOrDefault() x </span><b>@item.Name</b>
             </div>
-            <div class="column-20 section-right">
+            <div class="column-50 section-right">
                 @{
                     if (item.PriceWithDiscount.GetValueOrDefault() != item.Price.GetValueOrDefault())
                     {
-                        <span class="invalid-text">$@item.Price.GetValueOrDefault()</span>
+                        <span class="invalid-text">$@Convert.ToDecimal(item.Price.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</span>
                     }
                 }
                 $@Convert.ToDecimal(item.PriceWithDiscount).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
@@ -97,53 +98,45 @@
         </div>
         @if (item.Options != null && item.Options.Count > 0)
         {
-            <div class="row">&nbsp;</div>
-            <div class="row">
-                <ul class="item-detail">
-                    @{
-                        foreach (ItemOption option in item.Options)
-                        {
-                            string extraName = option.Price == 0 ? "Opción: " + option.Name : "Opción: " + option.Quantity + " x " + option.Name;
-                            <li class="row">&nbsp;</li>
-                            <li class="row">
-                                @if (option.Price > 0)
-                                {
-                                    <span class="column-80 section-left">
-                                        @extraName
-                                    </span>
-                                    <span class="column-20 section-right">
-                                        $@Convert.ToDecimal(option.Price).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="section-left">
-                                        @extraName
-                                    </span>
-                                }
-                            </li>
-                        }
-                        if (!string.IsNullOrEmpty(item.GuestComment))
-                        {
-                            <li class="row">* @item.GuestComment</li>
-                            <li class="row">&nbsp;</li>
-                        }
+            foreach (ItemOption option in item.Options)
+            {
+                string extraName = option.Price == 0 ? "Opción: " + option.Name : "Opción: " + option.Quantity + " x " + option.Name;
+                <div class="row">
+                    @if (option.Price > 0)
+                    {
+                        <div class="column-80 section-left">
+                            @extraName
+                        </div>
+                        <div class="column-20 section-right">
+                            $@Convert.ToDecimal(option.Price).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+                        </div>
                     }
-                </ul>
-            </div>
+                    else
+                    {
+                        <div class="column">
+                            @extraName
+                        </div>
+                    }
+                </div>
+            }
+            if (!string.IsNullOrEmpty(item.GuestComment))
+            {
+                <div class="row">
+                    <div class="column item-detail">* @item.GuestComment</div>
+                </div>
+            }
         }
         else if (!string.IsNullOrEmpty(item.GuestComment))
         {
             <div class="row">
-                <ul class="item-detail">
-                    <li class="row">* @item.GuestComment</li>
-                    <li class="row">&nbsp;</li>
-                </ul>
+                <div class="column item-detail">* @item.GuestComment</div>
             </div>
         }
+        <div class="row">&nbsp;</div>
     }
     <div class="row">&nbsp;</div>
     <div class="row"><hr /></div>
+    <div class="row">&nbsp;</div>
     <div class="row">
         <div class="column-50 section-left">Subtotal:</div>
         <div class="column-50 section-right">@subTotal</div>
@@ -160,20 +153,6 @@
         <div class="row">
             <div class="column-50 section-left">@paymentData.TableOpening.ArtisticCutleryQuantity x Cubierto artístico</div>
             <div class="column-50 section-right">$@artisticCutleryTotal</div>
-        </div>
-    }
-    if (!string.IsNullOrEmpty(propina))
-    {
-        <div class="row">
-            <div class="column-50 section-left">Propina</div>
-            <div class="column-50 section-right">$@propina</div>
-        </div>
-    }
-    if (!string.IsNullOrEmpty(paymentSurcharge))
-    {
-        <div class="row">
-            <div class="column-50 section-left">Adicional por servicio</div>
-            <div class="column-50 section-right">$@paymentSurcharge</div>
         </div>
     }
     if (paymentData.TableOpening.OfferCoupon != null && specialConditionCoupon)
@@ -236,6 +215,20 @@
             </b>
         </div>
     </div>
+    if (!string.IsNullOrEmpty(propina))
+    {
+        <div class="row">
+            <div class="column-50 section-left">Propina</div>
+            <div class="column-50 section-right">$@propina</div>
+        </div>
+    }
+    if (!string.IsNullOrEmpty(paymentSurcharge))
+    {
+        <div class="row">
+            <div class="column-50 section-left">Adicional por servicio</div>
+            <div class="column-50 section-right">$@paymentSurcharge</div>
+        </div>
+    }
     <div class="row">
         <div class="column-80 section-left">Pagado por cliente:</div>
         <div class="column-20 section-right">
@@ -243,18 +236,223 @@
         </div>
     </div>
     <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="section-left"><b>Medio de Pago</b></div>
-        <div class="section-left">@paymentData.TableOpening.PayMethod</div>
-    </div>
+    if (!string.IsNullOrEmpty(paymentData.TableOpening.PayMethod))
+    {
+        <div class="row">
+            <div class="section-left"><b>Medio de Pago</b></div>
+            <div class="section-left">@paymentData.TableOpening.PayMethod</div>
+        </div>
+    }
 }
 
 @helper BuildOnlyUserPayForAllContent()
 {
-
+    double preSubTotal = 0d;
+    var tableOpeningFamily = (TableOpeningFamily)Model["tableOpeningFamilyData"];
+    var paymentData = (Payment)Model["paymentData"];
+    string propina = Model["propina"].ToString();
+    string paymentSurcharge = Model["paymentSurcharge"].ToString();
+    bool specialConditionCoupon = paymentData.TableOpening.DiscountAmmount.GetValueOrDefault() > 0 && paymentData.TableOpening.DiscountByCouponAmount.GetValueOrDefault() == 0;
+    foreach (var tableOpening in tableOpeningFamily.TableOpenings)
+    {
+        <div class="row">
+            <div class="column">Cliente: <b>@tableOpening.UserName</b></div>
+        </div>
+        foreach (Order order in tableOpening.Orders)
+        {
+            @foreach (ItemOrder item in order.Items)
+            {
+                <div class="row">
+                    <div class="column-50 section-left">
+                        <span class="item-quantity section-left">@item.Quantity.GetValueOrDefault() x </span><b>@item.Name</b>
+                    </div>
+                    <div class="column-50 section-right">
+                        @{
+                            if (item.PriceWithDiscount.GetValueOrDefault() != item.Price.GetValueOrDefault())
+                            {
+                                <span class="invalid-text">$@Convert.ToDecimal(item.Price.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</span>
+                            }
+                        }
+                        $@Convert.ToDecimal(item.PriceWithDiscount).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+                    </div>
+                </div>
+                @if (item.Options != null && item.Options.Count > 0)
+                {
+                    foreach (ItemOption option in item.Options)
+                    {
+                        string extraName = option.Price == 0 ? "Opción: " + option.Name : "Opción: " + option.Quantity + " x " + option.Name;
+                        <div class="row">
+                            @if (option.Price > 0)
+                            {
+                                <div class="column-80 section-left">
+                                    @extraName
+                                </div>
+                                <div class="column-20 section-right">
+                                    $@Convert.ToDecimal(option.Price).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="column">
+                                    @extraName
+                                </div>
+                            }
+                        </div>
+                    }
+                    if (!string.IsNullOrEmpty(item.GuestComment))
+                    {
+                        <div class="row">
+                            <div class="column item-detail">* @item.GuestComment</div>
+                        </div>
+                    }
+                }
+                else if (!string.IsNullOrEmpty(item.GuestComment))
+                {
+                    <div class="row">
+                        <div class="column item-detail">* @item.GuestComment</div>
+                    </div>
+                }
+            }
+            preSubTotal += GetPreSubtotal(order);
+        }
+        string paymentMessage = PaymentRemarks(tableOpening);
+        if (!string.IsNullOrEmpty(paymentMessage))
+        {
+            <div class="row">
+                <div class="column">@paymentMessage</div>
+            </div>
+            <div class="row">&nbsp;</div>
+        }
+    }
+    if (paymentData.TableOpening.CutleryPriceTotal != null && paymentData.TableOpening.CutleryPriceTotal.GetValueOrDefault() > 0)
+    {
+        var culteryPriceAmount = Convert.ToDecimal(paymentData.TableOpening.CutleryPriceTotal.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="column-50 section-left">@paymentData.TableOpening.CulteryPriceQuantity.GetValueOrDefault() x Cubierto(s)</div>
+            <div class="column-50 section-right">$@culteryPriceAmount</div>
+        </div>
+    }
+    if (paymentData.TableOpening.ArtisticCutleryQuantity != null && paymentData.TableOpening.ArtisticCutleryTotal.GetValueOrDefault() > 0)
+    {
+        var artisticCutleryTotal = Convert.ToDecimal(paymentData.TableOpening.ArtisticCutleryTotal.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="column-50 section-left">@paymentData.TableOpening.ArtisticCutleryQuantity.GetValueOrDefault() x Cubierto(s) artístico</div>
+            <div class="column-50 section-right">$@artisticCutleryTotal</div>
+        </div>
+    }
+    <div class="row">&nbsp;</div>
+    <div class="row">&nbsp;</div>
+    <div class="row">&nbsp;</div>
+    <div class="row"><hr /></div>
+    <div class="row">
+        <div class="column-50 section-left">Subtotal:</div>
+        <div class="column-50 section-right">@GetSubtotal(preSubTotal, paymentData)</div>
+    </div>
+    if (paymentData.TableOpening.OfferCoupon != null && specialConditionCoupon)
+    {
+        <div class="row">
+            <div class="column-80 section-left">
+                @if (paymentData.TableOpening.OfferCoupon != null)
+                {
+                    <span>Descuento @paymentData.TableOpening.OfferCoupon.Code</span>
+                }
+                else if (paymentData.TableOpening.OfferCoupon == null)
+                {
+                    <span>Cupón</span>
+                }
+                else if (paymentData.TableOpening.OfferCoupon != null && paymentData.TableOpening.OfferCoupon.DiscountPercent != null)
+                {
+                    <span>@paymentData.TableOpening.OfferCoupon.DiscountPercent.GetValueOrDefault()%</span>
+                }
+            </div>
+            <div class="column-20 section-right">
+                -$@Convert.ToDecimal(paymentData.TableOpening.DiscountAmmount.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+            </div>
+        </div>
+    }
+    if (paymentData.TableOpening.OfferCoupon != null && paymentData.TableOpening.DiscountByCouponAmount.GetValueOrDefault() > 0)
+    {
+        <div class="row">
+            <div class="column-80 section-left">Descuento @paymentData.TableOpening.OfferCoupon.Code</div>
+            <div class="column-20 section-right">
+                -$@Convert.ToDecimal(paymentData.TableOpening.DiscountByCouponAmount.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+            </div>
+        </div>
+    }
+    if (paymentData.TableOpening.DiscountByCreditAmount != null && paymentData.TableOpening.DiscountByCreditAmount.GetValueOrDefault() > 0)
+    {
+        <div class="row">
+            <div class="column-80 section-left">Crédito Menoo</div>
+            <div class="column-20 section-right">
+                -$@Convert.ToDecimal(paymentData.TableOpening.DiscountByCreditAmount.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+            </div>
+        </div>
+    }
+    if (paymentData.Discounts != null && paymentData.Discounts.Count > 0)
+    {
+        foreach (var discount in paymentData.Discounts)
+        {
+            <div class="row">
+                <div class="column-80 section-left">@discount.Name</div>
+                <div class="column-20 section-right">
+                    -$@Convert.ToDecimal(discount.Amount.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+                </div>
+            </div>
+        }
+    }
+    if (!string.IsNullOrEmpty(propina))
+    {
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="column-50 section-left">Propina</div>
+            <div class="column-50 section-right">$@propina</div>
+        </div>
+    }
+    if (!string.IsNullOrEmpty(paymentSurcharge))
+    {
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="column-50 section-left">Adicional por servicio</div>
+            <div class="column-50 section-right">$@paymentSurcharge</div>
+        </div>
+    }
+    <div class="row">
+        <div class="column-50 section-left header uppercase"><b>TOTAL:</b></div>
+        <div class="column-50 section-right header uppercase">
+            <b>
+                $@Convert.ToDecimal(paymentData.TotalToPay.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+            </b>
+        </div>
+    </div>
+    <div class="row">
+        <div class="column-80 section-left">Pagado por cliente:</div>
+        <div class="column-20 section-right">
+            -$@Convert.ToDecimal(paymentData.TableOpening.TotalPaidByClient.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+        </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    if (!string.IsNullOrEmpty(paymentData.TableOpening.PayMethod))
+    {
+        <div class="row">
+            <div class="section-left"><b>Medio de Pago</b></div>
+            <div class="section-left">@paymentData.TableOpening.PayMethod</div>
+        </div>
+    }
 }
 
 @functions {
+    public double GetPreSubtotal(Order orderData)
+    {
+        double result = 0d;
+        foreach (ItemOrder item in orderData.Items)
+        {
+            result += item.Total.GetValueOrDefault();
+        }
+        return result;
+    }
+
     public string GetSubtotal(Order orderData)
     {
         double result = 0d;
@@ -264,5 +462,38 @@
         }
         string subtotal = Convert.ToDecimal(result).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
         return "$" + subtotal;
+    }
+
+    public string GetSubtotal(double preSubtotal, Payment paymentData)
+    {
+        double result = preSubtotal;
+        if (paymentData.TableOpening.CutleryPriceTotal != null && paymentData.TableOpening.CutleryPriceTotal.GetValueOrDefault() > 0)
+        {
+            result += paymentData.TableOpening.CutleryPriceTotal.GetValueOrDefault();
+        }
+        if (paymentData.TableOpening.ArtisticCutleryQuantity != null && paymentData.TableOpening.ArtisticCutleryTotal.GetValueOrDefault() > 0)
+        {
+            result += paymentData.TableOpening.ArtisticCutleryTotal.GetValueOrDefault();
+        }
+        string subtotal = Convert.ToDecimal(result).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+        return "$" + subtotal;
+    }
+
+    public string PaymentRemarks(TableOpening tableOpening)
+    {
+        string message = "";
+        if (tableOpening.PaidForIt)
+        {
+            message = "Pagó su propia cuenta";
+        }
+        if (tableOpening.PayingForAll)
+        {
+            message = "Pagó la cuenta de todos";
+        }
+        if (tableOpening.PaidByOther)
+        {
+            message = "Le pagaron su cuenta";
+        }
+        return message;
     }
 }
