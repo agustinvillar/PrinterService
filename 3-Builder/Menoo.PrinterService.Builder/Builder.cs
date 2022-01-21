@@ -33,7 +33,7 @@ namespace Menoo.PrinterService.Builder
 
         private readonly BuiltinHandlerActivator _adapter;
 
-        private Timer _timer;
+        private System.Timers.Timer _timer;
 
         private readonly string _queueName;
 
@@ -142,7 +142,7 @@ namespace Menoo.PrinterService.Builder
                 interval = 10000d;
             }
             _tickCounter = 0L;
-            _timer = new Timer(interval);
+            _timer = new System.Timers.Timer(interval);
             _timer.Elapsed += ServiceTimer_Tick;
         }
 
