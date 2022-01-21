@@ -47,10 +47,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("rut")]
         public string Rut { get; set; }
 
-        [FirestoreProperty("paymentDate")]
-        [JsonProperty("paymentDate")]
-        public long? PaymentDate { get; set; }
-
         [FirestoreProperty("mailSended")]
         [JsonProperty("mailSended")]
         public bool? MailSended { get; set; }

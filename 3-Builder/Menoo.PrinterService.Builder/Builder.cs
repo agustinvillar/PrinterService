@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -71,7 +72,7 @@ namespace Menoo.PrinterService.Builder
                         $"Id colleción printEvents: {documentsId}{Environment.NewLine}", EventLogEntryType.Information);
                     try
                     {
-                        await Task.Delay(_queueDelay);
+                        Thread.Sleep(_queueDelay);
                         var dataToPrint = await builder.BuildAsync(extras["id"], data);
                         await SendToFirebaseAsync(extras["id"], dataToPrint, data.TypeDocument, data.PrintEvent);
                     }
@@ -198,6 +199,7 @@ namespace Menoo.PrinterService.Builder
             {
                 var orderData = (Order)data.Content["orderData"];
                 string clientName = orderData.UserName;
+                bool isTakeAway = orderData.OrderType == SubOrderPrintTypes.ORDER_TA;
                 switch (printEvent)
                 {
                     case PrintEvents.NEW_TAKE_AWAY:
@@ -226,13 +228,12 @@ namespace Menoo.PrinterService.Builder
                         break;
                     case PrintEvents.REPRINT_ORDER:
                         printEvent = orderData.OrderType == SubOrderPrintTypes.ORDER_TA ? PrintEvents.NEW_TAKE_AWAY : PrintEvents.NEW_TABLE_ORDER;
-                        bool isTakeAway = orderData.OrderType == SubOrderPrintTypes.ORDER_TA;
                         sectors = data.Store.GetPrintSettings(printEvent);
                         await PrintAsync(id, data, printEvent, sectors, isTakeAway);
                         break;
                     case PrintEvents.ORDER_CANCELLED:
                         sectors = data.Store.GetPrintSettings(PrintEvents.ORDER_CANCELLED);
-                        await PrintAsync(id, data, printEvent, sectors);
+                        await PrintAsync(id, data, printEvent, sectors, isTakeAway);
                         break;
                 }
             }
