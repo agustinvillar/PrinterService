@@ -1,5 +1,4 @@
 ﻿using Google.Cloud.Firestore;
-using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using System.Linq;
@@ -10,7 +9,7 @@ namespace Menoo.PrinterService.Infraestructure.Repository
 {
     public sealed class PaymentRepository : FirebaseRepository<Payment>
     {
-        private const int TIME_OUT_QUERY = 1;
+        private const int TIME_OUT_QUERY = 10000;
 
         private readonly FirestoreDb _firebaseDb;
 

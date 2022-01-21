@@ -174,7 +174,7 @@
         <div class="row">&nbsp;</div>
         <div class="row">
             <div class="section-left"><b>Medio de Pago</b></div>
-            <div class="section-left">@Model["paymentMethod"].ToString()</div>
+            <div class="section-left">@PaymentMethod(Model["paymentMethod"].ToString())</div>
         </div>
         <div class="row"><hr /></div>
         @{
@@ -208,3 +208,13 @@
     </div>
 </body>
 </html>
+@functions {
+    public string PaymentMethod(string typeMethod)
+    {
+        if (typeMethod.ToLower().Contains("tarjeta"))
+        {
+            return "Pago en línea";
+        }
+        return typeMethod;
+    }
+}

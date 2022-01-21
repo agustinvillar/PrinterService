@@ -19,6 +19,10 @@ namespace Menoo.Printer.Builder.Orders.Extensions
             var sectorItems = new List<SectorItem>();
             foreach (var item in items)
             {
+                if (string.IsNullOrEmpty(item.Id)) 
+                {
+                    continue;
+                }
                 var sectorByItem = repository.GetSectorItemById(item.Id).GetAwaiter().GetResult();
                 if (sectorByItem != null)
                 {
