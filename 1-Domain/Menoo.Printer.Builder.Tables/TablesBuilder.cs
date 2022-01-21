@@ -84,7 +84,8 @@ namespace Menoo.Printer.Builder.Tables
             Payment paymentData = null;
             TableOpening tableOpeningInfo = null;
             var data = new Dictionary<string, object>();
-            var dateTime = Convert.ToDateTime(tableOpeningFamilyDTO.ClosedAt);
+            var dateTime = DateTime.ParseExact(tableOpeningFamilyDTO.ClosedAt, "dd-MM-yyyy HH:mm",
+                                       System.Globalization.CultureInfo.InvariantCulture);
             bool isOnlyUser = tableOpeningFamilyDTO.TableOpenings.Count > 0 && tableOpeningFamilyDTO.TableOpenings.Count < MIN_SHARED_TABLES_OPENING;
             data.Add("title", SetTitleForCloseTable(tableOpeningFamilyDTO));
             data.Add("tableNumber", tableOpeningFamilyDTO.TableNumberToShow.ToString());

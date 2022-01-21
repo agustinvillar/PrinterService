@@ -49,7 +49,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
         [FirestoreProperty("paymentDate")]
         [JsonProperty("paymentDate")]
-        public long? PaymentDate { get; set; }
+        public int? PaymentDate { get; set; }
 
         [FirestoreProperty("mailSended")]
         [JsonProperty("mailSended")]
