@@ -47,6 +47,15 @@ namespace Menoo.PrinterService.Infraestructure.Repository
                     .WhereArrayContainsAny("entityId", filter).GetSnapshotAsync();
                 isExists = documentSnapshots.Documents.Count > 0;
             }
+            else if (message.Item2.PrintEvent == PrintEvents.REPRINT_ORDER)
+            {
+                var filter = new List<string>() { message.Item1 };
+                documentSnapshots = await _firebaseDb.Collection(TICKET_HISTORY)
+                    .WhereEqualTo("dayCreatedAt", DateTime.Now.ToString("dd/MM/yyyy"))
+                    .WhereEqualTo("printEvent", message.Item2.PrintEvent)
+                    .WhereArrayContainsAny("entityId", filter).GetSnapshotAsync();
+                isExists = documentSnapshots.Documents.Count > 0;
+            }
             return isExists;
         }
 
@@ -64,7 +73,15 @@ namespace Menoo.PrinterService.Infraestructure.Repository
                 PrintEvent = message.Item2.PrintEvent,
                 CreatedAt = DateTime.UtcNow
             };
-            entity.EntityId = message.Item2.DocumentsId != null && message.Item2.DocumentsId.Count > 0 ? message.Item2.DocumentsId : new System.Collections.Generic.List<string>() { message.Item2.DocumentId };
+
+            if (message.Item2.PrintEvent == PrintEvents.REPRINT_ORDER)
+            {
+                entity.EntityId = new System.Collections.Generic.List<string>() { message.Item1 };
+            }
+            else
+            {
+                entity.EntityId = message.Item2.DocumentsId != null && message.Item2.DocumentsId.Count > 0 ? message.Item2.DocumentsId : new System.Collections.Generic.List<string>() { message.Item2.DocumentId };
+            }
             await base.SaveAsync(message.Item1, entity, TICKET_HISTORY);
         }
 

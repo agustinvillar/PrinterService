@@ -64,7 +64,7 @@
                     @{
                         if (item.PriceWithDiscountTA.GetValueOrDefault() != item.Price.GetValueOrDefault())
                         {
-                            <span class="invalid-text">$@Convert.ToDecimal(item.Price.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US")</span>
+                            <span class="invalid-text">$@Convert.ToDecimal(item.Price.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</span>
                         }
                     }
                     $@Convert.ToDecimal(item.PriceWithDiscountTA).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
@@ -86,7 +86,7 @@
                                             @extraName
                                         </span>
                                         <span class="column-20 section-right">
-                                            $@option.Price.ToString("N2", CultureInfo.CreateSpecificCulture("en-US")
+                                            $@option.Price.ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
                                         </span>
                                     }
                                     else

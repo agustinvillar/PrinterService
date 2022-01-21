@@ -109,6 +109,7 @@ namespace Menoo.PrinterService.Builder
             Debugger.Launch();
             _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             ConfigureWorker();
+            _timer.Start();
         }
 
         protected override void OnShutdown()
@@ -123,6 +124,7 @@ namespace Menoo.PrinterService.Builder
 
         protected override void OnStop()
         {
+            _timer.Stop();
             if (_adapter != null)
             {
                 _adapter.Dispose();

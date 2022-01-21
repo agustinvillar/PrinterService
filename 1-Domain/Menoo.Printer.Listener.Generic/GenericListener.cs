@@ -34,12 +34,12 @@ namespace Menoo.Printer.Listener.Generic
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("listener");
         }
 
-        public void Listen()
+        public void Listen(bool onStart = false)
         {
-            _firestoreDb.Collection("rePrint")
-                    .Listen(RePrintOrder);
             _firestoreDb.Collection("printEvent")
                     .Listen(OnRecieve);
+            _firestoreDb.Collection("rePrint")
+                    .Listen(RePrintOrder);
         }
 
         public override string ToString()
@@ -185,6 +185,11 @@ namespace Menoo.Printer.Listener.Generic
 
         private void RePrintOrder(QuerySnapshot snapshot)
         {
+            bool isEntry = _interceptor.OnEntry(snapshot, true);
+            if (!isEntry)
+            {
+                return;
+            }
             var documentReference = snapshot.OrderByDescending(o => o.CreateTime).FirstOrDefault();
             var message = PrintExtensions.GetReprintMessage(documentReference);
             try
