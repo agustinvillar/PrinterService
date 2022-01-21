@@ -84,8 +84,7 @@ namespace Menoo.Printer.Builder.Tables
             Payment paymentData = null;
             TableOpening tableOpeningInfo = null;
             var data = new Dictionary<string, object>();
-            var dateTime = DateTime.ParseExact(tableOpeningFamilyDTO.ClosedAt, "dd-MM-yyyy HH:mm",
-                                       System.Globalization.CultureInfo.InvariantCulture);
+            var dateTime = GetClosedDateTimeFormated(tableOpeningFamilyDTO.ClosedAt);
             bool isOnlyUser = tableOpeningFamilyDTO.TableOpenings.Count > 0 && tableOpeningFamilyDTO.TableOpenings.Count < MIN_SHARED_TABLES_OPENING;
             data.Add("title", SetTitleForCloseTable(tableOpeningFamilyDTO));
             data.Add("tableNumber", tableOpeningFamilyDTO.TableNumberToShow.ToString());
@@ -151,6 +150,21 @@ namespace Menoo.Printer.Builder.Tables
             data.Add("tableOpeningFamilyData", tableOpeningFamilyDTO);
             data.Add("tableNumber", tableOpeningFamilyDTO.TableNumberToShow.ToString());
             return data;
+        }
+
+                private DateTime GetClosedDateTimeFormated(string date) 
+        {
+            DateTime dateTime;
+            try
+            {
+                dateTime = DateTime.ParseExact(date, "dd-MM-yyyy HH:mm",
+                           System.Globalization.CultureInfo.InvariantCulture);
+            }
+            catch 
+            {
+                dateTime = Convert.ToDateTime(date);
+            }
+            return dateTime;
         }
 
         private Order GetOrderData(List<Order> orders)
