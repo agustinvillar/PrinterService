@@ -20,6 +20,7 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace Menoo.PrinterService.Builder
 {
@@ -107,7 +108,7 @@ namespace Menoo.PrinterService.Builder
 
         protected override void OnStart(string[] args)
         {
-            Debugger.Launch();
+            //Debugger.Launch();
             _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             ConfigureWorker();
             _timer.Start();
