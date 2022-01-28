@@ -315,12 +315,7 @@
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="Configuration\DefaultConfigurationManager.cs" />
     <Compile Include="Constants\OrderTypes.cs" />
-    <Compile Include="Constants\PrintBuilder.cs" />
-    <Compile Include="Constants\PrintEvents.cs" />
-    <Compile Include="Constants\PrintListeners.cs" />
-    <Compile Include="Constants\PrintProperties.cs" />
     <Compile Include="Constants\PrintTemplates.cs" />
-    <Compile Include="Constants\PrintTypes.cs" />
     <Compile Include="Database\Firebase\Entities\Booking.cs" />
     <Compile Include="Database\Firebase\Entities\Coupon.cs" />
     <Compile Include="Database\Firebase\Entities\Credits.cs" />
@@ -366,7 +361,6 @@
     <Compile Include="Exceptions\UnifiedSectorException.cs" />
     <Compile Include="Extensions\PrintExtensions.cs" />
     <Compile Include="HandlerAttribute.cs" />
-    <Compile Include="Interceptors\OnActionRecieve.cs" />
     <Compile Include="Interfaces\IConfigurationManager.cs" />
     <Compile Include="Interfaces\IFirebaseListener.cs" />
     <Compile Include="Interfaces\IFirebaseRepository.cs" />
@@ -395,8 +389,6 @@
     <Compile Include="OnStartUpAttribute.cs" />
     <Compile Include="PrintInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Queues\PrintMessage.cs" />
-    <Compile Include="Queues\PublisherService.cs" />
     <Compile Include="Repository\BookingRepository.cs" />
     <Compile Include="Repository\PaymentRepository.cs" />
     <Compile Include="Repository\StoreRepository.cs" />

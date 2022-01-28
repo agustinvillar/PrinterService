@@ -21,15 +21,6 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
             }
         }
 
-        public static byte[] GetEmbeddedResource(this Assembly assembly, string resourceName)
-        {
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var reader = new BinaryReader(stream))
-            {
-                return reader.ReadBytes(Convert.ToInt32(stream.Length));
-            }
-        }
-
         public static List<Type> GetTypesFormaterServices() 
         {
             string typeWithNamespace = typeof(IFormaterService).Namespace;
