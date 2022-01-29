@@ -1,10 +1,11 @@
-﻿using Menoo.Printer.Builder.Orders.Repository;
+﻿using Menoo.Backend.Integrations.Constants;
+using Menoo.Backend.Integrations.Messages;
+using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
 using Menoo.PrinterService.Infraestructure.Interfaces;
-using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
 using Newtonsoft.Json;
 using QRCoder;
@@ -53,7 +54,7 @@ namespace Menoo.Printer.Builder.Orders
             _paymentRepository = paymentRepository;
         }
 
-        public async Task<PrintInfo> BuildAsync(string id, PrintMessage message)
+        public async Task<PrintInfo> BuildAsync(PrintMessage message)
         {
             if (message.Builder != PrintBuilder.ORDER_BUILDER)
             {

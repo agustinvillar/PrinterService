@@ -1,12 +1,12 @@
-﻿using Menoo.PrinterService.Infraestructure;
+﻿using Menoo.Backend.Integrations.Constants;
+using Menoo.Backend.Integrations.Messages;
+using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Interfaces;
-using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Menoo.Printer.Builder.BookingBuilder
@@ -27,7 +27,7 @@ namespace Menoo.Printer.Builder.BookingBuilder
             _storeRepository = storeRepository;
         }
 
-        public async Task<PrintInfo> BuildAsync(string id, PrintMessage data)
+        public async Task<PrintInfo> BuildAsync(PrintMessage data)
         {
             if (data.Builder != PrintBuilder.BOOKING_BUILDER)
             {

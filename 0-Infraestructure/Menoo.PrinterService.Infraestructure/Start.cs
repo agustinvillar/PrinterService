@@ -1,7 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
 using Menoo.PrinterService.Infraestructure.Interfaces;
-using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
 using Menoo.PrinterService.Infraestructure.Services;
 using System.Diagnostics;

@@ -1,7 +1,7 @@
 ﻿using Google.Cloud.Firestore;
+using Menoo.Backend.Integrations.Constants;
 using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
-using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.MainSchema;
 using System;
 

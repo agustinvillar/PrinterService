@@ -1,4 +1,5 @@
-﻿using Menoo.PrinterService.Infraestructure;
+﻿using Menoo.Backend.Integrations.Constants;
+using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using System;
 

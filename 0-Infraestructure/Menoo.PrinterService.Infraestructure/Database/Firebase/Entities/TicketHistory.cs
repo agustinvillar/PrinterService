@@ -8,10 +8,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
     [FirestoreData]
     public class TicketHistory
     {
-        [FirestoreProperty("id")]
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
         [FirestoreProperty("printEvent")]
         [JsonProperty("printEvent")]
         public string PrintEvent { get; set; }
@@ -27,5 +23,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("entityId")]
         [JsonProperty("entityId")]
         public List<string> EntityId { get; set; }
+
+        [FirestoreProperty("ticketImage")]
+        [JsonProperty("ticketImage")]
+        public string TicketImage { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Menoo.Printer.Builder.Orders;
+﻿using Menoo.Backend.Integrations.Constants;
+using Menoo.Backend.Integrations.Messages;
+using Menoo.Printer.Builder.Orders;
 using Menoo.Printer.Builder.Orders.Extensions;
 using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Infraestructure;
@@ -7,7 +9,6 @@ using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Exceptions;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
-using Menoo.PrinterService.Infraestructure.Queues;
 using Menoo.PrinterService.Infraestructure.Repository;
 using Menoo.PrinterService.Infraestructure.Services;
 using Rebus.Activation;
@@ -74,7 +75,7 @@ namespace Menoo.PrinterService.Builder
                     try
                     {
                         Thread.Sleep(_queueDelay);
-                        var dataToPrint = await builder.BuildAsync(extras["id"], data);
+                        var dataToPrint = await builder.BuildAsync(data);
                         await SendToFirebaseAsync(extras["id"], dataToPrint, data.TypeDocument, data.PrintEvent);
                     }
                     catch (UnifiedSectorException sectorException) 
@@ -284,8 +285,7 @@ namespace Menoo.PrinterService.Builder
                     $"Restaurante: {printDocument.StoreName}{Environment.NewLine}" +
                     $"URL Ticket: {ticket} {Environment.NewLine}" +
                     $"Id en colección printEvents: {id}", EventLogEntryType.Information);
-                await _ticketRepository.SaveAsync(printDocument);
-                await _ticketRepository.SetTicketImageAsync(id, ticket);
+                await _ticketRepository.SaveAsync(printDocument, ticket);
             }
         }
 
@@ -333,8 +333,7 @@ namespace Menoo.PrinterService.Builder
                         $"Hora de impresión: {printDocument.PrintBefore}{Environment.NewLine}" +
                         $"Restaurante: {printDocument.StoreName}{Environment.NewLine}" +
                         $"Id en colección printEvents: {id}", EventLogEntryType.Information);
-                    await _ticketRepository.SaveAsync(printDocument);
-                    await _ticketRepository.SetTicketImageAsync(id, ticket);
+                    await _ticketRepository.SaveAsync(printDocument, ticket);
                 }
             }
         }
@@ -345,11 +344,6 @@ namespace Menoo.PrinterService.Builder
             {
                 long memSize = 0L;
                 _tickCounter++;
-                if (_tickCounter % 60L == 0L)
-                {
-                    memSize = GC.GetTotalMemory(true);
-                    _generalWriter.WriteEntry($"Builder::ServiceTimer_Tick(). Se ha liberado {memSize / 1024 }.", EventLogEntryType.Warning);
-                }
                 if (_tickCounter % 3600L == 0L)
                 {
                     _timer.Stop();
@@ -358,7 +352,7 @@ namespace Menoo.PrinterService.Builder
                     GC.WaitForPendingFinalizers();
                     GC.WaitForFullGCComplete();
                     memSize = GC.GetTotalMemory(true);
-                    _generalWriter.WriteEntry($"Builder::ServiceTimer_Tick(). Se ha liberado {memSize / 1024 }.", EventLogEntryType.Warning);
+                    _generalWriter.WriteEntry($"Builder::ServiceTimer_Tick(). Se ha liberado {memSize / 1024 / 1024 } MB.", EventLogEntryType.Warning);
                     _timer.Start();
                 }
             }

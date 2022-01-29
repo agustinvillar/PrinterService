@@ -1,5 +1,5 @@
-﻿using Menoo.PrinterService.Infraestructure;
-using Menoo.PrinterService.Infraestructure.Constants;
+﻿using Menoo.Backend.Integrations.Constants;
+using Menoo.PrinterService.Infraestructure;
 using System;
 
 namespace Menoo.Printer.Builder.Tables
