@@ -76,7 +76,7 @@ namespace Menoo.PrinterService.Builder
                     {
                         Thread.Sleep(_queueDelay);
                         var dataToPrint = await builder.BuildAsync(data);
-                        await SendToFirebaseAsync(extras["id"], dataToPrint, data.TypeDocument, data.PrintEvent);
+                        await SendToFirebaseAsync(dataToPrint, data.TypeDocument, data.PrintEvent);
                     }
                     catch (UnifiedSectorException sectorException) 
                     {
@@ -109,7 +109,7 @@ namespace Menoo.PrinterService.Builder
 
         protected override void OnStart(string[] args)
         {
-            //Debugger.Launch();
+            Debugger.Launch();
             _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             ConfigureWorker();
             _timer.Start();
@@ -185,7 +185,7 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
-        private async Task SendToFirebaseAsync(string id, PrintInfo data, string typeDocument, string printEvent)
+        private async Task SendToFirebaseAsync(PrintInfo data, string typeDocument, string printEvent)
         {
             if (data == null || data.Content.Count == 0)
             {
@@ -195,7 +195,7 @@ namespace Menoo.PrinterService.Builder
             if (typeDocument != PrintTypes.ORDER)
             {
                 sectors = data.Store.GetPrintSettings(printEvent);
-                await PrintAsync(id, data, printEvent, sectors);
+                await PrintAsync(data, printEvent, sectors);
             }
             else 
             {
@@ -206,9 +206,9 @@ namespace Menoo.PrinterService.Builder
                 {
                     case PrintEvents.NEW_TAKE_AWAY:
                         sectors = data.Store.GetPrintSettings(PrintEvents.NEW_TAKE_AWAY);
-                        await PrintAsync(id, data, printEvent, sectors, true);
+                        await PrintAsync(data, printEvent, sectors, true);
                         var items = ItemExtensions.GetPrintSectorByItems(orderData.Items, _itemRepository);
-                        await PrintAsync(id, data, clientName, items);
+                        await PrintAsync(data, clientName, items);
                         break;
                     case PrintEvents.NEW_TABLE_ORDER:
                         var unifiedSector = data.Store.SectorUnifiedTicket();
@@ -217,31 +217,30 @@ namespace Menoo.PrinterService.Builder
                             _generalWriter.WriteEntry($"Builder::PrintAsync(). El restaurante {data.Store.Name} no tiene asignado el sector unificado. {Environment.NewLine}" +
                                 $"Id del restaurante: {data.Store.Id}{Environment.NewLine}" +
                                 $"Evento: {PrintEvents.NEW_TABLE_ORDER}{Environment.NewLine}" +
-                                $"Tipo: {SubOrderPrintTypes.ORDER_TABLE}{Environment.NewLine}" +
-                                $"PrintEventId: {id}{Environment.NewLine}", EventLogEntryType.Warning);
+                                $"Tipo: {SubOrderPrintTypes.ORDER_TABLE}{Environment.NewLine}", EventLogEntryType.Warning);
                         }
                         else
                         {
                             sectors.Add(unifiedSector);
-                            await PrintAsync(id, data, PrintEvents.NEW_TABLE_ORDER, sectors);
+                            await PrintAsync(data, PrintEvents.NEW_TABLE_ORDER, sectors);
                         }
                         var sectorsByItems = ItemExtensions.GetPrintSectorByItems(orderData.Items, _itemRepository);
-                        await PrintAsync(id, data, clientName, sectorsByItems);
+                        await PrintAsync(data, clientName, sectorsByItems);
                         break;
                     case PrintEvents.REPRINT_ORDER:
                         printEvent = orderData.OrderType == SubOrderPrintTypes.ORDER_TA ? PrintEvents.NEW_TAKE_AWAY : PrintEvents.NEW_TABLE_ORDER;
                         sectors = data.Store.GetPrintSettings(printEvent);
-                        await PrintAsync(id, data, printEvent, sectors, isTakeAway);
+                        await PrintAsync(data, printEvent, sectors, isTakeAway);
                         break;
                     case PrintEvents.ORDER_CANCELLED:
                         sectors = data.Store.GetPrintSettings(PrintEvents.ORDER_CANCELLED);
-                        await PrintAsync(id, data, printEvent, sectors, isTakeAway);
+                        await PrintAsync(data, printEvent, sectors, isTakeAway);
                         break;
                 }
             }
         }
 
-        private async Task PrintAsync(string id, PrintInfo data, string printEvent, List<PrintSettings> sectors, bool isTakeAway = false) 
+        private async Task PrintAsync(PrintInfo data, string printEvent, List<PrintSettings> sectors, bool isTakeAway = false) 
         {
             foreach (var sector in sectors)
             {
@@ -283,13 +282,12 @@ namespace Menoo.PrinterService.Builder
                     $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
                     $"Hora de impresión: {printDocument.PrintBefore}{Environment.NewLine}" +
                     $"Restaurante: {printDocument.StoreName}{Environment.NewLine}" +
-                    $"URL Ticket: {ticket} {Environment.NewLine}" +
-                    $"Id en colección printEvents: {id}", EventLogEntryType.Information);
+                    $"URL Ticket: {ticket} {Environment.NewLine}", EventLogEntryType.Information);
                 await _ticketRepository.SaveAsync(printDocument, ticket);
             }
         }
 
-        private async Task PrintAsync(string id, PrintInfo extraData, string clientName, List<SectorItem> sectorsByItems)
+        private async Task PrintAsync(PrintInfo extraData, string clientName, List<SectorItem> sectorsByItems)
         {
             var orderData = (Order)extraData.Content["orderData"];
             foreach (var item in sectorsByItems)
@@ -331,8 +329,7 @@ namespace Menoo.PrinterService.Builder
                         $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
                         $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
                         $"Hora de impresión: {printDocument.PrintBefore}{Environment.NewLine}" +
-                        $"Restaurante: {printDocument.StoreName}{Environment.NewLine}" +
-                        $"Id en colección printEvents: {id}", EventLogEntryType.Information);
+                        $"Restaurante: {printDocument.StoreName}{Environment.NewLine}", EventLogEntryType.Information);
                     await _ticketRepository.SaveAsync(printDocument, ticket);
                 }
             }
