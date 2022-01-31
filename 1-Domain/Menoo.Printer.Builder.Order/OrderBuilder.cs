@@ -156,7 +156,7 @@ namespace Menoo.Printer.Builder.Orders
                         }
                         if (takeAwayOpening.DiscountByCouponAmount != null && takeAwayOpening.OfferCoupon != null) 
                         {
-                            viewBag.Add("couponName", "Descuento " + takeAwayOpening.OfferCoupon.Code);
+                            viewBag.Add("couponName", "Descuento Cupón " + takeAwayOpening.OfferCoupon.Code);
                             viewBag.Add("couponAmount", $"-${takeAwayOpening.DiscountByCouponAmount.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))}");
                         }
                         if (paymentData.Discounts != null && paymentData.Discounts.Count > 0) 

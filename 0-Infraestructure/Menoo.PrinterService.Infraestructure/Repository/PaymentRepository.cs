@@ -9,8 +9,6 @@ namespace Menoo.PrinterService.Infraestructure.Repository
 {
     public sealed class PaymentRepository : FirebaseRepository<Payment>
     {
-        private const int TIME_OUT_QUERY = 10000;
-
         private readonly FirestoreDb _firebaseDb;
 
         public PaymentRepository(FirestoreDb firebaseDb) 
@@ -21,7 +19,6 @@ namespace Menoo.PrinterService.Infraestructure.Repository
 
         public async Task<Payment> GetPaymentByIdAsync(long id)
         {
-            Thread.Sleep(TIME_OUT_QUERY);
             var snapshots = await _firebaseDb.Collection("payments").WhereEqualTo("paymentId", id).GetSnapshotAsync();
             var document = snapshots.Documents.LastOrDefault();
             if (document.Exists) 

@@ -54,9 +54,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
             return default;
         }
 
-        public virtual async Task SaveAsync<TEntity>(TEntity item, string collection)
+        public virtual async Task<DocumentReference> SaveAsync<TEntity>(TEntity item, string collection)
         {
-            await _db.Collection(collection).AddAsync(item);
+            return await _db.Collection(collection).AddAsync(item);
         }
 
         public virtual async Task SaveAsync<TEntity>(string id, TEntity item, string collection)

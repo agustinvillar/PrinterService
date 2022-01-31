@@ -14,30 +14,29 @@ namespace Menoo.PrinterService.Infraestructure.Repository
 
         private const string TICKET_HISTORY = "ticketHistory";
 
+        private const string TICKET_QUEUE = "print";
+
         public TicketRepository(FirestoreDb db)
             : base(db)
         {
             _firebaseDb = db;
         }
 
-        public async Task SetPrintedAsync(PrintMessage message, string ticketImage) 
+        public async Task<DocumentReference> SaveAsync(Ticket document) 
+        {
+            return await base.SaveAsync(document, TICKET_QUEUE);
+        }
+
+
+        public async Task SetPrintedAsync(string printEvent, string printId) 
         {
             var entity = new TicketHistory
             {
-                TicketImage = ticketImage,
                 DayCreatedAt = DateTime.Now.ToString("dd/MM/yyyy"),
-                PrintEvent = message.PrintEvent,
-                CreatedAt = DateTime.UtcNow
+                PrintEvent = printEvent,
+                CreatedAt = DateTime.UtcNow,
+                PrintId = printId
             };
-
-            if (message.PrintEvent == PrintEvents.REPRINT_ORDER)
-            {
-                entity.EntityId = new System.Collections.Generic.List<string>() { message.DocumentId };
-            }
-            else
-            {
-                entity.EntityId = message.DocumentsId != null && message.DocumentsId.Count > 0 ? message.DocumentsId : new System.Collections.Generic.List<string>() { message.DocumentId };
-            }
             await base.SaveAsync(entity, TICKET_HISTORY);
         }
     }

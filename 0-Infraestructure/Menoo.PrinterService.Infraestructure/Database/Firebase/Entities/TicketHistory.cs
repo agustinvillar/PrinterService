@@ -1,7 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
@@ -20,12 +19,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("createdAt")]
         public DateTime CreatedAt { get; set; }
 
-        [FirestoreProperty("entityId")]
-        [JsonProperty("entityId")]
-        public List<string> EntityId { get; set; }
-
-        [FirestoreProperty("ticketImage")]
-        [JsonProperty("ticketImage")]
-        public string TicketImage { get; set; }
+        [FirestoreProperty("printId")]
+        [JsonProperty("printId")]
+        public string PrintId { get; set; }
     }
 }
