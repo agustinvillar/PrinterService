@@ -137,7 +137,7 @@ namespace Menoo.Printer.Builder.Tables
         {
             var data = new Dictionary<string, object>();
             string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
-            var tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault(f => f.PayWithPOS);
+            var tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault();
             tableOpeningFamilyDTO.TableOpenings.ForEach(i =>
             {
                 var queryResult = i.Orders.FindAll(f => f.Status.ToLower() != "cancelado");
