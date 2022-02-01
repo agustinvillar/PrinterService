@@ -1,10 +1,10 @@
 ﻿@using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 @using System.Globalization
 @model System.Collections.Generic.Dictionary<string, object>
-@{
-    bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
-}<!DOCTYPE html>
-<html>
+    @{
+        bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
+    }<!DOCTYPE html>
+    <html>
     <head>
         <meta charset="utf-8" />
         <title></title>
@@ -61,10 +61,10 @@
             @foreach (ItemOrder item in order.Items)
             {
                 <div class="row">
-                    <div class="column-50 section-left">
+                    <div class="column-80 section-left">
                         <span class="item-quantity section-left">@item.Quantity.GetValueOrDefault() x </span><b>@item.Name</b>
                     </div>
-                    <div class="column-50 section-right">
+                    <div class="column-20 section-right">
                         @{
                             if (item.PriceWithDiscount.GetValueOrDefault() != item.Price.GetValueOrDefault())
                             {
@@ -102,6 +102,7 @@
                         <div class="row">
                             <div class="column item-detail">* @item.GuestComment</div>
                         </div>
+                        <div class="row">&nbsp;</div>
                     }
                 }
                 else if (!string.IsNullOrEmpty(item.GuestComment))
@@ -109,8 +110,9 @@
                     <div class="row">
                         <div class="column item-detail">* @item.GuestComment</div>
                     </div>
+                    <div class="row">&nbsp;</div>
                 }
-                else 
+                else
                 {
                     <div class="row">&nbsp;</div>
                 }
