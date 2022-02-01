@@ -139,7 +139,9 @@
         <div class="row">&nbsp;</div>
     }
     <div class="row">&nbsp;</div>
+    <div class="row">&nbsp;</div>
     <div class="row"><hr /></div>
+    <div class="row">&nbsp;</div>
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="column-50 section-left">Subtotal:</div>
@@ -148,14 +150,14 @@
     if (paymentData.TableOpening.CutleryPriceTotal != null && paymentData.TableOpening.CutleryPriceTotal.GetValueOrDefault() > 0)
     {
         <div class="row">
-            <div class="column-50 section-left">@paymentData.TableOpening.CulteryPriceQuantity x Cubierto</div>
+            <div class="column-50 section-left">@paymentData.TableOpening.CulteryPriceQuantity x Cubierto(s)</div>
             <div class="column-50 section-right">$@culteryPriceAmount</div>
         </div>
     }
     if (paymentData.TableOpening.ArtisticCutleryQuantity != null && paymentData.TableOpening.ArtisticCutleryTotal.GetValueOrDefault() > 0)
     {
         <div class="row">
-            <div class="column-50 section-left">@paymentData.TableOpening.ArtisticCutleryQuantity x Cubierto artístico</div>
+            <div class="column-50 section-left">@paymentData.TableOpening.ArtisticCutleryQuantity x Cubierto(s) artístico</div>
             <div class="column-50 section-right">$@artisticCutleryTotal</div>
         </div>
     }
@@ -184,7 +186,7 @@
     if (paymentData.TableOpening.OfferCoupon != null && paymentData.TableOpening.DiscountByCouponAmount.GetValueOrDefault() > 0)
     {
         <div class="row">
-            <div class="column-80 section-left">Descuento Cupón <br/>@paymentData.TableOpening.OfferCoupon.Code</div>
+            <div class="column-80 section-left">Descuento Cupón <br />@paymentData.TableOpening.OfferCoupon.Code</div>
             <div class="column-20 section-right">
                 -$@Convert.ToDecimal(paymentData.TableOpening.DiscountByCouponAmount.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
             </div>
@@ -353,8 +355,9 @@
     }
     <div class="row">&nbsp;</div>
     <div class="row">&nbsp;</div>
-    <div class="row">&nbsp;</div>
     <div class="row"><hr /></div>
+    <div class="row">&nbsp;</div>
+    <div class="row">&nbsp;</div>
     <div class="row">
         <div class="column-50 section-left">Subtotal:</div>
         <div class="column-50 section-right">@GetSubtotal(preSubTotal, paymentData)</div>
@@ -384,7 +387,7 @@
     if (paymentData.TableOpening.OfferCoupon != null && paymentData.TableOpening.DiscountByCouponAmount.GetValueOrDefault() > 0)
     {
         <div class="row">
-            <div class="column-80 section-left">Descuento @paymentData.TableOpening.OfferCoupon.Code</div>
+            <div class="column-80 section-left">Descuento Cupón <br />@paymentData.TableOpening.OfferCoupon.Code</div>
             <div class="column-20 section-right">
                 -$@Convert.ToDecimal(paymentData.TableOpening.DiscountByCouponAmount.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
             </div>
