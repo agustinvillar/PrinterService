@@ -126,6 +126,7 @@
                 <div class="row">
                     <div class="column item-detail">* @item.GuestComment</div>
                 </div>
+                <div class="row">&nbsp;</div>
             }
         }
         else if (!string.IsNullOrEmpty(item.GuestComment))
@@ -133,11 +134,13 @@
             <div class="row">
                 <div class="column item-detail">* @item.GuestComment</div>
             </div>
+            <div class="row">&nbsp;</div>
         }
         else
         {
             <div class="row">&nbsp;</div>
         }
+        <div class="row">&nbsp;</div>
         <div class="row">&nbsp;</div>
     }
     <div class="row">&nbsp;</div>
@@ -328,6 +331,7 @@
                 {
                     <div class="row">&nbsp;</div>
                 }
+                <div class="row">&nbsp;</div>
                 <div class="row">&nbsp;</div>
             }
             preSubTotal += GetPreSubtotal(order);
