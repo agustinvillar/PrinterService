@@ -88,12 +88,14 @@
             </div>
             <div class="column-50 section-right">
                 @{
-                    if (item.PriceWithDiscount.GetValueOrDefault() != item.Price.GetValueOrDefault())
+                    double totalItem = item.Quantity.GetValueOrDefault() * item.Price.GetValueOrDefault();
+                    double totalItemDiscount = item.Quantity.GetValueOrDefault() * item.PriceWithDiscount.GetValueOrDefault();
+                    if (totalItemDiscount != totalItem)
                     {
-                        <span class="invalid-text">$@Convert.ToDecimal(item.Price.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</span>
+                        <span class="invalid-text">$@Convert.ToDecimal(totalItem).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</span>
                     }
                 }
-                $@Convert.ToDecimal(item.PriceWithDiscount).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+                $@Convert.ToDecimal(totalItemDiscount).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
             </div>
         </div>
         @if (item.Options != null && item.Options.Count > 0)
@@ -274,12 +276,14 @@
                     </div>
                     <div class="column-50 section-right">
                         @{
-                            if (item.PriceWithDiscount.GetValueOrDefault() != item.Price.GetValueOrDefault())
+                            double totalItem = item.Quantity.GetValueOrDefault() * item.Price.GetValueOrDefault();
+                            double totalItemDiscount = item.Quantity.GetValueOrDefault() * item.PriceWithDiscount.GetValueOrDefault();
+                            if (totalItemDiscount != totalItem)
                             {
-                                <span class="invalid-text">$@Convert.ToDecimal(item.Price.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</span>
+                                <span class="invalid-text">$@Convert.ToDecimal(totalItem).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))</span>
                             }
                         }
-                        $@Convert.ToDecimal(item.PriceWithDiscount).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+                        $@Convert.ToDecimal(totalItemDiscount).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
                     </div>
                 </div>
                 @if (item.Options != null && item.Options.Count > 0)
