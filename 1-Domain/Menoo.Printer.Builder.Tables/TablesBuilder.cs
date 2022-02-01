@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Menoo.Printer.Builder.Tables
@@ -20,6 +21,8 @@ namespace Menoo.Printer.Builder.Tables
         private const int PRINT_MINUTES = 10;
 
         private const int MIN_SHARED_TABLES_OPENING = 2;
+
+        private readonly int _queueDelay;
 
         private readonly EventLog _generalWriter;
 
@@ -34,6 +37,7 @@ namespace Menoo.Printer.Builder.Tables
             TableOpeningFamilyRepository tableOpeningFamilyRepository,
             PaymentRepository paymentRepository)
         {
+            _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
             _storeRepository = storeRepository;
             _tableOpeningFamilyRepository = tableOpeningFamilyRepository;
             _paymentRepository = paymentRepository;
@@ -95,6 +99,7 @@ namespace Menoo.Printer.Builder.Tables
             {
                 tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault();
                 var ordersActive = tableOpeningInfo.Orders.FindAll(f => !f.Status.ToLower().Contains("cancelado"));
+                Thread.Sleep(_queueDelay);
                 paymentData = await _paymentRepository.GetPaymentByIdAsync(tableOpeningInfo.PaymentId.GetValueOrDefault());
                 var orderUnified = GetOrderData(ordersActive);
                 data.Add("userName", tableOpeningInfo.UserName);
@@ -104,8 +109,9 @@ namespace Menoo.Printer.Builder.Tables
             {
                 tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault(f => f.PayingForAll);
                 int paymentId = tableOpeningInfo.PaymentId.GetValueOrDefault();
+                Thread.Sleep(_queueDelay);
                 paymentData = await _paymentRepository.GetPaymentByIdAsync(paymentId);
-                tableOpeningFamilyDTO.TableOpenings.ForEach(i => 
+                tableOpeningFamilyDTO.TableOpenings.ForEach(i =>
                 {
                     var queryResult = i.Orders.FindAll(f => f.Status.ToLower() != "cancelado");
                     var onlyActiveOrders = new List<Order>(queryResult);
@@ -153,7 +159,7 @@ namespace Menoo.Printer.Builder.Tables
             return data;
         }
 
-                private DateTime GetClosedDateTimeFormated(string date) 
+        private DateTime GetClosedDateTimeFormated(string date)
         {
             DateTime dateTime;
             try
@@ -161,7 +167,7 @@ namespace Menoo.Printer.Builder.Tables
                 dateTime = DateTime.ParseExact(date, "dd-MM-yyyy HH:mm",
                            System.Globalization.CultureInfo.InvariantCulture);
             }
-            catch 
+            catch
             {
                 dateTime = Convert.ToDateTime(date);
             }
@@ -180,12 +186,13 @@ namespace Menoo.Printer.Builder.Tables
             orderUnified.UserName = ordersByUsername.Key;
             orderUnified.Store = ordersByStore.ToList().FirstOrDefault().Store;
             orderUnified.OrderType = ordersByStore.ToList().FirstOrDefault().OrderType;
-            orders.ForEach(item => {
-                if (item.Items != null && item.Items.Count > 0) 
+            orders.ForEach(item =>
+            {
+                if (item.Items != null && item.Items.Count > 0)
                 {
                     items.AddRange(item.Items);
                 }
-                if (item.Extras != null && item.Extras.Count > 0) 
+                if (item.Extras != null && item.Extras.Count > 0)
                 {
                     extras.AddRange(item.Extras);
                 }
@@ -209,7 +216,7 @@ namespace Menoo.Printer.Builder.Tables
             return title;
         }
 
-        private string SetTitleForRequestPayment(TableOpeningFamily tableOpeningFamilyDTO) 
+        private string SetTitleForRequestPayment(TableOpeningFamily tableOpeningFamilyDTO)
         {
             string title = string.Empty;
             if (tableOpeningFamilyDTO.TableOpenings.Any(f => f.PayWithPOS))

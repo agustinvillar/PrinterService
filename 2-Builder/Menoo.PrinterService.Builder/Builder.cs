@@ -41,8 +41,6 @@ namespace Menoo.PrinterService.Builder
 
         private readonly string _queueConnectionString;
 
-        private readonly int _queueDelay;
-
         private long _tickCounter;
 
         public Builder()
@@ -51,7 +49,6 @@ namespace Menoo.PrinterService.Builder
             _adapter = new BuiltinHandlerActivator();
             _queueName = GlobalConfig.ConfigurationManager.GetSetting("queueName");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
-            _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
             _ticketRepository = GlobalConfig.DependencyResolver.Resolve<TicketRepository>();
             _itemRepository = GlobalConfig.DependencyResolver.Resolve<ItemRepository>();
@@ -74,7 +71,6 @@ namespace Menoo.PrinterService.Builder
                         $"Id colleción printEvents: {documentsId}{Environment.NewLine}", EventLogEntryType.Information);
                     try
                     {
-                        Thread.Sleep(_queueDelay);
                         var dataToPrint = await builder.BuildAsync(data);
                         await SendToFirebaseAsync(dataToPrint, data.TypeDocument, data.PrintEvent);
                     }
