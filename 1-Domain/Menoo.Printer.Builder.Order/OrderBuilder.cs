@@ -31,8 +31,6 @@ namespace Menoo.Printer.Builder.Orders
 
         private const int PRINT_MINUTES_ORDER_REPRINT = 120;
 
-        private readonly int _queueDelay;
-
         private readonly BookingRepository _bookingRepository;
 
         private readonly OrderRepository _orderRepository;
@@ -50,7 +48,6 @@ namespace Menoo.Printer.Builder.Orders
             OrderRepository orderRepository,
             PaymentRepository paymentRepository)
         {
-            _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
             _menooContext = menooContext;
             _storeRepository = storeRepository;
             _bookingRepository = bookingRepository;
@@ -151,7 +148,6 @@ namespace Menoo.Printer.Builder.Orders
                     long paymentId = _menooContext.Payments.FirstOrDefault(f => f.EntityId == order.Id)?.PaymentId ?? 0;
                     if (paymentId > 0)
                     {
-                        Thread.Sleep(_queueDelay);
                         var paymentData = await _paymentRepository.GetPaymentByIdAsync(paymentId);
                         var takeAwayOpening = paymentData.TaOpening;
                         viewBag.Add("paymentMethod", $"{paymentData.PaymentType}: {paymentData.PaymentMethod}");

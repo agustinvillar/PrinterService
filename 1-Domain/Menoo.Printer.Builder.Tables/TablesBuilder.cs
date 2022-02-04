@@ -22,8 +22,6 @@ namespace Menoo.Printer.Builder.Tables
 
         private const int MIN_SHARED_TABLES_OPENING = 2;
 
-        private readonly int _queueDelay;
-
         private readonly EventLog _generalWriter;
 
         private readonly TableOpeningFamilyRepository _tableOpeningFamilyRepository;
@@ -37,7 +35,6 @@ namespace Menoo.Printer.Builder.Tables
             TableOpeningFamilyRepository tableOpeningFamilyRepository,
             PaymentRepository paymentRepository)
         {
-            _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
             _storeRepository = storeRepository;
             _tableOpeningFamilyRepository = tableOpeningFamilyRepository;
             _paymentRepository = paymentRepository;
@@ -99,7 +96,6 @@ namespace Menoo.Printer.Builder.Tables
             {
                 tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault();
                 var ordersActive = tableOpeningInfo.Orders.FindAll(f => !f.Status.ToLower().Contains("cancelado"));
-                Thread.Sleep(_queueDelay);
                 paymentData = await _paymentRepository.GetPaymentByIdAsync(tableOpeningInfo.PaymentId.GetValueOrDefault());
                 var orderUnified = GetOrderData(ordersActive);
                 data.Add("userName", tableOpeningInfo.UserName);
@@ -109,7 +105,6 @@ namespace Menoo.Printer.Builder.Tables
             {
                 tableOpeningInfo = tableOpeningFamilyDTO.TableOpenings.FirstOrDefault(f => f.PayingForAll);
                 int paymentId = tableOpeningInfo.PaymentId.GetValueOrDefault();
-                Thread.Sleep(_queueDelay);
                 paymentData = await _paymentRepository.GetPaymentByIdAsync(paymentId);
                 tableOpeningFamilyDTO.TableOpenings.ForEach(i =>
                 {

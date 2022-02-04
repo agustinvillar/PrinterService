@@ -7,6 +7,7 @@ using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Repository;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Menoo.Printer.Builder.BookingBuilder

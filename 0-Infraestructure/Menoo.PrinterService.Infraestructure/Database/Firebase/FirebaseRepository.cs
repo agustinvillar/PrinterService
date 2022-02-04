@@ -1,6 +1,7 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Infraestructure.Database.Firebase
@@ -8,6 +9,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
     public class FirebaseRepository<T> : IFirebaseRepository<T> where T : class
     {
         private readonly FirestoreDb _db;
+
+        private const int DELAY_QUERY = 10000;
 
         public FirebaseRepository(FirestoreDb db)
         {
@@ -26,12 +29,14 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
 
         public virtual async Task<bool> ExistsByIdAsync(string id, string collection)
         {
+            Thread.Sleep(DELAY_QUERY);
             var result = await _db.Collection(collection).Document(id).GetSnapshotAsync();
             return result != null && result.Exists;
         }
 
         public virtual async Task<List<TEntity>> GetAllAsync<TEntity>(string collection)
         {
+            Thread.Sleep(DELAY_QUERY);
             var entities = new List<TEntity>();
             var snapshot = await _db.Collection(collection).GetSnapshotAsync();
             foreach (var item in snapshot.Documents)
@@ -45,6 +50,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
 
         public virtual async Task<TEntity> GetById<TEntity>(string id, string collection)
         {
+            Thread.Sleep(DELAY_QUERY);
             var result = await _db.Collection(collection).Document(id).GetSnapshotAsync();
             if (result.Exists) 
             {
