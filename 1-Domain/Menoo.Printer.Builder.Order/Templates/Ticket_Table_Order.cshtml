@@ -1,0 +1,95 @@
+﻿@using System.Collections.Generic
+@using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
+@model System.Collections.Generic.Dictionary<string, object>
+@{
+    Order orderData = (Order)Model["orderData"];
+    bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
+}<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <style>
+            @Model["style"].ToString()
+        </style>
+    </head>
+    <body>
+        <div class="invoice-pos">
+            <div class="section-center invoince-header">
+                <div class="section-center invoince-header">
+                    <div class="section-center">
+                        @if (allowLogo)
+                        {
+                            <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO" />
+                        }
+                        else
+                        {
+                            <span class="title">MENOO</span>
+                        }
+                    </div>
+                </div>
+                <div class="section-center">
+                    @Model["title"].ToString()
+                </div>
+            </div>
+            <div class="row">
+                <div class="column-50 section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
+                <div class="column-50 section-right"><b>Mesa: @Model["tableNumber"].ToString()</b></div>
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <div class="section-left"><b>Cliente:</b> @Model["clientName"].ToString()</div>
+            </div>
+            <div class="row"><hr /></div>
+            <div class="row section-custom-header uppercase">
+                <div class="section-center"><b>Detalle del pedido</b></div>
+            </div>
+            @foreach (ItemOrder item in orderData.Items)
+            {
+                <div class="row">
+                    <div class="column-80 section-left">
+                        <span class="item-quantity section-left">@item.Quantity x </span><b>@item.Name</b>
+                    </div>
+                </div>
+                <div class="row">&nbsp;</div>
+                @if (item.Options != null)
+                {
+                    <div class="row">
+                        <ul class="item-detail">
+                            @{
+                                foreach (ItemOption option in item.Options)
+                                {
+                                    string extraName = option.Price == 0 ? "Opción: " + option.Name : "Opción: " + option.Quantity + " x " + option.Name;
+                                    <li class="row">
+                                        <span class="column section-left ">
+                                            @extraName
+                                        </span>
+                                    </li>
+                                    <li class="row">&nbsp;</li>
+                                }
+                                if (!string.IsNullOrEmpty(item.GuestComment))
+                                {
+                                    <li class="row">&nbsp;</li>
+                                    <li class="row">* @item.GuestComment</li>
+                                    <li class="row">&nbsp;</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(item.GuestComment))
+                {
+                    <div class="row">&nbsp;</div>
+                    <div class="row">
+                        <ul class="item-detail">
+                            <li class="row">@item.GuestComment</li>
+                            <li class="row">&nbsp;</li>
+                        </ul>
+                    </div>
+                }
+            }
+            <div class="row">&nbsp;</div>
+            <div class="row"><hr /></div>
+        </div>
+    </body>
+</html>

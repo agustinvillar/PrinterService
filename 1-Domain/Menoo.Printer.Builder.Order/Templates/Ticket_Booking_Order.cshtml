@@ -1,0 +1,105 @@
+﻿@using System.Collections.Generic
+@using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
+@model System.Collections.Generic.Dictionary<string, object>
+@{
+    Order orderData = (Order)Model["orderData"];
+    bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
+}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <style>
+            @Model["style"].ToString()
+        </style>
+    </head>
+    <body>
+        <div class="invoice-pos">
+            <div class="section-center invoince-header">
+                <div class="section-center">
+                    @if (allowLogo)
+                    {
+                        <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO" />
+                    }
+                    else
+                    {
+                        <span class="title">MENOO</span>
+                    }
+                </div>
+                <div class="section-center">
+                    @Model["title"].ToString()
+                </div>
+            </div>
+            <div class="row">
+                <div class="column-50 section-left"><b>N° de reserva:</b> @Model["bookingNumber"].ToString()</div>
+                <div class="column-50 section-right"><b>N° de orden: @Model["orderNumber"].ToString()</b></div>
+            </div>
+
+            <div class="row">
+                <div class="column-50 section-left"><b>Cliente:</b></div>
+                <div class="column-50 section-right"><b>Fecha: </b></div>
+            </div>
+            <div class="row">
+                <div class="column-50 section-left">@Model["clientName"].ToString()</div>
+                <div class="column-50 section-right">@Model["date"].ToString()</div>
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row"><hr /></div>
+            <div class="row">&nbsp;</div>
+            <div class="row section-custom-header">
+                <div class="section-center uppercase">
+                    <b>Detalle del pedido</b>
+                </div>
+            </div>
+            <div class="row">
+                @foreach (ItemOrder item in orderData.Items)
+                {
+                    <div class="section-left">
+                        <span class="item-quantity">@item.Quantity.GetValueOrDefault() x </span><b>@item.Name</b>
+                        @if (item.Options != null)
+                        {
+                            <ul class="item-detail">
+                                @{
+                                    foreach (ItemOption option in item.Options)
+                                    {
+                                        string extra = option.Price == 0 ? "Opción: " + option.Name : option.Quantity + " x " + option.Name;
+                                        <li>@extra</li>
+                                    }
+                                    if (!string.IsNullOrEmpty(item.GuestComment))
+                                    {
+                                        <li class="row">* @item.GuestComment</li>
+                                        <li class="row">&nbsp;</li>
+                                    }
+                                }
+                            </ul>
+                        }
+                        else if (!string.IsNullOrEmpty(item.GuestComment))
+                        {
+                            <div class="row">
+                                <ul class="item-detail">
+                                    <li class="row">@item.GuestComment</li>
+                                    <li class="row">&nbsp;</li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            @{
+                if (orderData.Extras != null && orderData.Extras.Count > 0)
+                {
+                    <div class="row">
+                        @foreach (Extra extra in orderData.Extras)
+                        {
+                            <div class="section-left">
+                                <span class="item-quantity">1 x </span><b>@extra.Name</b>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            <div class="row"><hr /></div>
+        </div>
+    </body>
+</html>

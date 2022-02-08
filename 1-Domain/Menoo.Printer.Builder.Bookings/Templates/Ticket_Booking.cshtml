@@ -1,0 +1,50 @@
+﻿@using System.Collections.Generic
+@model Dictionary<string, object>
+@{ 
+    bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
+}<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <style>
+            @Model["style"].ToString()
+        </style>
+    </head>
+    <body>
+        <div class="invoice-pos">
+            <div class="section-center invoince-header">
+                <div class="section-center">
+                    @if (allowLogo)
+                    {
+                        <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO" />
+                    }
+                    else
+                    {
+                        <span class="title">MENOO</span>
+                    }
+                </div>
+                <div class="section-center">
+                    @Model["title"].ToString()
+                </div>
+            </div>
+            <div class="row section-left">
+                <b>N° de reserva:</b> @Model["bookingNumber"].ToString()
+            </div>
+            <div class="row">
+                <div class="column-50 section-left">
+                    <b>Fecha:</b> @Model["bookingDate"].ToString()
+                </div>
+                <div class="column-50 section-right">
+                    <b>Hora: @Model["bookingTime"].ToString()</b>
+                </div>
+            </div>
+            <div class="row section-left">
+                <b>Cliente: </b>@Model["clientName"].ToString()
+            </div>
+            <div class="row section-left">
+                <b>Personas:</b> @Model["quantity"].ToString()
+            </div>
+        </div>
+    </body>
+</html>

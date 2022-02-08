@@ -18,13 +18,5 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("event")]
         [JsonProperty("event")]
         public string Event { get; set; }
-
-        [FirestoreProperty("read")]
-        [JsonProperty("read")]
-        public bool Read { get; set; }
-
-        [FirestoreProperty("tableOpId")]
-        [JsonProperty("tableOpId")]
-        public string TableOpeningId { get; set; }
     }
 }
