@@ -52,7 +52,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
         {
             Thread.Sleep(DELAY_QUERY);
             var result = await _db.Collection(collection).Document(id).GetSnapshotAsync();
-            if (result.Exists) 
+            if (result.Exists)
             {
                 var data = result.ToDictionary();
                 return data.GetObject<TEntity>();

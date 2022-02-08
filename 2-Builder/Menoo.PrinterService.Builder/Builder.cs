@@ -76,7 +76,7 @@ namespace Menoo.PrinterService.Builder
                         var dataToPrint = await builder.BuildAsync(data);
                         await SendToFirebaseAsync(dataToPrint, data.TypeDocument, data.PrintEvent);
                     }
-                    catch (UnifiedSectorException sectorException) 
+                    catch (UnifiedSectorException sectorException)
                     {
                         _generalWriter.WriteEntry(
                                 $"{builder}::RecieveAsync(). {sectorException.Message}. {Environment.NewLine}" +
@@ -195,7 +195,7 @@ namespace Menoo.PrinterService.Builder
                 sectors = data.Store.GetPrintSettings(printEvent);
                 await PrintAsync(data, printEvent, sectors);
             }
-            else 
+            else
             {
                 var orderData = (Order)data.Content["orderData"];
                 string clientName = orderData.UserName;
@@ -238,28 +238,29 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
-        private async Task PrintAsync(PrintInfo data, string printEvent, List<PrintSettings> sectors, bool isTakeAway = false) 
+        private async Task PrintAsync(PrintInfo data, string printEvent, List<PrintSettings> sectors, bool isTakeAway = false)
         {
             foreach (var sector in sectors)
             {
-                if (isTakeAway) 
+                if (isTakeAway)
                 {
                     if (!data.Content.ContainsKey("printQR"))
                     {
                         data.Content.Add("printQR", sector.PrintQR);
                     }
-                    else 
+                    else
                     {
                         data.Content["printQR"] = sector.PrintQR;
                     }
                 }
+                bool allowLogo = sector.AllowLogo.GetValueOrDefault();
                 if (!data.Content.ContainsKey("allowLogo"))
                 {
-                    data.Content.Add("allowLogo", sector.AllowLogo);
+                    data.Content.Add("allowLogo", allowLogo);
                 }
                 else
                 {
-                    data.Content["allowLogo"] = sector.AllowLogo;
+                    data.Content["allowLogo"] = allowLogo;
                 }
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
                 string ticket = formatterService.Create();
@@ -293,7 +294,7 @@ namespace Menoo.PrinterService.Builder
             {
                 var itemData = await _itemRepository.GetById<ItemOrder>(item.ItemId, "items");
                 var orderItem = orderData.Items.FirstOrDefault(f => f.Id == itemData.Id);
-                var viewData = new Dictionary<string, object>() 
+                var viewData = new Dictionary<string, object>()
                 {
                     { "title", extraData.Content["title"] },
                     { "orderNumber", extraData.Content["orderNumber"] },
