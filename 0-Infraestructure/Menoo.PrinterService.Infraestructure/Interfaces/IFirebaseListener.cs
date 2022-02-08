@@ -2,6 +2,6 @@
 {
     public interface IFirebaseListener
     {
-        void Listen();
+        void Listen(bool onStart = false);
     }
 }

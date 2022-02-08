@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Menoo.PrinterService.Infraestructure.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,13 +21,16 @@ namespace Menoo.PrinterService.Infraestructure.Extensions
             }
         }
 
-        public static byte[] GetEmbeddedResource(this Assembly assembly, string resourceName)
+        public static List<Type> GetTypesFormaterServices() 
         {
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var reader = new BinaryReader(stream))
-            {
-                return reader.ReadBytes(Convert.ToInt32(stream.Length));
-            }
+            string typeWithNamespace = typeof(IFormaterService).Namespace;
+            var type = typeof(IFormaterService);
+            var fileServices = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetLoadableTypes())
+                .Where(filter => type.IsAssignableFrom(filter))
+                .AsParallel()
+                .ToList();
+            return fileServices.FindAll(filter => filter.FullName != typeWithNamespace);
         }
     }
 }

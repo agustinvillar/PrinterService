@@ -1,0 +1,40 @@
+﻿@using System.Collections.Generic
+@model System.Collections.Generic.Dictionary<string, object>
+@{
+    bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
+}<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <style>
+        @Model["style"].ToString()
+        </style>
+    </head>
+    <body>
+        <div class="invoice-pos">
+            <div class="section-center invoince-header">
+                <div class="section-center">
+                    @if (allowLogo)
+                    {
+                        <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO" />
+                    }
+                    else
+                    {
+                        <span class="title">MENOO</span>
+                    }
+                </div>
+                <div class="section-center">
+                    @Model["title"].ToString()
+                </div>
+            </div>
+            <div class="row section-left">
+                <b>Número de Mesa: </b>@Model["tableNumber"].ToString()
+            </div>
+            <div class="row">
+                <div class="column-50 section-left"><b>Fecha:</b> @Model["openedAt"].ToString()</div>
+                <div class="column-50 section-right"><b>Hora: @Model["timeAt"].ToString()</b></div>
+            </div>
+        </div>
+    </body>
+</html>

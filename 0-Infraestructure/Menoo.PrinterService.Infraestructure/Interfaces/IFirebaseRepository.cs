@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Google.Cloud.Firestore;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Infraestructure.Interfaces
@@ -15,6 +16,6 @@ namespace Menoo.PrinterService.Infraestructure.Interfaces
 
         Task<TEntity> GetById<TEntity>(string id, string collection);
 
-        Task SaveAsync<TEntity>(TEntity item, string collection);
+        Task<DocumentReference> SaveAsync<TEntity>(TEntity item, string collection);
     }
 }

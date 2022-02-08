@@ -23,7 +23,7 @@ namespace Menoo.Printer.Builder.Orders.Repository
             {
                 item = new SectorItem
                 {
-                    Sectors = resultQuery.Sectors,
+                    Sectors = resultQuery.Sectors.FindAll(f => f.AllowPrinting),
                     ItemId = documentId
                 };
             }

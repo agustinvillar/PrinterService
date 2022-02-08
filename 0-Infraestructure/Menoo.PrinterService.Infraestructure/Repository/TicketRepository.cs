@@ -1,9 +1,9 @@
 ﻿using Google.Cloud.Firestore;
+using Menoo.Backend.Integrations.Constants;
+using Menoo.Backend.Integrations.Messages;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
-using Menoo.PrinterService.Infraestructure.Queues;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Infraestructure.Repository
@@ -14,60 +14,30 @@ namespace Menoo.PrinterService.Infraestructure.Repository
 
         private const string TICKET_HISTORY = "ticketHistory";
 
+        private const string TICKET_QUEUE = "print";
+
         public TicketRepository(FirestoreDb db)
             : base(db)
         {
             _firebaseDb = db;
         }
 
-        public override Task SaveAsync<TEntity>(TEntity item, string collection = "print")
+        public async Task<DocumentReference> SaveAsync(Ticket document) 
         {
-            return base.SaveAsync(item, collection);
+            return await base.SaveAsync(document, TICKET_QUEUE);
         }
 
-        public async Task<bool> IsTicketPrinted(Tuple<string, PrintMessage> message)
-        {
-            QuerySnapshot documentSnapshots;
-            if (message.Item2.DocumentsId != null && message.Item2.DocumentsId.Count > 0)
-            {
-                documentSnapshots = await _firebaseDb.Collection(TICKET_HISTORY)
-                    .WhereEqualTo("dayCreatedAt", DateTime.Now.ToString("dd/MM/yyyy"))
-                    .WhereEqualTo("printEvent", message.Item2.PrintEvent)
-                    .WhereArrayContainsAny("entityId", message.Item2.DocumentsId).GetSnapshotAsync();
-            }
-            else 
-            {
-                var filter = new List<string>() { message.Item2.DocumentId };
-                documentSnapshots = await _firebaseDb.Collection(TICKET_HISTORY)
-                    .WhereEqualTo("dayCreatedAt", DateTime.Now.ToString("dd/MM/yyyy"))
-                    .WhereEqualTo("printEvent", message.Item2.PrintEvent)
-                    .WhereArrayContainsAny("entityId", filter).GetSnapshotAsync();
-            }
-            bool exists = documentSnapshots.Documents.Count > 0;
-            return exists;
-        }
 
-        public async Task SetPrintedAsync(Tuple<string, PrintMessage> message) 
+        public async Task SetPrintedAsync(string printEvent, string printId) 
         {
-            bool isExists = await IsTicketPrinted(message);
-            if (isExists) 
-            {
-                return;
-            }
             var entity = new TicketHistory
             {
-                Id = message.Item1,
                 DayCreatedAt = DateTime.Now.ToString("dd/MM/yyyy"),
-                PrintEvent = message.Item2.PrintEvent,
-                CreatedAt = DateTime.UtcNow
+                PrintEvent = printEvent,
+                CreatedAt = DateTime.UtcNow,
+                PrintId = printId
             };
-            entity.EntityId = message.Item2.DocumentsId != null && message.Item2.DocumentsId.Count > 0 ? message.Item2.DocumentsId : new System.Collections.Generic.List<string>() { message.Item2.DocumentId };
-            await base.SaveAsync(message.Item1, entity, TICKET_HISTORY);
-        }
-
-        public async Task SetDocumentHtmlAsync(string id, string documentHTML) 
-        {
-            await AddPropertyAsync(id, "html", documentHTML, TICKET_HISTORY);
+            await base.SaveAsync(entity, TICKET_HISTORY);
         }
     }
 }

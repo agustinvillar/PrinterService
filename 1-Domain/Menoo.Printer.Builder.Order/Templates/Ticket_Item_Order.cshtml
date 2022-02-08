@@ -1,0 +1,68 @@
+﻿@using System.Collections.Generic
+@using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
+@model System.Collections.Generic.Dictionary<string, object>
+@{
+    ItemOrder item = (ItemOrder)Model["item"];
+    bool allowLogo = Convert.ToBoolean(Model["allowLogo"]);
+}<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+        <style>
+            @Model["style"].ToString()
+        </style>
+    </head>
+    <body>
+        <div class="invoice-pos">
+            <div class="section-center invoince-header">
+                <div class="section-center">
+                    @if (allowLogo)
+                    {
+                        <img class="img-logo" src="@Model["logo"].ToString()" alt="MENOO" />
+                    }
+                    else
+                    {
+                        <span class="title">MENOO</span>
+                    }
+                </div>
+                <div class="section-center uppercase">
+                    @Model["title"].ToString()
+                </div>
+            </div>
+            <div class="row">
+                <div class="section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <div class="section-left"><b>Cliente:</b> @Model["clientName"].ToString()</div>
+            </div>
+            <div class="row"><hr /></div>
+            <div class="row section-custom-header uppercase">
+                <div class="section-center"><b>Plato a preparar</b></div>
+            </div>
+            <div class="row">
+                <div class="section-left">
+                    <span class="item-quantity">@item.Quantity x </span><b>@item.Name</b>
+                    @if (item.Options != null) 
+                    {
+                        <ul class="item-detail">
+                            @foreach (ItemOption option in item.Options)
+                            {
+                                string extraData = option.Quantity + " x " + option.Name;
+                                <li>@extraData</li>
+                            }
+                            @if (!string.IsNullOrEmpty(item.GuestComment))
+                            {
+                                <li class="row">* @item.GuestComment</li>
+                                <li class="row">&nbsp;</li>
+                            }
+                        </ul>
+                    }
+
+                </div>
+            </div>
+            <div class="row"><hr /></div>
+        </div>
+    </body>
+</html>

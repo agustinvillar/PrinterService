@@ -1,9 +1,11 @@
-﻿using Menoo.PrinterService.Infraestructure;
+﻿using Menoo.Backend.Integrations.Constants;
+using Menoo.PrinterService.Infraestructure;
+using Menoo.PrinterService.Infraestructure.Constants;
 using System;
 
 namespace Menoo.Printer.Builder.BookingBuilder
 {
-    [OnStartUp(Module = "Booking.Builder", Order = 2)]
+    [OnStartUp(Module = PrintBuilder.BOOKING_BUILDER, Order = 2)]
     public class Start
     {
         public Start()
