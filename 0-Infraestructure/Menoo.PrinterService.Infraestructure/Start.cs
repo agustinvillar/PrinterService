@@ -17,30 +17,36 @@ namespace Menoo.PrinterService.Infraestructure
             var firebaseDb = GetInstanceFirebase();
             if (!string.IsNullOrEmpty(builderLog))
             {
-                dependencyResolver.Register(() => {
+                dependencyResolver.Register(() =>
+                {
                     var log = ConfigureBuilderEventLog();
                     return log;
                 }, "builder");
             }
             dependencyResolver.Register(GetInstanceFirebase);
-            dependencyResolver.Register(() => {
+            dependencyResolver.Register(() =>
+            {
                 var storeRepository = new StoreRepository(firebaseDb);
                 return storeRepository;
             });
-            dependencyResolver.Register(() => {
+            dependencyResolver.Register(() =>
+            {
                 var ticketRepository = new TicketRepository(firebaseDb);
                 return ticketRepository;
             });
-            dependencyResolver.Register(() => {
+            dependencyResolver.Register(() =>
+            {
                 var userRepository = new UserRepository(firebaseDb);
                 return userRepository;
             });
-            dependencyResolver.Register(() => {
+            dependencyResolver.Register(() =>
+            {
 
                 var tableOpeningRepository = new TableOpeningFamilyRepository(firebaseDb);
                 return tableOpeningRepository;
             });
-            dependencyResolver.Register(() => {
+            dependencyResolver.Register(() =>
+            {
                 var paymentRepository = new PaymentRepository(firebaseDb);
                 return paymentRepository;
             });
@@ -51,7 +57,6 @@ namespace Menoo.PrinterService.Infraestructure
         {
             string sourceBuilderName = GlobalConfig.ConfigurationManager.GetSetting("serviceBuilderName");
             string logBuilderName = GlobalConfig.ConfigurationManager.GetSetting("eventBuilderLog");
-
             var generalWriter = new EventLog { Log = logBuilderName, Source = sourceBuilderName, EnableRaisingEvents = true };
             return generalWriter;
         }
