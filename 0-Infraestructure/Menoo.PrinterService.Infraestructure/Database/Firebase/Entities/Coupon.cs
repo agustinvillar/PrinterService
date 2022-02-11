@@ -1,10 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 {
@@ -72,7 +68,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         public int? UsedInStore { get; set; }
     }
 
-    public class StoreInfo 
+    public class StoreInfo
     {
         [FirestoreProperty("storeId")]
         [JsonProperty("storeId")]
