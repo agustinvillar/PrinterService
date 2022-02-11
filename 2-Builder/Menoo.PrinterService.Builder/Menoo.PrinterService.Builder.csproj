@@ -8,7 +8,7 @@
     <ProjectGuid>{A67B916B-A30A-4B71-B42D-8E09A4D00D89}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Menoo.PrinterService.Builder</RootNamespace>
-    <AssemblyName>Menoo.PrinterService.Builder</AssemblyName>
+    <AssemblyName>Menoo.PRE.PrinterService.Builder</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
