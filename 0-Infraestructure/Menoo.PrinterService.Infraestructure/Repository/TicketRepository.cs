@@ -1,9 +1,8 @@
 ﻿using Google.Cloud.Firestore;
-using Menoo.Backend.Integrations.Constants;
-using Menoo.Backend.Integrations.Messages;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using System;
+using System.Configuration;
 using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Infraestructure.Repository
@@ -12,9 +11,9 @@ namespace Menoo.PrinterService.Infraestructure.Repository
     {
         private readonly FirestoreDb _firebaseDb;
 
-        private const string TICKET_HISTORY = "ticketHistory";
+        private readonly string _ticketHistory = ConfigurationManager.AppSettings["printTicketHistoryCollection"].ToString();
 
-        private const string TICKET_QUEUE = "print";
+        private readonly string _ticket = ConfigurationManager.AppSettings["printCollection"].ToString();
 
         public TicketRepository(FirestoreDb db)
             : base(db)
@@ -22,13 +21,13 @@ namespace Menoo.PrinterService.Infraestructure.Repository
             _firebaseDb = db;
         }
 
-        public async Task<DocumentReference> SaveAsync(Ticket document) 
+        public async Task<DocumentReference> SaveAsync(Ticket document)
         {
-            return await base.SaveAsync(document, TICKET_QUEUE);
+            return await base.SaveAsync(document, _ticket);
         }
 
 
-        public async Task SetPrintedAsync(string printEvent, string printId) 
+        public async Task SetPrintedAsync(string printEvent, string printId)
         {
             var entity = new TicketHistory
             {
@@ -37,7 +36,7 @@ namespace Menoo.PrinterService.Infraestructure.Repository
                 CreatedAt = DateTime.UtcNow,
                 PrintId = printId
             };
-            await base.SaveAsync(entity, TICKET_HISTORY);
+            await base.SaveAsync(entity, _ticketHistory);
         }
     }
 }
