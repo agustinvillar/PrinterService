@@ -47,7 +47,7 @@ namespace Menoo.PrinterService.Builder
         {
             InitializeService();
             _adapter = new BuiltinHandlerActivator();
-            _queueName = GlobalConfig.ConfigurationManager.GetSetting("queueName");
+            _queueName = GlobalConfig.ConfigurationManager.GetSetting("QueuePrint");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
             _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
