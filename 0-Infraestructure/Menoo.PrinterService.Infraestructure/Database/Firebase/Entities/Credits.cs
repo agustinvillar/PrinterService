@@ -16,7 +16,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
     }
 
     [FirestoreData]
-    public class CreditDetail 
+    public class CreditDetail
     {
         [FirestoreProperty("paymentId")]
         [JsonProperty("paymentId")]

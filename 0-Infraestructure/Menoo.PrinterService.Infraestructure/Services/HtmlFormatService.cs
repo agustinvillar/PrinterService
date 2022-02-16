@@ -56,14 +56,14 @@ namespace Menoo.PrinterService.Infraestructure.Services
         }
 
         #region private methods
-        private async Task<string> GetImageUrlAsync(string html) 
+        private async Task<string> GetImageUrlAsync(string html)
         {
             var converter = new HtmlConverter();
             var bytes = converter.FromHtmlString(html, TICKET_WIDTH, CoreHtmlToImage.ImageFormat.Png, 100);
             string urlImage = await _storageService.UploadAsync(bytes, $"ticket_{Guid.NewGuid().ToString()}");
             return urlImage;
         }
-        
+
         private void SetLogoAndStyle()
         {
             string cssPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", "assets", "print.css");
@@ -71,8 +71,14 @@ namespace Menoo.PrinterService.Infraestructure.Services
             string style = File.ReadAllText(cssPath);
             byte[] imageArray = File.ReadAllBytes(imagePath);
             string base64Image = $"data:image/png;base64, {Convert.ToBase64String(imageArray)}";
-            _viewData.Add("style", style);
-            _viewData.Add("logo", base64Image);
+            if (!_viewData.ContainsKey("style"))
+            {
+                _viewData.Add("style", style);
+            }
+            if (!_viewData.ContainsKey("logo"))
+            {
+                _viewData.Add("logo", base64Image);
+            }
         }
         #endregion
     }

@@ -47,7 +47,7 @@ namespace Menoo.PrinterService.Builder
         {
             InitializeService();
             _adapter = new BuiltinHandlerActivator();
-            _queueName = GlobalConfig.ConfigurationManager.GetSetting("queueName");
+            _queueName = GlobalConfig.ConfigurationManager.GetSetting("QueuePrint");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
             _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
@@ -107,6 +107,9 @@ namespace Menoo.PrinterService.Builder
 
         protected override void OnStart(string[] args)
         {
+#if DEBUG
+            Debugger.Launch();
+#endif
             _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             ConfigureWorker();
             _timer.Start();
@@ -252,13 +255,14 @@ namespace Menoo.PrinterService.Builder
                         data.Content["printQR"] = sector.PrintQR;
                     }
                 }
+                bool allowLogo = sector.AllowLogo.GetValueOrDefault();
                 if (!data.Content.ContainsKey("allowLogo"))
                 {
-                    data.Content.Add("allowLogo", sector.AllowLogo);
+                    data.Content.Add("allowLogo", allowLogo);
                 }
                 else
                 {
-                    data.Content["allowLogo"] = sector.AllowLogo;
+                    data.Content["allowLogo"] = allowLogo;
                 }
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
                 string ticket = formatterService.Create();
