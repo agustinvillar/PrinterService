@@ -328,8 +328,8 @@
     <None Include="App.Base.config" />
     <None Include="App.config" />
     <None Include="App.Debug.config">
-		<DependentUpon>App.config</DependentUpon>
-	</None>
+      <DependentUpon>App.config</DependentUpon>
+    </None>
     <None Include="App.PREpro.config">
       <DependentUpon>App.config</DependentUpon>
     </None>
