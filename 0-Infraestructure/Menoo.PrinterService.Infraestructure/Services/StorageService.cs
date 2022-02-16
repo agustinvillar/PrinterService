@@ -25,7 +25,7 @@ namespace Menoo.PrinterService.Infraestructure.Services
 
         public async Task<string> UploadAsync(byte[] fileBytes)
         {
-            string fileName = $"ticket_{Guid.NewGuid().ToString()}";
+            string fileName = $"ticket_{Guid.NewGuid().ToString()}.png";
             using (var s3 = new AmazonS3Client(_awsAccessKeyId, _awsSecretKey, RegionEndpoint.USEast1))
             {
                 var stream = new MemoryStream(fileBytes);
