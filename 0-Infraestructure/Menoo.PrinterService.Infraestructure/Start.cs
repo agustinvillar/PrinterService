@@ -50,7 +50,7 @@ namespace Menoo.PrinterService.Infraestructure
                 var paymentRepository = new PaymentRepository(firebaseDb);
                 return paymentRepository;
             });
-            dependencyResolver.Register<IFirebaseStorage, FirebaseStorageService>();
+            dependencyResolver.Register<IStorage, StorageService>();
         }
 
         static EventLog ConfigureBuilderEventLog()

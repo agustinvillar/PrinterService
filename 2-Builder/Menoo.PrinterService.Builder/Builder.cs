@@ -273,7 +273,7 @@ namespace Menoo.PrinterService.Builder
                     Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                     Copies = sector.Copies,
                     PrinterName = sector.Printer,
-                    TicketImage = ticket,
+                    TicketKey = ticket,
                     StoreName = data.Store.Name,
                     StoreId = data.Store.Id
                 };
@@ -322,7 +322,7 @@ namespace Menoo.PrinterService.Builder
                         Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                         Copies = sector.Copies,
                         PrinterName = sector.Printer,
-                        TicketImage = ticket,
+                        TicketKey = ticket,
                         StoreName = extraData.Store.Name,
                         StoreId = extraData.Store.Id
                     };

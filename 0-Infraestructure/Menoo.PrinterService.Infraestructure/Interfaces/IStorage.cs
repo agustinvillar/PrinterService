@@ -2,8 +2,8 @@
 
 namespace Menoo.PrinterService.Infraestructure.Interfaces
 {
-    public interface IFirebaseStorage
+    public interface IStorage
     {
-        Task<string> UploadAsync(byte[] file, string fileName);
+        Task<string> UploadAsync(byte[] file);
     }
 }
