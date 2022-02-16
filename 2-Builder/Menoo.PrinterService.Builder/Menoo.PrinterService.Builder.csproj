@@ -8,7 +8,7 @@
     <ProjectGuid>{A67B916B-A30A-4B71-B42D-8E09A4D00D89}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Menoo.PrinterService.Builder</RootNamespace>
-    <AssemblyName>Menoo.PRE.PrinterService.Builder</AssemblyName>
+    <AssemblyName>Menoo.PrinterService.Builder</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -16,6 +16,7 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AssemblyName>Menoo.PrinterService.Builder</AssemblyName>
     <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -28,6 +29,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'PRE|AnyCPU' ">
+    <AssemblyName>Menoo.PrinterService.Builder</AssemblyName>
     <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -40,6 +42,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'PREpro|AnyCPU' ">
+    <AssemblyName>Menoo.PRE.PrinterService.Builder</AssemblyName>
     <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -52,6 +55,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'PRO|AnyCPU' ">
+    <AssemblyName>Menoo.PrinterService.Builder</AssemblyName>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
@@ -323,6 +327,9 @@
   <ItemGroup>
     <None Include="App.Base.config" />
     <None Include="App.config" />
+    <None Include="App.Debug.config">
+		<DependentUpon>App.config</DependentUpon>
+	</None>
     <None Include="App.PREpro.config">
       <DependentUpon>App.config</DependentUpon>
     </None>
