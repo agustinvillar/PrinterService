@@ -27,14 +27,14 @@ namespace Menoo.PrinterService.Infraestructure.Repository
         }
 
 
-        public async Task SetPrintedAsync(string printEvent, string printId)
+        public async Task SetPrintedAsync(string printEvent, string printKey)
         {
             var entity = new TicketHistory
             {
                 DayCreatedAt = DateTime.Now.ToString("dd/MM/yyyy"),
                 PrintEvent = printEvent,
                 CreatedAt = DateTime.UtcNow,
-                PrintId = printId
+                PrintKey = printKey
             };
             await base.SaveAsync(entity, _ticketHistory);
         }

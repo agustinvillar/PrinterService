@@ -283,9 +283,9 @@ namespace Menoo.PrinterService.Builder
                     $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
                     $"Hora de impresión: {printDocument.PrintBefore}{Environment.NewLine}" +
                     $"Restaurante: {printDocument.StoreName}{Environment.NewLine}" +
-                    $"URL Ticket: {ticket} {Environment.NewLine}", EventLogEntryType.Information);
-                var reference = await _ticketRepository.SaveAsync(printDocument);
-                await _ticketRepository.SetPrintedAsync(printEvent, reference.Id);
+                    $"Ticket: {ticket} {Environment.NewLine}", EventLogEntryType.Information);
+                await _ticketRepository.SaveAsync(printDocument);
+                await _ticketRepository.SetPrintedAsync(printEvent, ticket);
             }
         }
 
