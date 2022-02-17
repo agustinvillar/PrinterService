@@ -10,7 +10,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
     {
         private readonly FirestoreDb _db;
 
-        private const int DELAY_QUERY = 10000;
+        private const int DELAY_QUERY = 5000;
 
         public FirebaseRepository(FirestoreDb db)
         {
@@ -52,7 +52,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
         {
             Thread.Sleep(DELAY_QUERY);
             var result = await _db.Collection(collection).Document(id).GetSnapshotAsync();
-            if (result.Exists) 
+            if (result.Exists)
             {
                 var data = result.ToDictionary();
                 return data.GetObject<TEntity>();

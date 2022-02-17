@@ -113,7 +113,11 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
 
         [FirestoreProperty("price")]
         [JsonProperty("price")]
-        public string Price { get; set; }
+        public decimal Price { get; set; }
+
+        [FirestoreProperty("qty")]
+        [JsonProperty("qty")]
+        public int Quantity { get; set; }
     }
 
     public class SectorItem

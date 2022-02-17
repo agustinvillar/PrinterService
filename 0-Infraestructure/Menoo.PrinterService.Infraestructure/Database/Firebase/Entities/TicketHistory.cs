@@ -19,8 +19,12 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("createdAt")]
         public DateTime CreatedAt { get; set; }
 
-        [FirestoreProperty("printId")]
-        [JsonProperty("printId")]
-        public string PrintId { get; set; }
+        [FirestoreProperty("printKey")]
+        [JsonProperty("printKey")]
+        public string PrintKey { get; set; }
+
+        [FirestoreProperty("sector")]
+        [JsonProperty("sector")]
+        public string Sector { get; set; }
     }
 }

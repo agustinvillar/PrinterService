@@ -35,13 +35,13 @@ namespace Menoo.PrinterService.Builder
 
             this.serviceInstallerInstance.DelayedAutoStart = true;
             this.serviceInstallerInstance.Description = @"Menoo Printer Builder es un servicio para construir el ticket de impresión.";
-            this.serviceInstallerInstance.DisplayName = @"Menoo Printer Builder";
-            this.serviceInstallerInstance.ServiceName = @"MenooPrinterBuilder";
+            this.serviceInstallerInstance.DisplayName = @"Menoo Printer Builder (PRE)";
+            this.serviceInstallerInstance.ServiceName = @"MenooPREPrinterBuilder";
             this.serviceInstallerInstance.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
 
             EventLogInstaller logInstaller = new EventLogInstaller();
-            logInstaller.Source = @"MenooPrinterBuilder";
-            logInstaller.Log = "MenooBuilderLog";
+            logInstaller.Source = @"MenooPREPrinterBuilder";
+            logInstaller.Log = "MenooPREBuilderLog";
 
             this.Installers.AddRange(new System.Configuration.Install.Installer[]
             {

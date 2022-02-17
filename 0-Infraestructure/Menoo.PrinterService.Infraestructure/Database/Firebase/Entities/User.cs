@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 
 namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
-{ 
+{
     [FirestoreData]
     public class User
     {
