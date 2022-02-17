@@ -284,7 +284,7 @@ namespace Menoo.PrinterService.Builder
                     $"Restaurante: {printDocument.StoreName}{Environment.NewLine}" +
                     $"Ticket: {ticket} {Environment.NewLine}", EventLogEntryType.Information);
                 await _ticketRepository.SaveAsync(printDocument);
-                await _ticketRepository.SetPrintedAsync(printEvent, ticket);
+                await _ticketRepository.SetPrintedAsync(printEvent, ticket, sector.Printer);
             }
         }
 
@@ -300,7 +300,8 @@ namespace Menoo.PrinterService.Builder
                     { "title", extraData.Content["title"] },
                     { "orderNumber", extraData.Content["orderNumber"] },
                     { "clientName", clientName},
-                    { "item", orderItem }
+                    { "item", orderItem },
+                    { "tableNumber", extraData.Content["tableNumber"]}
                 };
                 foreach (var sector in item.Sectors.FindAll(f => f.AllowPrinting))
                 {

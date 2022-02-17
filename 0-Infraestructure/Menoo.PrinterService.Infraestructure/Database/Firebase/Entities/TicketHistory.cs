@@ -22,5 +22,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [FirestoreProperty("printKey")]
         [JsonProperty("printKey")]
         public string PrintKey { get; set; }
+
+        [FirestoreProperty("sector")]
+        [JsonProperty("sector")]
+        public string Sector { get; set; }
     }
 }
