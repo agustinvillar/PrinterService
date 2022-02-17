@@ -1,18 +1,18 @@
 # Changelog
 Para mayor información de documentación, consulte [confluence](https://menoo-app.atlassian.net/wiki/spaces/DESARROLLO/overview)
-## [2.5.0] - 2022-02-16
-
-- [DEV-538] (https://menoo-app.atlassian.net/browse/DEV-538) Imprimir las cancelaciones de reservas que hace el usuario
-- [DEV-198] (https://menoo-app.atlassian.net/browse/DEV-198) Tamaño de hora de retiro en Ticket.
-- [DEV-540] (https://menoo-app.atlassian.net/browse/DEV-540) El cierre de mesa se imprime "n" veces.
-- [DEV-541] (https://menoo-app.atlassian.net/browse/DEV-541) Ordenes quedan asignadas a un # de mesa que no es el correcto.
-- [DEV-542] (https://menoo-app.atlassian.net/browse/DEV-542) Agregar la palabra "Cupón" al ticket.
-- [DEV-543] (https://menoo-app.atlassian.net/browse/DEV-543) Ordenes de mesa se imprimen "n" veces.
-- [DEV-69] (https://menoo-app.atlassian.net/browse/DEV-69) No funciona la reimpresion desde el admin.
-- [DEV-289] (https://menoo-app.atlassian.net/browse/DEV-289) Tickets apertura de mesa no se imprimen.
-- [DEV-24] (https://menoo-app.atlassian.net/browse/DEV-24) Detalles de impresión.
-- [DEV-63] (https://menoo-app.atlassian.net/browse/DEV-63) Impresión de extras en ordenes de mesa, ordenes TA, solicitud de pago y cierre de mesa.
-- [DEV-64] (https://menoo-app.atlassian.net/browse/DEV-64) Agregar descuentos y Cupones en tickets de órdenes TA
+## [2.5.0] - 2022-02-17
+- [DEV-628](https://menoo-app.atlassian.net/browse/DEV-628) Imprimir en las comandas el # de mesa
+- [DEV-538](https://menoo-app.atlassian.net/browse/DEV-538) Imprimir las cancelaciones de reservas que hace el usuario
+- [DEV-198](https://menoo-app.atlassian.net/browse/DEV-198) Tamaño de hora de retiro en Ticket.
+- [DEV-540](https://menoo-app.atlassian.net/browse/DEV-540) El cierre de mesa se imprime "n" veces.
+- [DEV-541](https://menoo-app.atlassian.net/browse/DEV-541) Ordenes quedan asignadas a un # de mesa que no es el correcto.
+- [DEV-542](https://menoo-app.atlassian.net/browse/DEV-542) Agregar la palabra "Cupón" al ticket.
+- [DEV-543](https://menoo-app.atlassian.net/browse/DEV-543) Ordenes de mesa se imprimen "n" veces.
+- [DEV-69](https://menoo-app.atlassian.net/browse/DEV-69) No funciona la reimpresion desde el admin.
+- [DEV-289](https://menoo-app.atlassian.net/browse/DEV-289) Tickets apertura de mesa no se imprimen.
+- [DEV-24](https://menoo-app.atlassian.net/browse/DEV-24) Detalles de impresión.
+- [DEV-63](https://menoo-app.atlassian.net/browse/DEV-63) Impresión de extras en ordenes de mesa, ordenes TA, solicitud de pago y cierre de mesa.
+- [DEV-64](https://menoo-app.atlassian.net/browse/DEV-64) Agregar descuentos y Cupones en tickets de órdenes TA
 - [DEV-301](https://menoo-app.atlassian.net/browse/DEV-301) [Correciones] Establecer nuevo formato de ticket de impresión.
 - [DEV-319](https://menoo-app.atlassian.net/browse/DEV-319) [Correciones] Los tickets unificados estan imprimiendose en dos partes.
 - [DEV-26](https://menoo-app.atlassian.net/browse/DEV-26) [Correciones] Cierre de mesa con descuentos (cupones, descuentos menoo y/o tarjeta).
