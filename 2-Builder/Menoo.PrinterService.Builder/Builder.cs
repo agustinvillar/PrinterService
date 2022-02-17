@@ -17,7 +17,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -72,7 +71,7 @@ namespace Menoo.PrinterService.Builder
                         $"Id colleción printEvents: {documentsId}{Environment.NewLine}", EventLogEntryType.Information);
                     try
                     {
-                        Thread.Sleep(_queueDelay);
+                        //Thread.Sleep(_queueDelay);
                         var dataToPrint = await builder.BuildAsync(data);
                         await SendToFirebaseAsync(dataToPrint, data.TypeDocument, data.PrintEvent);
                     }
