@@ -10,7 +10,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase
     {
         private readonly FirestoreDb _db;
 
-        private const int DELAY_QUERY = 10000;
+        private const int DELAY_QUERY = 5000;
 
         public FirebaseRepository(FirestoreDb db)
         {
