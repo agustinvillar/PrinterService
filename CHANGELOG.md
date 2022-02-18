@@ -1,6 +1,7 @@
 # Changelog
 Para mayor información de documentación, consulte [confluence](https://menoo-app.atlassian.net/wiki/spaces/DESARROLLO/overview)
 ## [2.5.0] - 2022-02-17
+- Ajuste en impresión de plato para TA.
 - Disminución tiempo de consultas de 10 segundos a 5 segundos.
 - [DEV-628](https://menoo-app.atlassian.net/browse/DEV-628) Imprimir en las comandas el # de mesa
 - [DEV-538](https://menoo-app.atlassian.net/browse/DEV-538) Imprimir las cancelaciones de reservas que hace el usuario
