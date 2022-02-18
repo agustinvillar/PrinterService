@@ -71,7 +71,6 @@ namespace Menoo.PrinterService.Builder
                         $"Id colleción printEvents: {documentsId}{Environment.NewLine}", EventLogEntryType.Information);
                     try
                     {
-                        //Thread.Sleep(_queueDelay);
                         var dataToPrint = await builder.BuildAsync(data);
                         await SendToFirebaseAsync(dataToPrint, data.TypeDocument, data.PrintEvent);
                     }
@@ -300,9 +299,12 @@ namespace Menoo.PrinterService.Builder
                     { "title", extraData.Content["title"] },
                     { "orderNumber", extraData.Content["orderNumber"] },
                     { "clientName", clientName},
-                    { "item", orderItem },
-                    { "tableNumber", extraData.Content["tableNumber"]}
+                    { "item", orderItem }
                 };
+                if (orderData.OrderType.ToUpper() == OrderTypes.MESA)
+                {
+                    viewData.Add("tableNumber", extraData.Content["tableNumber"]);
+                }
                 foreach (var sector in item.Sectors.FindAll(f => f.AllowPrinting))
                 {
                     if (!viewData.ContainsKey("allowLogo"))

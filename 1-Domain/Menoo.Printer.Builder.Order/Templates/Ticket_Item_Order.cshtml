@@ -30,10 +30,19 @@
                     @Model["title"].ToString()
                 </div>
             </div>
-            <div class="row">
-                <div class="column-50 section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
-                <div class="column-50 section-right"><b>Mesa: @Model["tableNumber"].ToString()</b></div>
-            </div>
+            @if (@Model.ContainsKey("tableNumber"))
+            {
+                <div class="row">
+                    <div class="column-50 section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
+                    <div class="column-50 section-right"><b>Mesa: @Model["tableNumber"].ToString()</b></div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="column section-left"><b>N° Orden:</b> @Model["orderNumber"].ToString()</div>
+                </div>
+            }
             <div class="row">&nbsp;</div>
             <div class="row">
                 <div class="section-left"><b>Cliente:</b> @Model["clientName"].ToString()</div>
@@ -45,7 +54,7 @@
             <div class="row">
                 <div class="section-left">
                     <span class="item-quantity">@item.Quantity x </span><b>@item.Name</b>
-                    @if (item.Options != null) 
+                    @if (item.Options != null)
                     {
                         <ul class="item-detail">
                             @foreach (ItemOption option in item.Options)
