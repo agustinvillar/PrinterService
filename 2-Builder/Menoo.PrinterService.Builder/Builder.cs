@@ -313,6 +313,10 @@ namespace Menoo.PrinterService.Builder
                 {
                     viewData.Add("tableNumber", extraData.Content["tableNumber"]);
                 }
+                if (orderData.OrderType.ToUpper() == OrderTypes.TAKEAWAY && !string.IsNullOrEmpty(orderData.GuestComment))
+                {
+                    viewData.Add("tableNumber", orderData.GuestComment);
+                }
                 foreach (var sector in item.Sectors.FindAll(f => f.AllowPrinting))
                 {
                     if (!viewData.ContainsKey("allowLogo"))
