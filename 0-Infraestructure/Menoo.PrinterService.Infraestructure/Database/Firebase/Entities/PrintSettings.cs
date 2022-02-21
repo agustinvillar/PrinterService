@@ -39,10 +39,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.Firebase.Entities
         [JsonProperty("updatedAt")]
         public string UpdatedAt { get; set; }
 
-        [FirestoreProperty("sectorName")]
-        [JsonProperty("sectorName")]
-        public string SectorName { get; set; }
-
         [FirestoreProperty("isHTML")]
         [JsonProperty("isHTML")]
         public bool? IsHTML { get; set; }

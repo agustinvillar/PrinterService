@@ -262,6 +262,14 @@ namespace Menoo.PrinterService.Builder
                 {
                     data.Content["allowLogo"] = allowLogo;
                 }
+                if (!data.Content.ContainsKey("sector"))
+                {
+                    data.Content.Add("sector", sector.Name);
+                }
+                else
+                {
+                    data.Content["sector"] = sector.Name;
+                }
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
                 string ticket = formatterService.Create();
                 var printDocument = new Ticket
@@ -314,6 +322,14 @@ namespace Menoo.PrinterService.Builder
                     else
                     {
                         viewData["allowLogo"] = sector.AllowLogo;
+                    }
+                    if (!viewData.ContainsKey("sector"))
+                    {
+                        viewData.Add("sector", sector.Name);
+                    }
+                    else
+                    {
+                        viewData["sector"] = sector.Name;
                     }
                     IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), viewData, PrintTemplates.NEW_ITEM_ORDER);
                     string ticket = formatterService.Create();
