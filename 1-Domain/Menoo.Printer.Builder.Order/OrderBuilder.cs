@@ -14,7 +14,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using OrderTypes = Menoo.PrinterService.Infraestructure.Constants.OrderTypes;
 
@@ -151,21 +150,21 @@ namespace Menoo.Printer.Builder.Orders
                         var paymentData = await _paymentRepository.GetPaymentByIdAsync(paymentId);
                         var takeAwayOpening = paymentData.TaOpening;
                         viewBag.Add("paymentMethod", $"{paymentData.PaymentType}: {paymentData.PaymentMethod}");
-                        if (paymentData.Surcharge != null && paymentData.Surcharge > 0) 
+                        if (paymentData.Surcharge != null && paymentData.Surcharge > 0)
                         {
                             viewBag.Add("sucharge", $"${paymentData.Surcharge.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))}");
                         }
-                        if (takeAwayOpening.DiscountByCouponAmount != null && takeAwayOpening.OfferCoupon != null) 
+                        if (takeAwayOpening.DiscountByCouponAmount != null && takeAwayOpening.OfferCoupon != null)
                         {
                             viewBag.Add("couponName", "Descuento Cupón " + takeAwayOpening.OfferCoupon.Code);
                             viewBag.Add("couponAmount", $"-${takeAwayOpening.DiscountByCouponAmount.GetValueOrDefault().ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))}");
                         }
-                        if (paymentData.Discounts != null && paymentData.Discounts.Count > 0) 
+                        if (paymentData.Discounts != null && paymentData.Discounts.Count > 0)
                         {
                             viewBag.Add("discounts", paymentData.Discounts);
                         }
                         var subtotal = Convert.ToDecimal(takeAwayOpening.SubTotal).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
-                        var total = Convert.ToDecimal(takeAwayOpening.TotalToPay).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
+                        var total = Convert.ToDecimal(paymentData.TotalToPay).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"));
                         viewBag.Add("subtotal", $"${subtotal}");
                         viewBag.Add("total", $"${total}");
                     }
@@ -193,7 +192,8 @@ namespace Menoo.Printer.Builder.Orders
             orderUnified.Store = ordersByStore.ToList().FirstOrDefault().Store;
             orderUnified.OrderType = ordersByStore.ToList().FirstOrDefault().OrderType;
             orderUnified.Status = ordersStatus.Key;
-            orders.ForEach(item => {
+            orders.ForEach(item =>
+            {
                 items.AddRange(item.Items);
             });
             orderUnified.Items = items;
