@@ -1,4 +1,6 @@
-﻿namespace Menoo.PrinterService.Infraestructure.Interfaces
+﻿using System;
+
+namespace Menoo.PrinterService.Infraestructure.Interfaces
 {
     public interface IFormaterService
     {
@@ -6,6 +8,6 @@
 
         string Template { set; }
 
-        string Create();
+        Tuple<string, string> Create();
     }
 }

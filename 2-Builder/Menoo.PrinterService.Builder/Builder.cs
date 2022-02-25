@@ -2,6 +2,7 @@
 using Menoo.Backend.Integrations.Messages;
 using Menoo.Printer.Builder.Orders.Extensions;
 using Menoo.Printer.Builder.Orders.Repository;
+using Menoo.PrinterService.Builder.Hub;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
@@ -10,6 +11,7 @@ using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Repository;
 using Menoo.PrinterService.Infraestructure.Services;
+using Microsoft.Owin.Hosting;
 using Rebus.Activation;
 using Rebus.Config;
 using System;
@@ -32,13 +34,15 @@ namespace Menoo.PrinterService.Builder
 
         private readonly BuiltinHandlerActivator _adapter;
 
+        private readonly PrintHub _hub;
+
         private System.Timers.Timer _timer;
 
         private readonly string _queueName;
 
         private readonly string _queueConnectionString;
 
-        private readonly int _queueDelay;
+        private readonly string _signalR_Endpoint;
 
         private long _tickCounter;
 
@@ -49,9 +53,10 @@ namespace Menoo.PrinterService.Builder
             _queueName = GlobalConfig.ConfigurationManager.GetSetting("QueuePrint");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
-            _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
+            _signalR_Endpoint = GlobalConfig.ConfigurationManager.GetSetting("signalR");
             _ticketRepository = GlobalConfig.DependencyResolver.Resolve<TicketRepository>();
             _itemRepository = GlobalConfig.DependencyResolver.Resolve<ItemRepository>();
+            _hub = new PrintHub();
         }
 
         public async Task RecieveAsync(PrintMessage data, Dictionary<string, string> extras = null)
@@ -111,6 +116,7 @@ namespace Menoo.PrinterService.Builder
             _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             ConfigureWorker();
             _timer.Start();
+            WebApp.Start<Startup>(_signalR_Endpoint);
         }
 
         protected override void OnShutdown()
@@ -275,8 +281,9 @@ namespace Menoo.PrinterService.Builder
                     data.Content["sector"] = sector.Name;
                 }
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
-                string ticket = formatterService.Create();
-                var printDocument = new Ticket
+                var ticketData = formatterService.Create();
+                _hub.SendToPrint(ticketData.Item2);
+                /*var printDocument = new Ticket
                 {
                     TicketType = printEvent,
                     PrintBefore = data.BeforeAt,
@@ -295,7 +302,7 @@ namespace Menoo.PrinterService.Builder
                     $"Restaurante: {printDocument.StoreName}{Environment.NewLine}" +
                     $"Ticket: {ticket} {Environment.NewLine}", EventLogEntryType.Information);
                 await _ticketRepository.SaveAsync(printDocument);
-                await _ticketRepository.SetPrintedAsync(printEvent, ticket, sector.Printer);
+                await _ticketRepository.SetPrintedAsync(printEvent, ticketData.Item1, sector.Printer);*/
             }
         }
 

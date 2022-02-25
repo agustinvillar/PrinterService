@@ -34,7 +34,7 @@ namespace Menoo.PrinterService.Infraestructure.Services
             _storageService = GlobalConfig.DependencyResolver.Resolve<IStorage>();
         }
 
-        public string Create()
+        public Tuple<string, string> Create()
         {
             string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates");
             var host = new RazorFolderHostContainer
@@ -50,18 +50,19 @@ namespace Menoo.PrinterService.Infraestructure.Services
             {
                 throw new BadFormatTicketException($"HtmlFormatService::Create(). Error generando el HTML. Detalles: {host.ErrorMessage}");
             }
-            string urlImage = GetImageUrlAsync(html).GetAwaiter().GetResult();
+            var imageData = GetImageUrlAsync(html).GetAwaiter().GetResult();
             host.Stop();
-            return urlImage;
+            return imageData;
         }
 
         #region private methods
-        private async Task<string> GetImageUrlAsync(string html)
+        private async Task<Tuple<string, string>> GetImageUrlAsync(string html)
         {
             var converter = new HtmlConverter();
             var bytes = converter.FromHtmlString(html, TICKET_WIDTH, CoreHtmlToImage.ImageFormat.Png, 100);
+            var imageBase64 = Convert.ToBase64String(bytes);
             string urlImage = await _storageService.UploadAsync(bytes);
-            return urlImage;
+            return new Tuple<string, string>(urlImage, imageBase64);
         }
 
         private void SetLogoAndStyle()
