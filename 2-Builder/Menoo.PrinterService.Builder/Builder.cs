@@ -347,7 +347,7 @@ namespace Menoo.PrinterService.Builder
                         viewData["sector"] = sector.Name;
                     }
                     IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), viewData, PrintTemplates.NEW_ITEM_ORDER);
-                    string ticket = formatterService.Create();
+                    var ticketData = formatterService.Create();
                     var printDocument = new Ticket
                     {
                         TicketType = PrintEvents.NEW_TABLE_ORDER_ITEM,
@@ -355,7 +355,7 @@ namespace Menoo.PrinterService.Builder
                         Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
                         Copies = sector.Copies,
                         PrinterName = sector.Printer,
-                        TicketKey = ticket,
+                        TicketKey = ticketData.Item1,
                         StoreName = extraData.Store.Name,
                         StoreId = extraData.Store.Id
                     };
