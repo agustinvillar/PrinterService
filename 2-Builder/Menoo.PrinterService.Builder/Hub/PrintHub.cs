@@ -11,9 +11,9 @@ namespace Menoo.PrinterService.Builder.Hub
             _hub = GlobalHost.ConnectionManager.GetHubContext("PrintHub");
         }
 
-        public void SendToPrint(string ticket)
+        public void SendToPrint(string ticket, int copies, string sector)
         {
-            _hub.Clients.All.recieveTicket(ticket);
+            _hub.Clients.All.recieveTicket(ticket, copies, sector);
         }
     }
 }
