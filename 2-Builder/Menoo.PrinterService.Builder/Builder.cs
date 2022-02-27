@@ -280,7 +280,7 @@ namespace Menoo.PrinterService.Builder
                 }
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
                 var ticketData = formatterService.Create();
-                _hub.SendToPrint(ticketData.Item2, sector.Copies, sector.Printer);
+                _hub.SendToPrint(data.Store.Id, ticketData.Item2, sector.Copies, sector.Printer);
                 await SetPrintedAsync(sector, data, printEvent, ticketData.Item2);
                 _generalWriter.WriteEntry($"Builder::SendToPrint(). Enviando a imprimir el ticket con la siguiente información. {Environment.NewLine}" +
                     $"Detalles:{Environment.NewLine}" +
@@ -333,7 +333,7 @@ namespace Menoo.PrinterService.Builder
                     }
                     IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), viewData, PrintTemplates.NEW_ITEM_ORDER);
                     var ticketData = formatterService.Create();
-                    _hub.SendToPrint(ticketData.Item2, sector.Copies, sector.Printer);
+                    _hub.SendToPrint(orderItem.StoreId, ticketData.Item2, sector.Copies, sector.Printer);
                     await SetPrintedAsync(sector, extraData, PrintEvents.NEW_TABLE_ORDER_ITEM, ticketData.Item2);
                     _generalWriter.WriteEntry($"Builder::SendToPrint(). Enviando a imprimir el ticket con la siguiente información. {Environment.NewLine}" +
                         $"Detalles:{Environment.NewLine}" +

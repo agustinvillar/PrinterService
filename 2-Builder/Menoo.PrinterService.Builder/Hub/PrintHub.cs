@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNet.SignalR;
+﻿using Menoo.PrinterService.Infraestructure;
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Menoo.PrinterService.Builder.Hub
@@ -9,12 +13,14 @@ namespace Menoo.PrinterService.Builder.Hub
     {
         private readonly IHubContext _hub;
 
-        private readonly Dictionary<string, string> _printers;
+        private static readonly Dictionary<string, string> _printers = new Dictionary<string, string>();
+
+        private readonly EventLog _generalWriter;
 
         public PrintHub()
         {
             _hub = GlobalHost.ConnectionManager.GetHubContext("PrintHub");
-            _printers = new Dictionary<string, string>();
+            _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
         }
 
         public override Task OnConnected()
@@ -39,23 +45,30 @@ namespace Menoo.PrinterService.Builder.Hub
             }
         }
 
-        public void SendToPrint(string ticket, int copies, string printer)
+        public void SendToPrint(string storeId, string ticket, int copies, string printer)
         {
-            _hub.Clients.All.recieveTicket(ticket, copies, printer);
+            _hub.Clients.Group(storeId).recieveTicket(ticket, copies, printer);
         }
 
         #region private methods
         private void Remove(string connectionId)
         {
-            lock (_printers)
+            try
             {
-                foreach (var item in _printers)
+                lock (_printers)
                 {
-                    if (_printers.ContainsKey(connectionId))
+                    foreach (var item in _printers.ToArray())
                     {
-                        _printers.Remove(item.Key);
+                        if (item.Key == connectionId)
+                        {
+                            _printers.Remove(item.Key);
+                        }
                     }
                 }
+            }
+            catch (Exception e) 
+            {
+                _generalWriter.WriteEntry($"OnDisconnected():: Error al intentar desconectar el cliente de impresión. Detalles: {Environment.NewLine}{e.ToString()}", EventLogEntryType.Error);
             }
         }
         #endregion

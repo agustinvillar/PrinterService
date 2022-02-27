@@ -58,12 +58,6 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\AWSSDK.Core.3.7.7\lib\net45\AWSSDK.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\AWSSDK.S3.3.7.7.21\lib\net45\AWSSDK.S3.dll</HintPath>
-    </Reference>
     <Reference Include="CoreHtmlToImage, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CoreHtmlToImage.1.0.6\lib\netstandard2.0\CoreHtmlToImage.dll</HintPath>
     </Reference>
@@ -390,7 +384,6 @@
     <Compile Include="DI\UnityDependencyResolver.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="GlobalConfig.cs" />
-    <Compile Include="Interfaces\IStorage.cs" />
     <Compile Include="Interfaces\IFormaterService.cs" />
     <Compile Include="Interfaces\ISubscriptionService.cs" />
     <Compile Include="Interfaces\ITicketBuilder.cs" />
@@ -407,7 +400,6 @@
     <Compile Include="Repository\StoreRepository.cs" />
     <Compile Include="Repository\TableOpeningFamilyRepository.cs" />
     <Compile Include="Repository\UserRepository.cs" />
-    <Compile Include="Services\StorageService.cs" />
     <Compile Include="Services\FormaterFactory.cs" />
     <Compile Include="Services\HtmlFormatService.cs" />
     <Compile Include="Services\PlainFormatService.cs" />
@@ -427,9 +419,6 @@
     <Content Include="Templates\assets\print.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\packages\AWSSDK.S3.3.7.7.21\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202202262305465_PrinterSchema.resx">

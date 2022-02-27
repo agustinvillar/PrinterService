@@ -1,8 +1,6 @@
 ﻿using Google.Cloud.Firestore;
 using Menoo.PrinterService.Infraestructure.Database.Firebase;
-using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Repository;
-using Menoo.PrinterService.Infraestructure.Services;
 using System.Diagnostics;
 
 namespace Menoo.PrinterService.Infraestructure
@@ -45,7 +43,6 @@ namespace Menoo.PrinterService.Infraestructure
                 var paymentRepository = new PaymentRepository(firebaseDb);
                 return paymentRepository;
             });
-            dependencyResolver.Register<IStorage, StorageService>();
         }
 
         static EventLog ConfigureBuilderEventLog()
