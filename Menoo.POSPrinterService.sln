@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32126.315
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0-Infraestructure", "0-Infraestructure", "{78C833BA-B036-49C3-A189-FA14276E2AEB}"
 EndProject
@@ -61,8 +61,8 @@ Global
 		{B088C46B-3B17-440A-98B6-5FE6B6C4DDB2}.PREpro|Any CPU.Build.0 = Debug|Any CPU
 		{B088C46B-3B17-440A-98B6-5FE6B6C4DDB2}.PRO|Any CPU.ActiveCfg = Debug|Any CPU
 		{B088C46B-3B17-440A-98B6-5FE6B6C4DDB2}.PRO|Any CPU.Build.0 = Debug|Any CPU
-		{A67B916B-A30A-4B71-B42D-8E09A4D00D89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A67B916B-A30A-4B71-B42D-8E09A4D00D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A67B916B-A30A-4B71-B42D-8E09A4D00D89}.Debug|Any CPU.ActiveCfg = PREpro|Any CPU
+		{A67B916B-A30A-4B71-B42D-8E09A4D00D89}.Debug|Any CPU.Build.0 = PREpro|Any CPU
 		{A67B916B-A30A-4B71-B42D-8E09A4D00D89}.PRE|Any CPU.ActiveCfg = PRE|Any CPU
 		{A67B916B-A30A-4B71-B42D-8E09A4D00D89}.PRE|Any CPU.Build.0 = PRE|Any CPU
 		{A67B916B-A30A-4B71-B42D-8E09A4D00D89}.PREpro|Any CPU.ActiveCfg = PREpro|Any CPU
