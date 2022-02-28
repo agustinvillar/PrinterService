@@ -10,7 +10,6 @@ using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Exceptions;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
-using Menoo.PrinterService.Infraestructure.Repository;
 using Menoo.PrinterService.Infraestructure.Services;
 using Microsoft.Owin.Hosting;
 using Rebus.Activation;
@@ -278,6 +277,7 @@ namespace Menoo.PrinterService.Builder
                 {
                     data.Content["sector"] = sector.Name;
                 }
+
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
                 var ticketData = formatterService.Create();
                 _hub.SendToPrint(data.Store.Id, ticketData.Item2, sector.Copies, sector.Printer);
