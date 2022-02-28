@@ -50,6 +50,12 @@
             <div class="row">
                 <div class="section-left"><b>Cliente:</b> @Model["clientName"].ToString()</div>
             </div>
+            @if (@Model.ContainsKey("tableNumber"))
+            {
+                <div class="row">
+                    <div class="column"><b>Mesa: </b>@Model["tableNumber"].ToString()</div>
+                </div>
+            }
             <div class="row">
                 <div class="column"><b>Sector de impresión: </b>@Model["sector"].ToString()</div>
             </div>

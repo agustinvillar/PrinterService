@@ -203,6 +203,10 @@ namespace Menoo.PrinterService.Builder
                 switch (printEvent)
                 {
                     case PrintEvents.NEW_TAKE_AWAY:
+                        if (!string.IsNullOrEmpty(orderData.GuestComment))
+                        {
+                            data.Content.Add("tableNumber", orderData.GuestComment);
+                        }
                         sectors = data.Store.GetPrintSettings(PrintEvents.NEW_TAKE_AWAY);
                         await PrintAsync(data, printEvent, sectors, true);
                         var items = ItemExtensions.GetPrintSectorByItems(orderData.Items, _itemRepository);
