@@ -347,9 +347,18 @@ namespace Menoo.PrinterService.Builder
 
         private async Task SetPrintedAsync(PrintSettings sector, PrintInfo info, string printEvent, string image)
         {
-            using (var sqlServerContext = new PrinterContext())
+            try
             {
-                await sqlServerContext.SetPrintedAsync(sector, info, printEvent, image);
+                using (var sqlServerContext = new PrinterContext())
+                {
+                    await sqlServerContext.SetPrintedAsync(sector, info, printEvent, image);
+                }
+            }
+            catch (Exception e)
+            {
+                _generalWriter.WriteEntry($"Builder::SetPrintedAsync(). Ha ocurrido un error en la base de datos. {Environment.NewLine}" +
+                        $"Detalles:{Environment.NewLine}" +
+                        $"{e.ToString()}", EventLogEntryType.Error);
             }
         }
 
