@@ -1,4 +1,5 @@
 ﻿using Menoo.PrinterService.Infraestructure.Interfaces;
+using System;
 using System.Collections.Generic;
 
 namespace Menoo.PrinterService.Infraestructure.Services
@@ -20,7 +21,7 @@ namespace Menoo.PrinterService.Infraestructure.Services
             _viewData = viewData;
         }
 
-        public string Create()
+        public Tuple<string, string> Create()
         {
             throw new System.NotImplementedException();
         }
