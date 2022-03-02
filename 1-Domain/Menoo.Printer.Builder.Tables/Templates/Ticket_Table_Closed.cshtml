@@ -247,7 +247,7 @@
     <div class="row">
         <div class="column-80 section-left">Pagado por cliente:</div>
         <div class="column-20 section-right">
-            -$@Convert.ToDecimal(paymentData.TableOpening.TotalPaidByClient.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
+            -$@Convert.ToDecimal(paymentData.TotalToPay.GetValueOrDefault()).ToString("N2", CultureInfo.CreateSpecificCulture("en-US"))
         </div>
     </div>
     <div class="row">&nbsp;</div>

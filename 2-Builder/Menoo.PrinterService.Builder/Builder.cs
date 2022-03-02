@@ -2,14 +2,16 @@
 using Menoo.Backend.Integrations.Messages;
 using Menoo.Printer.Builder.Orders.Extensions;
 using Menoo.Printer.Builder.Orders.Repository;
+using Menoo.PrinterService.Builder.Hub;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Menoo.PrinterService.Infraestructure.Exceptions;
 using Menoo.PrinterService.Infraestructure.Extensions;
 using Menoo.PrinterService.Infraestructure.Interfaces;
-using Menoo.PrinterService.Infraestructure.Repository;
 using Menoo.PrinterService.Infraestructure.Services;
+using Microsoft.Owin.Hosting;
 using Rebus.Activation;
 using Rebus.Config;
 using System;
@@ -26,11 +28,11 @@ namespace Menoo.PrinterService.Builder
     {
         private readonly ItemRepository _itemRepository;
 
-        private readonly TicketRepository _ticketRepository;
-
         private readonly EventLog _generalWriter;
 
         private readonly BuiltinHandlerActivator _adapter;
+
+        private readonly PrintHub _hub;
 
         private System.Timers.Timer _timer;
 
@@ -38,7 +40,7 @@ namespace Menoo.PrinterService.Builder
 
         private readonly string _queueConnectionString;
 
-        private readonly int _queueDelay;
+        private readonly string _signalR_Endpoint;
 
         private long _tickCounter;
 
@@ -49,9 +51,9 @@ namespace Menoo.PrinterService.Builder
             _queueName = GlobalConfig.ConfigurationManager.GetSetting("QueuePrint");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
-            _queueDelay = int.Parse(GlobalConfig.ConfigurationManager.GetSetting("queueDelay"));
-            _ticketRepository = GlobalConfig.DependencyResolver.Resolve<TicketRepository>();
+            _signalR_Endpoint = GlobalConfig.ConfigurationManager.GetSetting("signalR");
             _itemRepository = GlobalConfig.DependencyResolver.Resolve<ItemRepository>();
+            _hub = new PrintHub();
         }
 
         public async Task RecieveAsync(PrintMessage data, Dictionary<string, string> extras = null)
@@ -72,7 +74,7 @@ namespace Menoo.PrinterService.Builder
                     try
                     {
                         var dataToPrint = await builder.BuildAsync(data);
-                        await SendToFirebaseAsync(dataToPrint, data.TypeDocument, data.PrintEvent);
+                        await SendToPrintAsync(dataToPrint, data.TypeDocument, data.PrintEvent);
                     }
                     catch (UnifiedSectorException sectorException)
                     {
@@ -111,6 +113,7 @@ namespace Menoo.PrinterService.Builder
             _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
             ConfigureWorker();
             _timer.Start();
+            WebApp.Start<Startup>(_signalR_Endpoint);
         }
 
         protected override void OnShutdown()
@@ -183,7 +186,7 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
-        private async Task SendToFirebaseAsync(PrintInfo data, string typeDocument, string printEvent)
+        private async Task SendToPrintAsync(PrintInfo data, string typeDocument, string printEvent)
         {
             if (data == null || data.Content.Count == 0)
             {
@@ -203,6 +206,10 @@ namespace Menoo.PrinterService.Builder
                 switch (printEvent)
                 {
                     case PrintEvents.NEW_TAKE_AWAY:
+                        if (!string.IsNullOrEmpty(orderData.GuestComment))
+                        {
+                            data.Content.Add("tableNumber", orderData.GuestComment);
+                        }
                         sectors = data.Store.GetPrintSettings(PrintEvents.NEW_TAKE_AWAY);
                         await PrintAsync(data, printEvent, sectors, true);
                         var items = ItemExtensions.GetPrintSectorByItems(orderData.Items, _itemRepository);
@@ -270,28 +277,17 @@ namespace Menoo.PrinterService.Builder
                 {
                     data.Content["sector"] = sector.Name;
                 }
+
                 IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
-                string ticket = formatterService.Create();
-                var printDocument = new Ticket
-                {
-                    TicketType = printEvent,
-                    PrintBefore = data.BeforeAt,
-                    Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
-                    Copies = sector.Copies,
-                    PrinterName = sector.Printer,
-                    TicketKey = ticket,
-                    StoreName = data.Store.Name,
-                    StoreId = data.Store.Id
-                };
-                _generalWriter.WriteEntry($"Builder::SendToFirebaseAsync(). Enviando a imprimir el ticket con la siguiente información. {Environment.NewLine}" +
+                var ticketData = formatterService.Create();
+                _hub.SendToPrint(data.Store.Id, ticketData.Item2, sector.Copies, sector.Printer);
+                await SetPrintedAsync(sector, data, printEvent, ticketData.Item2);
+                _generalWriter.WriteEntry($"Builder::SendToPrint(). Enviando a imprimir el ticket con la siguiente información. {Environment.NewLine}" +
                     $"Detalles:{Environment.NewLine}" +
                     $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
                     $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
-                    $"Hora de impresión: {printDocument.PrintBefore}{Environment.NewLine}" +
-                    $"Restaurante: {printDocument.StoreName}{Environment.NewLine}" +
-                    $"Ticket: {ticket} {Environment.NewLine}", EventLogEntryType.Information);
-                await _ticketRepository.SaveAsync(printDocument);
-                await _ticketRepository.SetPrintedAsync(printEvent, ticket, sector.Printer);
+                    $"Hora de impresión: {data.BeforeAt}{Environment.NewLine}" +
+                    $"Restaurante: {data.Store.Name}{Environment.NewLine}");
             }
         }
 
@@ -336,26 +332,33 @@ namespace Menoo.PrinterService.Builder
                         viewData["sector"] = sector.Name;
                     }
                     IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), viewData, PrintTemplates.NEW_ITEM_ORDER);
-                    string ticket = formatterService.Create();
-                    var printDocument = new Ticket
-                    {
-                        TicketType = PrintEvents.NEW_TABLE_ORDER_ITEM,
-                        PrintBefore = extraData.BeforeAt,
-                        Date = DateTime.Now.ToString("yyyy/MM/dd HH:mm"),
-                        Copies = sector.Copies,
-                        PrinterName = sector.Printer,
-                        TicketKey = ticket,
-                        StoreName = extraData.Store.Name,
-                        StoreId = extraData.Store.Id
-                    };
-                    _generalWriter.WriteEntry($"Builder::SendToFirebaseAsync(). Enviando a imprimir el ticket con la siguiente información. {Environment.NewLine}" +
+                    var ticketData = formatterService.Create();
+                    _hub.SendToPrint(orderItem.StoreId, ticketData.Item2, sector.Copies, sector.Printer);
+                    await SetPrintedAsync(sector, extraData, PrintEvents.NEW_TABLE_ORDER_ITEM, ticketData.Item2);
+                    _generalWriter.WriteEntry($"Builder::SendToPrint(). Enviando a imprimir el ticket con la siguiente información. {Environment.NewLine}" +
                         $"Detalles:{Environment.NewLine}" +
                         $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
                         $"Sector de impresión: {sector.Name}{Environment.NewLine}" +
-                        $"Hora de impresión: {printDocument.PrintBefore}{Environment.NewLine}" +
-                        $"Restaurante: {printDocument.StoreName}{Environment.NewLine}", EventLogEntryType.Information);
-                    await _ticketRepository.SaveAsync(printDocument);
+                        $"Hora de impresión: {extraData.BeforeAt}{Environment.NewLine}" +
+                        $"Restaurante: {extraData.Store.Name}{Environment.NewLine}", EventLogEntryType.Information);
                 }
+            }
+        }
+
+        private async Task SetPrintedAsync(PrintSettings sector, PrintInfo info, string printEvent, string image)
+        {
+            try
+            {
+                using (var sqlServerContext = new PrinterContext())
+                {
+                    await sqlServerContext.SetPrintedAsync(sector, info, printEvent, image);
+                }
+            }
+            catch (Exception e)
+            {
+                _generalWriter.WriteEntry($"Builder::SetPrintedAsync(). Ha ocurrido un error en la base de datos. {Environment.NewLine}" +
+                        $"Detalles:{Environment.NewLine}" +
+                        $"{e.ToString()}", EventLogEntryType.Error);
             }
         }
 
