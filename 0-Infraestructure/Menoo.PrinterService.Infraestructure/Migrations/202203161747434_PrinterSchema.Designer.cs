@@ -13,7 +13,7 @@ namespace Menoo.PrinterService.Infraestructure.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202202262305465_PrinterSchema"; }
+            get { return "202203161747434_PrinterSchema"; }
         }
         
         string IMigrationMetadata.Source

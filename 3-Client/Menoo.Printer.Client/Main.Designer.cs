@@ -33,7 +33,7 @@ namespace Menoo.Printer.Client
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             this.statusArea = new System.Windows.Forms.StatusStrip();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.mainPanel = new System.Windows.Forms.Panel();
             this.notifyClient = new System.Windows.Forms.NotifyIcon(this.components);
             this.SuspendLayout();
             // 
@@ -45,13 +45,13 @@ namespace Menoo.Printer.Client
             this.statusArea.TabIndex = 0;
             this.statusArea.Text = "statusArea";
             // 
-            // panel1
+            // mainPanel
             // 
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 0);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(672, 245);
-            this.panel1.TabIndex = 1;
+            this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mainPanel.Location = new System.Drawing.Point(0, 0);
+            this.mainPanel.Name = "mainPanel";
+            this.mainPanel.Size = new System.Drawing.Size(672, 245);
+            this.mainPanel.TabIndex = 1;
             // 
             // notifyClient
             // 
@@ -66,7 +66,7 @@ namespace Menoo.Printer.Client
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(672, 267);
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.mainPanel);
             this.Controls.Add(this.statusArea);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -84,7 +84,7 @@ namespace Menoo.Printer.Client
         #endregion
 
         private System.Windows.Forms.StatusStrip statusArea;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel mainPanel;
         private System.Windows.Forms.NotifyIcon notifyClient;
     }
 }

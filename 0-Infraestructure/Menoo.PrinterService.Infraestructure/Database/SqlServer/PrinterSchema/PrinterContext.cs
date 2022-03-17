@@ -29,6 +29,10 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 
         public DbSet<TicketHistory> TicketHistory { get; set; }
 
+        public DbSet<PrinterConfiguration> PrinterConfiguration { get; set; }
+
+        public DbSet<PrinterEvents> PrinterEvents { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("printer");

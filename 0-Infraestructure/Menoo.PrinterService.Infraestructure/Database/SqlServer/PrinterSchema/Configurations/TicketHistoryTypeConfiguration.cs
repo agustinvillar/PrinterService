@@ -1,4 +1,6 @@
-﻿using System.Data.Entity.ModelConfiguration;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Infrastructure.Annotations;
+using System.Data.Entity.ModelConfiguration;
 
 namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Configurations
 {
@@ -8,13 +10,21 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
         {
             HasKey(d => d.Id);
             Property(d => d.Id).HasColumnOrder(0).IsRequired();
-            Property(d => d.PrintEvent).HasColumnOrder(1).IsRequired();
-            Property(d => d.Copies).HasColumnOrder(2).IsRequired();
-            Property(d => d.PrinterName).HasColumnOrder(3).IsRequired();
-            Property(d => d.TicketImage).HasColumnOrder(4).IsRequired();
-            Property(d => d.StoreName).HasColumnOrder(5).IsRequired();
-            Property(d => d.StoreId).HasColumnOrder(6).IsRequired();
-            Property(d => d.CreatedAt).HasColumnOrder(7).IsRequired();
+            Property(d => d.StoreId)
+                .HasColumnAnnotation(
+                    IndexAnnotation.AnnotationName,
+                    new IndexAnnotation(new IndexAttribute()))
+                .HasColumnOrder(1).IsRequired();
+            Property(d => d.StoreName).HasColumnOrder(2).IsRequired();
+            Property(d => d.SectorName).HasColumnOrder(3).IsRequired();
+            Property(d => d.PrintEvent).HasColumnOrder(4).IsRequired();
+            Property(d => d.PrinterName).HasColumnOrder(5).IsRequired();
+            Property(d => d.Copies).HasColumnOrder(6).IsRequired();
+            Property(d => d.TicketImage).HasColumnOrder(7).IsRequired();
+            Property(d => d.IsPrinted).HasColumnOrder(8).IsRequired();
+            Property(d => d.IsReprinted).HasColumnOrder(9).IsRequired();
+            Property(d => d.CreatedAt).HasColumnOrder(10).IsRequired();
+            Property(d => d.UpdatedAt).HasColumnOrder(11).IsOptional();
         }
     }
 }
