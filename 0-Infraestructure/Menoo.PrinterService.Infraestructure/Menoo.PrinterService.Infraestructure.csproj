@@ -366,12 +366,16 @@
     <Compile Include="Database\SqlServer\MainSchema\Entities\Refund.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\SmsVerification.cs" />
     <Compile Include="Database\SqlServer\MainSchema\Entities\Store.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Configurations\PrinterStatusTypeConfiguration.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Configurations\PrinterLogTypeConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Configurations\PrinterEventsTypeConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Configurations\PrinterConfigurationTypeConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Configurations\TicketHistoryTypeConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\CustomModelHistoryConfiguration.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Entities\PrinterEvents.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Entities\PrinterConfiguration.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Entities\PrinterLog.cs" />
+    <Compile Include="Database\SqlServer\PrinterSchema\Entities\PrinterStatus.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\Entities\TicketHistory.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\MyHistoryContext.cs" />
     <Compile Include="Database\SqlServer\PrinterSchema\PrinterContext.cs" />
@@ -391,13 +395,9 @@
     <Compile Include="Interfaces\IFormaterService.cs" />
     <Compile Include="Interfaces\ISubscriptionService.cs" />
     <Compile Include="Interfaces\ITicketBuilder.cs" />
-    <Compile Include="Migrations\202203161747434_PrinterSchema.cs" />
-    <Compile Include="Migrations\202203161747434_PrinterSchema.designer.cs">
-      <DependentUpon>202203161747434_PrinterSchema.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202203161754182_Index_StoredId.cs" />
-    <Compile Include="Migrations\202203161754182_Index_StoredId.designer.cs">
-      <DependentUpon>202203161754182_Index_StoredId.cs</DependentUpon>
+    <Compile Include="Migrations\202203181831374_PrinterSchema.cs" />
+    <Compile Include="Migrations\202203181831374_PrinterSchema.designer.cs">
+      <DependentUpon>202203181831374_PrinterSchema.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OnStartUpAttribute.cs" />
@@ -429,11 +429,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202203161747434_PrinterSchema.resx">
-      <DependentUpon>202203161747434_PrinterSchema.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202203161754182_Index_StoredId.resx">
-      <DependentUpon>202203161754182_Index_StoredId.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202203181831374_PrinterSchema.resx">
+      <DependentUpon>202203181831374_PrinterSchema.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

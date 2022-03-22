@@ -69,13 +69,14 @@ namespace Menoo.Printer.Client
             this.Controls.Add(this.mainPanel);
             this.Controls.Add(this.statusArea);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.IsMdiContainer = true;
             this.MaximizeBox = false;
             this.Name = "Main";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Printer";
-            this.TransparencyKey = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
             this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+            this.Load += new System.EventHandler(this.Main_Load);
             this.SizeChanged += new System.EventHandler(this.PrinterMain_SizeChanged);
             this.ResumeLayout(false);
             this.PerformLayout();

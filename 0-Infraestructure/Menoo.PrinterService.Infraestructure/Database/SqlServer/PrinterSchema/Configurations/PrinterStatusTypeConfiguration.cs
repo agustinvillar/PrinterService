@@ -2,9 +2,9 @@
 
 namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Configurations
 {
-    public class PrinterEventsTypeConfiguration : EntityTypeConfiguration<Entities.PrinterEvents>
+    public class PrinterStatusTypeConfiguration : EntityTypeConfiguration<Entities.PrinterStatus>
     {
-        public PrinterEventsTypeConfiguration()
+        public PrinterStatusTypeConfiguration()
         {
             HasKey(d => d.Id);
             Property(d => d.Id)
