@@ -42,5 +42,10 @@ namespace Menoo.Printer.Client
             }
             DisableNotification(false, true);
         }
+
+        private void CloseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }

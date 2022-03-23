@@ -117,4 +117,29 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ButtonReconnectPrintEvents" xml:space="preserve">
+    <value>Obtener listado de eventos de impresión.</value>
+  </data>
+  <data name="ButtonReconnectStores" xml:space="preserve">
+    <value>Obtener listado de restaurantes.</value>
+  </data>
+  <data name="ErrorListStores" xml:space="preserve">
+    <value>No se han obtenido el listado de restaurantes. Intente usando el botón de reconectar.</value>
+  </data>
+  <data name="GroupBasicInfo" xml:space="preserve">
+    <value>Datos básicos</value>
+  </data>
+  <data name="GroupDataPrinter" xml:space="preserve">
+    <value>Datos de la impresora</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="menoo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\menoo.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="printer" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\printer.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reconnect" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reconnect.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
