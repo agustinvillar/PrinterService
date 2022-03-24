@@ -12,14 +12,14 @@
                 c => new
                     {
                         Id = c.Guid(nullable: false),
-                        StoreId = c.Int(nullable: false),
+                        StoreId = c.String(nullable: false),
                         Name = c.String(nullable: false, maxLength: 25),
                         AllowLogo = c.Boolean(nullable: false),
                         AllowPrintQR = c.Boolean(nullable: false),
                         Copies = c.Int(nullable: false),
                         IsHtml = c.Boolean(nullable: false),
                         Printer = c.String(nullable: false, maxLength: 25),
-                        PrintEvents = c.String(nullable: false, maxLength: 25),
+                        PrintEvents = c.String(nullable: false),
                         CreatedAt = c.DateTime(nullable: false),
                         UpdatedAt = c.DateTime(),
                     })
@@ -39,7 +39,7 @@
                 "printer.PrinterStatus",
                 c => new
                     {
-                        Id = c.Int(nullable: false, identity: true),
+                        Id = c.Int(nullable: false),
                         Name = c.String(nullable: false, maxLength: 25),
                     })
                 .PrimaryKey(t => t.Id);
@@ -49,7 +49,7 @@
                 c => new
                     {
                         Id = c.Guid(nullable: false),
-                        StoreId = c.Guid(nullable: false),
+                        StoreId = c.String(nullable: false),
                         PrintEvent = c.String(nullable: false, maxLength: 25),
                         Details = c.String(nullable: false),
                         Status_Id = c.Int(nullable: false),

@@ -9,6 +9,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
             HasKey(d => d.Id);
             Property(d => d.Id)
                 .HasColumnOrder(0)
+                .HasDatabaseGeneratedOption(System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption.None)
                 .IsRequired();
             Property(d => d.Name)
                 .HasColumnOrder(1)

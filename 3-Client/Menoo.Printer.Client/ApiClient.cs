@@ -4,6 +4,7 @@ using Menoo.PrinterService.Client.Extensions;
 using Menoo.PrinterService.Client.Properties;
 using Menoo.PrinterService.Client.Resources;
 using RestSharp;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
@@ -19,6 +20,21 @@ namespace Menoo.PrinterService.Client
         {
             string baseUrl = ConfigurationManager.AppSettings["api"].ToString();
             _restClient = new RestClient(baseUrl);
+        }
+
+        public async Task<Guid> ConfigurePrinter(ConfigurePrinterRequest configuration)
+        {
+            var request = new RestRequest(ApiResources.CONFIGURE, Method.POST);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Accept", "application/json");
+            request.AddJsonBody(configuration);
+            var response = await _restClient.ExecuteAsync(request);
+            if (response?.StatusCode != HttpStatusCode.OK)
+            {
+                throw new ApiException(response.ErrorMessage, response.ErrorException, response.StatusCode);
+            }
+            var entityId = response.Content.ToObject<PrinterConfiguredDTO>();
+            return new Guid(entityId.RegistrationId);
         }
 
         public async Task<List<PrintEvents>> GetAllPrintEventsAsync()

@@ -35,7 +35,6 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
                 .IsRequired();
             Property(d => d.PrintEvents)
                 .HasColumnOrder(8)
-                .HasMaxLength(25)
                 .IsRequired();
             Ignore(d => d.PrintEventsId);
             Property(d => d.CreatedAt).HasColumnOrder(9).IsRequired();

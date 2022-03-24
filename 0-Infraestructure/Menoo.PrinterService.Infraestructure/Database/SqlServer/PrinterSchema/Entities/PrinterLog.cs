@@ -6,7 +6,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
     {
         public Guid Id { get; set; }
 
-        public Guid StoreId { get; set; }
+        public string StoreId { get; set; }
 
         public string PrintEvent { get; set; }
 

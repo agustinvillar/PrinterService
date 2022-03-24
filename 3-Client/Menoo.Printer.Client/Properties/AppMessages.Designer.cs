@@ -88,6 +88,24 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a {0} Se ha configurado el sector de impresión de forma exitosa..
+        /// </summary>
+        internal static string ConfigurationSectorOK {
+            get {
+                return ResourceManager.GetString("ConfigurationSectorOK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Debe indicar el número de copias a ser impresas..
+        /// </summary>
+        internal static string CopiesZero {
+            get {
+                return ResourceManager.GetString("CopiesZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Seleccione.
         /// </summary>
         internal static string Empty {
@@ -120,6 +138,15 @@ namespace Menoo.PrinterService.Client.Properties {
         internal static string ErrorListStores {
             get {
                 return ResourceManager.GetString("ErrorListStores", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Debe configurar el sector de impresión..
+        /// </summary>
+        internal static string FormEmpty {
+            get {
+                return ResourceManager.GetString("FormEmpty", resourceCulture);
             }
         }
         
@@ -162,12 +189,57 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Seleccione la impresora..
+        /// </summary>
+        internal static string PrinterEmpty {
+            get {
+                return ResourceManager.GetString("PrinterEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Seleccione al menos un ticket a ser impreso..
+        /// </summary>
+        internal static string PrintEventsEmpty {
+            get {
+                return ResourceManager.GetString("PrintEventsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Icon similar a (Icono).
         /// </summary>
         internal static System.Drawing.Icon reconnect {
             get {
                 object obj = ResourceManager.GetObject("reconnect", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El nombre de sector es requerido..
+        /// </summary>
+        internal static string SectorStoreEmpty {
+            get {
+                return ResourceManager.GetString("SectorStoreEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a El máximo de caracteres permitidos es 25..
+        /// </summary>
+        internal static string SectorStoreMaxLength {
+            get {
+                return ResourceManager.GetString("SectorStoreMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Seleccione un restaurante..
+        /// </summary>
+        internal static string StoreIdEmpty {
+            get {
+                return ResourceManager.GetString("StoreIdEmpty", resourceCulture);
             }
         }
     }

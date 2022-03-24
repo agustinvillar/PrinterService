@@ -11,7 +11,7 @@ namespace Menoo.Printer.Client
             InitializeComponent();
         }
 
-        private void DisableNotification(bool showInTaskbar, bool enableNotificationArea)
+        internal void TurnNotification(bool showInTaskbar, bool enableNotificationArea)
         {
             ShowInTaskbar = showInTaskbar;
             notifyClient.Visible = enableNotificationArea;
@@ -21,17 +21,17 @@ namespace Menoo.Printer.Client
         {
             if (string.IsNullOrEmpty(ConfigurationManager.AppSettings["sectorId"]))
             {
-                DisableNotification(false, false);
+                TurnNotification(false, false);
                 var preferences = new Preferences();
                 WindowState = FormWindowState.Normal;
-                preferences.ShowDialog();
+                preferences.ShowDialog(this);
             }
         }
 
         private void NotifyPrinter_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             WindowState = FormWindowState.Normal;
-            DisableNotification(true, false);
+            TurnNotification(true, false);
         }
 
         private void PrinterMain_SizeChanged(object sender, EventArgs e)
@@ -40,7 +40,7 @@ namespace Menoo.Printer.Client
             {
                 return;
             }
-            DisableNotification(false, true);
+            TurnNotification(false, true);
         }
 
         private void CloseToolStripMenuItem_Click(object sender, EventArgs e)

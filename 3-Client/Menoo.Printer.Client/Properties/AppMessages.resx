@@ -126,6 +126,12 @@
   <data name="ButtonReconnectStores" xml:space="preserve">
     <value>Obtener listado de restaurantes.</value>
   </data>
+  <data name="ConfigurationSectorOK" xml:space="preserve">
+    <value>{0} Se ha configurado el sector de impresión de forma exitosa.</value>
+  </data>
+  <data name="CopiesZero" xml:space="preserve">
+    <value>Debe indicar el número de copias a ser impresas.</value>
+  </data>
   <data name="Empty" xml:space="preserve">
     <value>Seleccione</value>
   </data>
@@ -137,6 +143,9 @@
   </data>
   <data name="ErrorListStores" xml:space="preserve">
     <value>No se han obtenido el listado de restaurantes. Intente de nuevo, usando el botón de reconectar.</value>
+  </data>
+  <data name="FormEmpty" xml:space="preserve">
+    <value>Debe configurar el sector de impresión.</value>
   </data>
   <data name="GroupBasicInfo" xml:space="preserve">
     <value>Datos básicos</value>
@@ -151,7 +160,22 @@
   <data name="printer" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\printer.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="PrinterEmpty" xml:space="preserve">
+    <value>Seleccione la impresora.</value>
+  </data>
+  <data name="PrintEventsEmpty" xml:space="preserve">
+    <value>Seleccione al menos un ticket a ser impreso.</value>
+  </data>
   <data name="reconnect" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\reconnect.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SectorStoreEmpty" xml:space="preserve">
+    <value>El nombre de sector es requerido.</value>
+  </data>
+  <data name="SectorStoreMaxLength" xml:space="preserve">
+    <value>El máximo de caracteres permitidos es 25.</value>
+  </data>
+  <data name="StoreIdEmpty" xml:space="preserve">
+    <value>Seleccione un restaurante.</value>
   </data>
 </root>

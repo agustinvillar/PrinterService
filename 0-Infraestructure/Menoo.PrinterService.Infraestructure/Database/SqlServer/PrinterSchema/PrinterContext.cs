@@ -35,6 +35,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
 
         public DbSet<PrinterStatus> PrinterStatus { get; set; }
 
+        public DbSet<PrinterLog> PrinterEventSourcing { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("printer");
