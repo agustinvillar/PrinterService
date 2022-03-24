@@ -8,11 +8,13 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
     {
         public Guid Id { get; set; }
 
-        public Guid StoreId { get; set; }
+        public int StoreId { get; set; }
 
         public string Name { get; set; }
 
         public bool AllowLogo { get; set; }
+
+        public bool AllowPrintQR { get; set; }
 
         public int Copies { get; set; }
 

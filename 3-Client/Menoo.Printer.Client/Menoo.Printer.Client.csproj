@@ -115,6 +115,7 @@
   <ItemGroup>
     <Compile Include="ApiClient.cs" />
     <Compile Include="DTOs\PrinterInfo.cs" />
+    <Compile Include="DTOs\PrintEvents.cs" />
     <Compile Include="Exceptions\ApiException.cs" />
     <Compile Include="Extensions\ControlsExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />

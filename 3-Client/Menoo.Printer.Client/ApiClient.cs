@@ -1,7 +1,8 @@
 ﻿using Menoo.PrinterService.Client.DTOs;
 using Menoo.PrinterService.Client.Exceptions;
+using Menoo.PrinterService.Client.Extensions;
+using Menoo.PrinterService.Client.Properties;
 using Menoo.PrinterService.Client.Resources;
-using Newtonsoft.Json;
 using RestSharp;
 using System.Collections.Generic;
 using System.Configuration;
@@ -12,11 +13,27 @@ namespace Menoo.PrinterService.Client
 {
     public class ApiClient
     {
-        private readonly string _baseUrl;
+        private readonly RestClient _restClient;
 
         public ApiClient()
         {
-            _baseUrl = ConfigurationManager.AppSettings["api"].ToString();
+            string baseUrl = ConfigurationManager.AppSettings["api"].ToString();
+            _restClient = new RestClient(baseUrl);
+        }
+
+        public async Task<List<PrintEvents>> GetAllPrintEventsAsync()
+        {
+            List<PrintEvents> printEvents = new List<PrintEvents>();
+            var request = new RestRequest(ApiResources.PRINTER_EVENTS, Method.GET);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Accept", "application/json");
+            var response = await _restClient.ExecuteAsync(request);
+            if (response?.StatusCode != HttpStatusCode.OK)
+            {
+                throw new ApiException(response.ErrorMessage, response.ErrorException, response.StatusCode);
+            }
+            printEvents.AddRange(response.Content.ToObject<List<PrintEvents>>());
+            return printEvents;
         }
 
         public async Task<List<StoreInfoDTO>> GetAllStoresAsync()
@@ -26,21 +43,19 @@ namespace Menoo.PrinterService.Client
                 new StoreInfoDTO
                 {
                     BusinessName = string.Empty,
-                    StoreId = string.Empty,
-                    StoreName = string.Empty
+                    StoreId = 0,
+                    StoreName = AppMessages.Empty
                 }
             };
-            string baseUrl = _baseUrl + ApiResources.STORES;
-            var client = new RestClient(baseUrl);
-            var request = new RestRequest(Method.GET);
+            var request = new RestRequest(ApiResources.STORES, Method.GET);
             request.AddHeader("Content-Type", "application/json");
             request.AddHeader("Accept", "application/json");
-            var response = await client.ExecuteAsync(request);
+            var response = await _restClient.ExecuteAsync(request);
             if (response?.StatusCode != HttpStatusCode.OK)
             {
                 throw new ApiException(response.ErrorMessage, response.ErrorException, response.StatusCode);
             }
-            stores.AddRange(JsonConvert.DeserializeObject<List<StoreInfoDTO>>(response.Content));
+            stores.AddRange(response.Content.ToObject<List<StoreInfoDTO>>());
             return stores;
         }
     }

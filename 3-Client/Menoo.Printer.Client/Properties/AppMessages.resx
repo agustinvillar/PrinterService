@@ -117,14 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ButtonReconnectPrinters" xml:space="preserve">
+    <value>Obtener listado de impresoras instaladas.</value>
+  </data>
   <data name="ButtonReconnectPrintEvents" xml:space="preserve">
     <value>Obtener listado de eventos de impresión.</value>
   </data>
   <data name="ButtonReconnectStores" xml:space="preserve">
     <value>Obtener listado de restaurantes.</value>
   </data>
+  <data name="Empty" xml:space="preserve">
+    <value>Seleccione</value>
+  </data>
+  <data name="ErrorListPrinters" xml:space="preserve">
+    <value>No se han obtenido el listado de las impresoras. Intente de nuevo, usando el botón de reconectar.</value>
+  </data>
+  <data name="ErrorListPrintEvents" xml:space="preserve">
+    <value>No se han obtenidos el listado de eventos de impresión. Intente de nuevo, usando el botón de reconectar.</value>
+  </data>
   <data name="ErrorListStores" xml:space="preserve">
-    <value>No se han obtenido el listado de restaurantes. Intente usando el botón de reconectar.</value>
+    <value>No se han obtenido el listado de restaurantes. Intente de nuevo, usando el botón de reconectar.</value>
   </data>
   <data name="GroupBasicInfo" xml:space="preserve">
     <value>Datos básicos</value>

@@ -10,9 +10,12 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
             Property(d => d.Id)
                 .HasColumnOrder(0)
                 .IsRequired();
-            Property(d => d.Name)
+            Property(d => d.DisplayName)
                 .HasColumnOrder(1)
                 .HasMaxLength(25)
+                .IsRequired();
+            Property(d => d.Value)
+                .HasColumnOrder(2)
                 .IsRequired();
         }
     }

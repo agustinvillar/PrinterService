@@ -395,9 +395,9 @@
     <Compile Include="Interfaces\IFormaterService.cs" />
     <Compile Include="Interfaces\ISubscriptionService.cs" />
     <Compile Include="Interfaces\ITicketBuilder.cs" />
-    <Compile Include="Migrations\202203181831374_PrinterSchema.cs" />
-    <Compile Include="Migrations\202203181831374_PrinterSchema.designer.cs">
-      <DependentUpon>202203181831374_PrinterSchema.cs</DependentUpon>
+    <Compile Include="Migrations\202203232358362_PrinterSchema.cs" />
+    <Compile Include="Migrations\202203232358362_PrinterSchema.designer.cs">
+      <DependentUpon>202203232358362_PrinterSchema.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OnStartUpAttribute.cs" />
@@ -429,8 +429,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202203181831374_PrinterSchema.resx">
-      <DependentUpon>202203181831374_PrinterSchema.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202203232358362_PrinterSchema.resx">
+      <DependentUpon>202203232358362_PrinterSchema.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

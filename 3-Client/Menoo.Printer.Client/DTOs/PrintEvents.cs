@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities
+namespace Menoo.PrinterService.Client.DTOs
 {
-    public class PrinterEvents
+    public class PrintEvents
     {
         public Guid Id { get; set; }
 

@@ -12,9 +12,10 @@
                 c => new
                     {
                         Id = c.Guid(nullable: false),
-                        StoreId = c.Guid(nullable: false),
+                        StoreId = c.Int(nullable: false),
                         Name = c.String(nullable: false, maxLength: 25),
                         AllowLogo = c.Boolean(nullable: false),
+                        AllowPrintQR = c.Boolean(nullable: false),
                         Copies = c.Int(nullable: false),
                         IsHtml = c.Boolean(nullable: false),
                         Printer = c.String(nullable: false, maxLength: 25),
@@ -29,7 +30,8 @@
                 c => new
                     {
                         Id = c.Guid(nullable: false),
-                        Name = c.String(nullable: false, maxLength: 25),
+                        DisplayName = c.String(nullable: false, maxLength: 25),
+                        Value = c.String(nullable: false),
                     })
                 .PrimaryKey(t => t.Id);
             

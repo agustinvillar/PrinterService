@@ -61,6 +61,15 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Obtener listado de impresoras instaladas..
+        /// </summary>
+        internal static string ButtonReconnectPrinters {
+            get {
+                return ResourceManager.GetString("ButtonReconnectPrinters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Obtener listado de eventos de impresión..
         /// </summary>
         internal static string ButtonReconnectPrintEvents {
@@ -79,7 +88,34 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a No se han obtenido el listado de restaurantes. Intente usando el botón de reconectar..
+        ///   Busca una cadena traducida similar a Seleccione.
+        /// </summary>
+        internal static string Empty {
+            get {
+                return ResourceManager.GetString("Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se han obtenido el listado de las impresoras. Intente de nuevo, usando el botón de reconectar..
+        /// </summary>
+        internal static string ErrorListPrinters {
+            get {
+                return ResourceManager.GetString("ErrorListPrinters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se han obtenidos el listado de eventos de impresión. Intente de nuevo, usando el botón de reconectar..
+        /// </summary>
+        internal static string ErrorListPrintEvents {
+            get {
+                return ResourceManager.GetString("ErrorListPrintEvents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a No se han obtenido el listado de restaurantes. Intente de nuevo, usando el botón de reconectar..
         /// </summary>
         internal static string ErrorListStores {
             get {

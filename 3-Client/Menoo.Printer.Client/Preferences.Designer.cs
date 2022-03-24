@@ -41,15 +41,16 @@ namespace Menoo.Printer.Client
             this.comboStore = new System.Windows.Forms.ComboBox();
             this.labelStore = new System.Windows.Forms.Label();
             this.groupPrinter = new System.Windows.Forms.GroupBox();
-            this.labelPrintLogo = new System.Windows.Forms.Label();
+            this.comboPrintEvents = new System.Windows.Forms.ListBox();
+            this.buttonReconnectPrinters = new System.Windows.Forms.Button();
+            this.buttonPrinterEvents = new System.Windows.Forms.Button();
             this.checkBoxPrintLogo = new System.Windows.Forms.CheckBox();
-            this.comboPrintEvents = new System.Windows.Forms.ComboBox();
+            this.labelPrintLogo = new System.Windows.Forms.Label();
+            this.txtCopies = new System.Windows.Forms.NumericUpDown();
             this.labelPrintEvents = new System.Windows.Forms.Label();
             this.checkBoxPrintQR = new System.Windows.Forms.CheckBox();
             this.labelCopies = new System.Windows.Forms.Label();
             this.buttonSave = new System.Windows.Forms.Button();
-            this.txtCopies = new System.Windows.Forms.NumericUpDown();
-            this.buttonPrinterEvents = new System.Windows.Forms.Button();
             this.groupStore.SuspendLayout();
             this.groupPrinter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtCopies)).BeginInit();
@@ -81,6 +82,7 @@ namespace Menoo.Printer.Client
             this.textSectorName.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.textSectorName.Enabled = false;
             this.textSectorName.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textSectorName.Location = new System.Drawing.Point(121, 75);
             this.textSectorName.Name = "textSectorName";
@@ -92,6 +94,7 @@ namespace Menoo.Printer.Client
             this.comboPrinters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboPrinters.Enabled = false;
             this.comboPrinters.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboPrinters.FormattingEnabled = true;
             this.comboPrinters.Location = new System.Drawing.Point(121, 28);
@@ -113,7 +116,7 @@ namespace Menoo.Printer.Client
             this.groupStore.Controls.Add(this.textSectorName);
             this.groupStore.Location = new System.Drawing.Point(12, 12);
             this.groupStore.Name = "groupStore";
-            this.groupStore.Size = new System.Drawing.Size(372, 116);
+            this.groupStore.Size = new System.Drawing.Size(372, 129);
             this.groupStore.TabIndex = 4;
             this.groupStore.TabStop = false;
             // 
@@ -122,10 +125,11 @@ namespace Menoo.Printer.Client
             this.buttonReconnectStores.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonReconnectStores.Enabled = false;
             this.buttonReconnectStores.Image = ((System.Drawing.Image)(resources.GetObject("buttonReconnectStores.Image")));
             this.buttonReconnectStores.Location = new System.Drawing.Point(311, 30);
             this.buttonReconnectStores.Name = "buttonReconnectStores";
-            this.buttonReconnectStores.Size = new System.Drawing.Size(24, 22);
+            this.buttonReconnectStores.Size = new System.Drawing.Size(25, 25);
             this.buttonReconnectStores.TabIndex = 5;
             this.buttonReconnectStores.UseVisualStyleBackColor = true;
             this.buttonReconnectStores.Click += new System.EventHandler(this.ButtonReconnectStores_Click);
@@ -135,6 +139,7 @@ namespace Menoo.Printer.Client
             this.comboStore.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboStore.Enabled = false;
             this.comboStore.FormattingEnabled = true;
             this.comboStore.Location = new System.Drawing.Point(121, 30);
             this.comboStore.Name = "comboStore";
@@ -160,11 +165,12 @@ namespace Menoo.Printer.Client
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupPrinter.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.groupPrinter.Controls.Add(this.buttonPrinterEvents);
-            this.groupPrinter.Controls.Add(this.txtCopies);
-            this.groupPrinter.Controls.Add(this.labelPrintLogo);
-            this.groupPrinter.Controls.Add(this.checkBoxPrintLogo);
             this.groupPrinter.Controls.Add(this.comboPrintEvents);
+            this.groupPrinter.Controls.Add(this.buttonReconnectPrinters);
+            this.groupPrinter.Controls.Add(this.buttonPrinterEvents);
+            this.groupPrinter.Controls.Add(this.checkBoxPrintLogo);
+            this.groupPrinter.Controls.Add(this.labelPrintLogo);
+            this.groupPrinter.Controls.Add(this.txtCopies);
             this.groupPrinter.Controls.Add(this.labelPrintEvents);
             this.groupPrinter.Controls.Add(this.checkBoxPrintQR);
             this.groupPrinter.Controls.Add(this.labelCopies);
@@ -172,21 +178,49 @@ namespace Menoo.Printer.Client
             this.groupPrinter.Controls.Add(this.comboPrinters);
             this.groupPrinter.Location = new System.Drawing.Point(12, 147);
             this.groupPrinter.Name = "groupPrinter";
-            this.groupPrinter.Size = new System.Drawing.Size(372, 212);
+            this.groupPrinter.Size = new System.Drawing.Size(372, 319);
             this.groupPrinter.TabIndex = 5;
             this.groupPrinter.TabStop = false;
             // 
-            // labelPrintLogo
+            // comboPrintEvents
             // 
-            this.labelPrintLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.comboPrintEvents.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelPrintLogo.AutoSize = true;
-            this.labelPrintLogo.Location = new System.Drawing.Point(6, 172);
-            this.labelPrintLogo.Name = "labelPrintLogo";
-            this.labelPrintLogo.Size = new System.Drawing.Size(68, 13);
-            this.labelPrintLogo.TabIndex = 12;
-            this.labelPrintLogo.Text = "Imprimir logo:";
+            this.comboPrintEvents.Enabled = false;
+            this.comboPrintEvents.FormattingEnabled = true;
+            this.comboPrintEvents.Location = new System.Drawing.Point(121, 124);
+            this.comboPrintEvents.Name = "comboPrintEvents";
+            this.comboPrintEvents.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+            this.comboPrintEvents.Size = new System.Drawing.Size(184, 134);
+            this.comboPrintEvents.TabIndex = 15;
+            // 
+            // buttonReconnectPrinters
+            // 
+            this.buttonReconnectPrinters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonReconnectPrinters.Enabled = false;
+            this.buttonReconnectPrinters.Image = ((System.Drawing.Image)(resources.GetObject("buttonReconnectPrinters.Image")));
+            this.buttonReconnectPrinters.Location = new System.Drawing.Point(311, 28);
+            this.buttonReconnectPrinters.Name = "buttonReconnectPrinters";
+            this.buttonReconnectPrinters.Size = new System.Drawing.Size(25, 25);
+            this.buttonReconnectPrinters.TabIndex = 14;
+            this.buttonReconnectPrinters.UseVisualStyleBackColor = true;
+            this.buttonReconnectPrinters.Click += new System.EventHandler(this.ButtonReconnectPrinters_Click);
+            // 
+            // buttonPrinterEvents
+            // 
+            this.buttonPrinterEvents.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonPrinterEvents.Enabled = false;
+            this.buttonPrinterEvents.Image = ((System.Drawing.Image)(resources.GetObject("buttonPrinterEvents.Image")));
+            this.buttonPrinterEvents.Location = new System.Drawing.Point(311, 124);
+            this.buttonPrinterEvents.Name = "buttonPrinterEvents";
+            this.buttonPrinterEvents.Size = new System.Drawing.Size(25, 25);
+            this.buttonPrinterEvents.TabIndex = 6;
+            this.buttonPrinterEvents.UseVisualStyleBackColor = true;
             // 
             // checkBoxPrintLogo
             // 
@@ -194,23 +228,41 @@ namespace Menoo.Printer.Client
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxPrintLogo.AutoSize = true;
+            this.checkBoxPrintLogo.Enabled = false;
             this.checkBoxPrintLogo.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBoxPrintLogo.Location = new System.Drawing.Point(121, 172);
+            this.checkBoxPrintLogo.Location = new System.Drawing.Point(121, 275);
             this.checkBoxPrintLogo.Name = "checkBoxPrintLogo";
             this.checkBoxPrintLogo.Size = new System.Drawing.Size(15, 14);
             this.checkBoxPrintLogo.TabIndex = 11;
             this.checkBoxPrintLogo.UseVisualStyleBackColor = true;
             // 
-            // comboPrintEvents
+            // labelPrintLogo
             // 
-            this.comboPrintEvents.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.labelPrintLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.comboPrintEvents.FormattingEnabled = true;
-            this.comboPrintEvents.Location = new System.Drawing.Point(121, 124);
-            this.comboPrintEvents.Name = "comboPrintEvents";
-            this.comboPrintEvents.Size = new System.Drawing.Size(184, 21);
-            this.comboPrintEvents.TabIndex = 10;
+            this.labelPrintLogo.AutoSize = true;
+            this.labelPrintLogo.Location = new System.Drawing.Point(6, 276);
+            this.labelPrintLogo.Name = "labelPrintLogo";
+            this.labelPrintLogo.Size = new System.Drawing.Size(68, 13);
+            this.labelPrintLogo.TabIndex = 12;
+            this.labelPrintLogo.Text = "Imprimir logo:";
+            // 
+            // txtCopies
+            // 
+            this.txtCopies.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCopies.Enabled = false;
+            this.txtCopies.Location = new System.Drawing.Point(121, 72);
+            this.txtCopies.Name = "txtCopies";
+            this.txtCopies.Size = new System.Drawing.Size(38, 20);
+            this.txtCopies.TabIndex = 13;
+            this.txtCopies.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // labelPrintEvents
             // 
@@ -230,6 +282,7 @@ namespace Menoo.Printer.Client
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxPrintQR.AutoSize = true;
+            this.checkBoxPrintQR.Enabled = false;
             this.checkBoxPrintQR.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.checkBoxPrintQR.Location = new System.Drawing.Point(196, 72);
             this.checkBoxPrintQR.Name = "checkBoxPrintQR";
@@ -257,47 +310,20 @@ namespace Menoo.Printer.Client
             this.buttonSave.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonSave.Location = new System.Drawing.Point(279, 383);
+            this.buttonSave.Location = new System.Drawing.Point(283, 472);
             this.buttonSave.Name = "buttonSave";
-            this.buttonSave.Size = new System.Drawing.Size(105, 29);
+            this.buttonSave.Size = new System.Drawing.Size(101, 26);
             this.buttonSave.TabIndex = 6;
             this.buttonSave.Text = "Guardar";
             this.buttonSave.UseVisualStyleBackColor = true;
             this.buttonSave.Click += new System.EventHandler(this.ButtonSave_Click);
-            // 
-            // txtCopies
-            // 
-            this.txtCopies.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtCopies.Location = new System.Drawing.Point(121, 72);
-            this.txtCopies.Name = "txtCopies";
-            this.txtCopies.Size = new System.Drawing.Size(38, 20);
-            this.txtCopies.TabIndex = 13;
-            this.txtCopies.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            // 
-            // buttonPrinterEvents
-            // 
-            this.buttonPrinterEvents.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonPrinterEvents.Image = ((System.Drawing.Image)(resources.GetObject("buttonPrinterEvents.Image")));
-            this.buttonPrinterEvents.Location = new System.Drawing.Point(311, 124);
-            this.buttonPrinterEvents.Name = "buttonPrinterEvents";
-            this.buttonPrinterEvents.Size = new System.Drawing.Size(24, 22);
-            this.buttonPrinterEvents.TabIndex = 6;
-            this.buttonPrinterEvents.UseVisualStyleBackColor = true;
             // 
             // Preferences
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(402, 442);
+            this.ClientSize = new System.Drawing.Size(402, 510);
             this.ControlBox = false;
             this.Controls.Add(this.buttonSave);
             this.Controls.Add(this.groupPrinter);
@@ -316,6 +342,7 @@ namespace Menoo.Printer.Client
             this.groupPrinter.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.txtCopies)).EndInit();
             this.ResumeLayout(false);
+
         }
 
         #endregion
@@ -330,7 +357,6 @@ namespace Menoo.Printer.Client
         private System.Windows.Forms.GroupBox groupPrinter;
         private System.Windows.Forms.Label labelCopies;
         private System.Windows.Forms.CheckBox checkBoxPrintQR;
-        private System.Windows.Forms.ComboBox comboPrintEvents;
         private System.Windows.Forms.Label labelPrintEvents;
         private System.Windows.Forms.Label labelPrintLogo;
         private System.Windows.Forms.CheckBox checkBoxPrintLogo;
@@ -338,5 +364,7 @@ namespace Menoo.Printer.Client
         private System.Windows.Forms.Button buttonReconnectStores;
         private System.Windows.Forms.NumericUpDown txtCopies;
         private System.Windows.Forms.Button buttonPrinterEvents;
+        private System.Windows.Forms.Button buttonReconnectPrinters;
+        private System.Windows.Forms.ListBox comboPrintEvents;
     }
 }
