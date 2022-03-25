@@ -217,6 +217,15 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Sector {0} iniciado correctamente..
+        /// </summary>
+        internal static string SectorInit {
+            get {
+                return ResourceManager.GetString("SectorInit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a El nombre de sector es requerido..
         /// </summary>
         internal static string SectorStoreEmpty {
@@ -240,6 +249,15 @@ namespace Menoo.PrinterService.Client.Properties {
         internal static string StoreIdEmpty {
             get {
                 return ResourceManager.GetString("StoreIdEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Aviso.
+        /// </summary>
+        internal static string TextNotice {
+            get {
+                return ResourceManager.GetString("TextNotice", resourceCulture);
             }
         }
     }

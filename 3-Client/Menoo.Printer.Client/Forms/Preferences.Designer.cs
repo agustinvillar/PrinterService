@@ -45,7 +45,6 @@ namespace Menoo.Printer.Client
             this.buttonReconnectPrinters = new System.Windows.Forms.Button();
             this.groupPrinter = new System.Windows.Forms.GroupBox();
             this.allowLogoCheckBox = new System.Windows.Forms.CheckBox();
-            this.configurePrinterRequestBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.allowPrintQRCheckBox = new System.Windows.Forms.CheckBox();
             this.copiesNumericUpDown = new System.Windows.Forms.NumericUpDown();
             this.printEventsListBox = new System.Windows.Forms.ListBox();
@@ -55,6 +54,7 @@ namespace Menoo.Printer.Client
             this.storedIdComboBox = new System.Windows.Forms.ComboBox();
             this.buttonReconnectStores = new System.Windows.Forms.Button();
             this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
+            this.configurePrinterRequestBindingSource = new System.Windows.Forms.BindingSource(this.components);
             storedIdLabel = new System.Windows.Forms.Label();
             nameLabel = new System.Windows.Forms.Label();
             printerLabel = new System.Windows.Forms.Label();
@@ -63,10 +63,10 @@ namespace Menoo.Printer.Client
             allowPrintQRLabel = new System.Windows.Forms.Label();
             allowLogoLabel = new System.Windows.Forms.Label();
             this.groupPrinter.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.configurePrinterRequestBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.copiesNumericUpDown)).BeginInit();
             this.groupStore.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.configurePrinterRequestBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // storedIdLabel
@@ -101,9 +101,9 @@ namespace Menoo.Printer.Client
             printEventsLabel.AutoSize = true;
             printEventsLabel.Location = new System.Drawing.Point(6, 74);
             printEventsLabel.Name = "printEventsLabel";
-            printEventsLabel.Size = new System.Drawing.Size(67, 13);
+            printEventsLabel.Size = new System.Drawing.Size(91, 13);
             printEventsLabel.TabIndex = 16;
-            printEventsLabel.Text = "Print Events:";
+            printEventsLabel.Text = "Tickets a imprimir:";
             // 
             // copiesLabel
             // 
@@ -192,23 +192,19 @@ namespace Menoo.Printer.Client
             // 
             this.allowLogoCheckBox.DataBindings.Add(new System.Windows.Forms.Binding("CheckState", this.configurePrinterRequestBindingSource, "AllowLogo", true));
             this.allowLogoCheckBox.Enabled = false;
-            this.allowLogoCheckBox.Location = new System.Drawing.Point(261, 190);
+            this.allowLogoCheckBox.Location = new System.Drawing.Point(261, 194);
             this.allowLogoCheckBox.Name = "allowLogoCheckBox";
-            this.allowLogoCheckBox.Size = new System.Drawing.Size(20, 24);
+            this.allowLogoCheckBox.Size = new System.Drawing.Size(15, 14);
             this.allowLogoCheckBox.TabIndex = 20;
             this.allowLogoCheckBox.UseVisualStyleBackColor = true;
-            // 
-            // configurePrinterRequestBindingSource
-            // 
-            this.configurePrinterRequestBindingSource.DataSource = typeof(Menoo.PrinterService.Client.DTOs.ConfigurePrinterRequest);
             // 
             // allowPrintQRCheckBox
             // 
             this.allowPrintQRCheckBox.DataBindings.Add(new System.Windows.Forms.Binding("CheckState", this.configurePrinterRequestBindingSource, "AllowPrintQR", true));
             this.allowPrintQRCheckBox.Enabled = false;
-            this.allowPrintQRCheckBox.Location = new System.Drawing.Point(121, 244);
+            this.allowPrintQRCheckBox.Location = new System.Drawing.Point(121, 249);
             this.allowPrintQRCheckBox.Name = "allowPrintQRCheckBox";
-            this.allowPrintQRCheckBox.Size = new System.Drawing.Size(17, 24);
+            this.allowPrintQRCheckBox.Size = new System.Drawing.Size(13, 13);
             this.allowPrintQRCheckBox.TabIndex = 19;
             this.allowPrintQRCheckBox.UseVisualStyleBackColor = true;
             // 
@@ -291,6 +287,10 @@ namespace Menoo.Printer.Client
             // 
             this.errorProvider.ContainerControl = this;
             // 
+            // configurePrinterRequestBindingSource
+            // 
+            this.configurePrinterRequestBindingSource.DataSource = typeof(Menoo.PrinterService.Client.DTOs.ConfigurePrinterRequest);
+            // 
             // Preferences
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -312,11 +312,11 @@ namespace Menoo.Printer.Client
             this.Load += new System.EventHandler(this.Preferences_Load);
             this.groupPrinter.ResumeLayout(false);
             this.groupPrinter.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.configurePrinterRequestBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.copiesNumericUpDown)).EndInit();
             this.groupStore.ResumeLayout(false);
             this.groupStore.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.configurePrinterRequestBindingSource)).EndInit();
             this.ResumeLayout(false);
 
         }

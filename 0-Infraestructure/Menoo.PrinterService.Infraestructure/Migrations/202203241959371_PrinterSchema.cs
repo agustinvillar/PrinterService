@@ -20,6 +20,7 @@
                         IsHtml = c.Boolean(nullable: false),
                         Printer = c.String(nullable: false, maxLength: 25),
                         PrintEvents = c.String(nullable: false),
+                        Queue = c.String(nullable: false, maxLength: 25),
                         CreatedAt = c.DateTime(nullable: false),
                         UpdatedAt = c.DateTime(),
                     })
@@ -36,15 +37,6 @@
                 .PrimaryKey(t => t.Id);
             
             CreateTable(
-                "printer.PrinterStatus",
-                c => new
-                    {
-                        Id = c.Int(nullable: false),
-                        Name = c.String(nullable: false, maxLength: 25),
-                    })
-                .PrimaryKey(t => t.Id);
-            
-            CreateTable(
                 "printer.PrinterLog",
                 c => new
                     {
@@ -57,6 +49,15 @@
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("printer.PrinterStatus", t => t.Status_Id, cascadeDelete: true)
                 .Index(t => t.Status_Id);
+            
+            CreateTable(
+                "printer.PrinterStatus",
+                c => new
+                    {
+                        Id = c.Int(nullable: false),
+                        Name = c.String(nullable: false, maxLength: 25),
+                    })
+                .PrimaryKey(t => t.Id);
             
             CreateTable(
                 "printer.TicketHistory",
@@ -84,8 +85,8 @@
             DropForeignKey("printer.PrinterLog", "Status_Id", "printer.PrinterStatus");
             DropIndex("printer.PrinterLog", new[] { "Status_Id" });
             DropTable("printer.TicketHistory");
-            DropTable("printer.PrinterLog");
             DropTable("printer.PrinterStatus");
+            DropTable("printer.PrinterLog");
             DropTable("printer.PrinterEvents");
             DropTable("printer.PrinterConfiguration");
         }

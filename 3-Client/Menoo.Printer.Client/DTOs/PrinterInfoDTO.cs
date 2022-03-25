@@ -1,6 +1,6 @@
 ﻿namespace Menoo.PrinterService.Client.DTOs
 {
-    public class PrinterInfo
+    public class PrinterInfoDTO
     {
         public string Name { get; set; }
 

@@ -24,6 +24,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
 
         public string PrintEvents { get; set; }
 
+        public string Queue { get; set; }
+
         public List<Guid> PrintEventsId
         {
             get

@@ -2,6 +2,7 @@
 using Menoo.PrinterService.Client.DTOs;
 using Menoo.PrinterService.Client.Extensions;
 using Menoo.PrinterService.Client.Properties;
+using Menoo.PrinterService.Client.Resources;
 using Menoo.PrinterService.Client.Validators;
 using NLog;
 using System;
@@ -18,13 +19,15 @@ namespace Menoo.Printer.Client
     {
         private const int PADDING_ERROR_PROVIDER = 5;
 
-        private static Logger _logger = LogManager.GetCurrentClassLogger();
+        private readonly Logger _logger;
 
         private readonly ApiClient _apiClient;
+
         public Preferences()
         {
             InitializeComponent();
             _apiClient = new ApiClient();
+            _logger = LogManager.GetCurrentClassLogger();
             this.groupStore.Text = AppMessages.GroupBasicInfo;
             this.groupPrinter.Text = AppMessages.GroupDataPrinter;
             this.buttonReconnectStores.SetToolTip(AppMessages.ButtonReconnectStores);
@@ -80,9 +83,9 @@ namespace Menoo.Printer.Client
 
         private void GetAllPrinters()
         {
-            var printers = new List<PrinterInfo>()
+            var printers = new List<PrinterInfoDTO>()
             {
-                new PrinterInfo
+                new PrinterInfoDTO
                 {
                     Name = AppMessages.Empty
                 }
@@ -92,7 +95,7 @@ namespace Menoo.Printer.Client
                 var printerQuery = new ManagementObjectSearcher("SELECT * from Win32_Printer");
                 foreach (var printer in printerQuery.Get())
                 {
-                    var printerInfo = new PrinterInfo
+                    var printerInfo = new PrinterInfoDTO
                     {
                         Name = printer.GetPropertyValue("Name").ToString(),
                         Status = printer.GetPropertyValue("Status").ToString(),
@@ -117,9 +120,9 @@ namespace Menoo.Printer.Client
             }
         }
 
-        private async Task<List<PrintEvents>> GetAllPrintEventsAsync()
+        private async Task<List<PrintEventsDTO>> GetAllPrintEventsAsync()
         {
-            var printEvents = new List<PrintEvents>();
+            var printEvents = new List<PrintEventsDTO>();
             try
             {
                 _logger.Info("GetAllStoresAsync()::Listando todos los restaurantes.");
@@ -146,7 +149,7 @@ namespace Menoo.Printer.Client
                 stores = await _apiClient.GetAllStoresAsync();
                 this.storedIdComboBox.DataSource = stores;
                 this.storedIdComboBox.DisplayMember = "StoreName";
-                this.storedIdComboBox.ValueMember = "StoreId";
+                this.storedIdComboBox.ValueMember = "StoreAuxId";
                 _logger.Info($"GetAllStoresAsync():: Resultado de la petición. {Environment.NewLine} {stores.ToJson()}");
             }
             catch (Exception e)
@@ -173,7 +176,7 @@ namespace Menoo.Printer.Client
                 Copies = 1,
                 AllowLogo = false,
                 AllowPrintQR = false,
-                StoredId = 0,
+                StoredId = string.Empty,
                 Printer = AppMessages.Empty
             };
             #region enable controls
@@ -193,7 +196,7 @@ namespace Menoo.Printer.Client
         private void SetPrinterEvents(ConfigurePrinterRequest request, SelectedObjectCollection selectedObjectCollection)
         {
             var values = new List<Guid>();
-            foreach (PrintEvents item in selectedObjectCollection)
+            foreach (PrintEventsDTO item in selectedObjectCollection)
             {
                 values.Add(item.Id);
             }
@@ -206,15 +209,23 @@ namespace Menoo.Printer.Client
             config.AppSettings.Settings["sectorId"].Value = registrationId.ToString();
             config.AppSettings.Settings["sectorName"].Value = this.nameTextBox.Text;
             config.AppSettings.Settings["storeId"].Value = this.storedIdComboBox.SelectedValue.ToString();
-            config.AppSettings.Settings["storeName"].Value = this.storedIdComboBox.SelectedText;
+            config.AppSettings.Settings["storeName"].Value = this.storedIdComboBox.Text;
             config.Save(ConfigurationSaveMode.Modified);
             ConfigurationManager.RefreshSection("appSettings");
         }
+
         private void UpdateMainForm()
         {
             var mainForm = (Main)Owner;
-            mainForm.Text = $"{this.storedIdComboBox.Text} - {this.nameTextBox.Text}";
-            mainForm.toolStripStatusLabel.Text = string.Format(AppMessages.ConfigurationSectorOK, DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss"));
+            string statusMessage = string.Format(AppMessages.ConfigurationSectorOK, DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss"));
+            string title = $"{this.storedIdComboBox.Text} - {this.nameTextBox.Text}";
+            mainForm.Text = title;
+            mainForm.notifyClient.Text = title;
+            mainForm.toolStripStatusLabel.Text = statusMessage;
+            mainForm.notifyClient.BalloonTipText = statusMessage;
+            mainForm.notifyClient.BalloonTipIcon = ToolTipIcon.Info;
+            mainForm.notifyClient.BalloonTipTitle = "Aviso";
+            mainForm.notifyClient.ShowBalloonTip(Constants.NOTICON_DURATION);
         }
 
         private void ValidateForm(ConfigurePrinterRequest request, out bool isValid)

@@ -2,7 +2,7 @@
 
 namespace Menoo.PrinterService.Client.DTOs
 {
-    public class PrintEvents
+    public class PrintEventsDTO
     {
         public Guid Id { get; set; }
 

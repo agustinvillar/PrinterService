@@ -5,7 +5,7 @@ namespace Menoo.PrinterService.Client.DTOs
 {
     public class ConfigurePrinterRequest
     {
-        public int StoredId { get; set; }
+        public string StoredId { get; set; }
 
         public string Name { get; set; }
 

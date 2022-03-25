@@ -37,9 +37,23 @@ namespace Menoo.PrinterService.Client
             return new Guid(entityId.RegistrationId);
         }
 
-        public async Task<List<PrintEvents>> GetAllPrintEventsAsync()
+        public async Task<bool> IsExistsConfiguration(string storeId)
         {
-            List<PrintEvents> printEvents = new List<PrintEvents>();
+            var request = new RestRequest(string.Format(ApiResources.EXISTS_CONFIGURATION, storeId), Method.GET);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Accept", "application/json");
+            var response = await _restClient.ExecuteAsync(request);
+            if (response?.StatusCode != HttpStatusCode.OK)
+            {
+                throw new ApiException(response.ErrorMessage, response.ErrorException, response.StatusCode);
+            }
+            var isExists = response.Content.ToObject<ExistsConfigurationDTO>();
+            return isExists.Exists;
+        }
+
+        public async Task<List<PrintEventsDTO>> GetAllPrintEventsAsync()
+        {
+            List<PrintEventsDTO> printEvents = new List<PrintEventsDTO>();
             var request = new RestRequest(ApiResources.PRINTER_EVENTS, Method.GET);
             request.AddHeader("Content-Type", "application/json");
             request.AddHeader("Accept", "application/json");
@@ -48,7 +62,7 @@ namespace Menoo.PrinterService.Client
             {
                 throw new ApiException(response.ErrorMessage, response.ErrorException, response.StatusCode);
             }
-            printEvents.AddRange(response.Content.ToObject<List<PrintEvents>>());
+            printEvents.AddRange(response.Content.ToObject<List<PrintEventsDTO>>());
             return printEvents;
         }
 
@@ -59,7 +73,7 @@ namespace Menoo.PrinterService.Client
                 new StoreInfoDTO
                 {
                     BusinessName = string.Empty,
-                    StoreId = 0,
+                    StoreAuxId = string.Empty,
                     StoreName = AppMessages.Empty
                 }
             };
