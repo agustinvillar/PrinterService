@@ -198,6 +198,15 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Configuración del Sector.
+        /// </summary>
+        internal static string PrinterPreferences {
+            get {
+                return ResourceManager.GetString("PrinterPreferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Seleccione al menos un ticket a ser impreso..
         /// </summary>
         internal static string PrintEventsEmpty {
@@ -217,7 +226,7 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
-        ///   Busca una cadena traducida similar a Sector {0} iniciado correctamente..
+        ///   Busca una cadena traducida similar a {0} iniciado correctamente..
         /// </summary>
         internal static string SectorInit {
             get {
@@ -253,11 +262,47 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Error.
+        /// </summary>
+        internal static string TextError {
+            get {
+                return ResourceManager.GetString("TextError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Aviso.
         /// </summary>
         internal static string TextNotice {
             get {
                 return ResourceManager.GetString("TextNotice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Preferencias {0}.
+        /// </summary>
+        internal static string UpdatePreferences {
+            get {
+                return ResourceManager.GetString("UpdatePreferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a {0} Se ha actualizado el sector de impresión de forma exitosa..
+        /// </summary>
+        internal static string UpdatePrintPreferencesOK {
+            get {
+                return ResourceManager.GetString("UpdatePrintPreferencesOK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a ¿Desea apagar este sector de impresión?.
+        /// </summary>
+        internal static string WarningCloseClient {
+            get {
+                return ResourceManager.GetString("WarningCloseClient", resourceCulture);
             }
         }
     }

@@ -36,12 +36,12 @@ namespace Menoo.PrinterService.Builder.Hub
         }
 
         [HubMethodName("subscribe")]
-        public void SubscribeToPrinterGroup(string storeId, string clientConnectionId)
+        public void SubscribeToPrinterGroup(string storeId, string clientPrinterId)
         {
-            if (_printers.ContainsKey(clientConnectionId))
+            if (_printers.ContainsKey(clientPrinterId))
             {
-                _printers[clientConnectionId] = storeId;
-                this.Groups.Add(clientConnectionId, storeId);
+                _printers[clientPrinterId] = storeId;
+                this.Groups.Add(clientPrinterId, storeId);
             }
         }
 
@@ -66,7 +66,7 @@ namespace Menoo.PrinterService.Builder.Hub
                     }
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 _generalWriter.WriteEntry($"OnDisconnected():: Error al intentar desconectar el cliente de impresión. Detalles: {Environment.NewLine}{e.ToString()}", EventLogEntryType.Error);
             }

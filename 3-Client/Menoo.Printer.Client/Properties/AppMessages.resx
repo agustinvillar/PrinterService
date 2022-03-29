@@ -163,6 +163,9 @@
   <data name="PrinterEmpty" xml:space="preserve">
     <value>Seleccione la impresora.</value>
   </data>
+  <data name="PrinterPreferences" xml:space="preserve">
+    <value>Configuración del Sector</value>
+  </data>
   <data name="PrintEventsEmpty" xml:space="preserve">
     <value>Seleccione al menos un ticket a ser impreso.</value>
   </data>
@@ -170,7 +173,7 @@
     <value>..\Resources\reconnect.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SectorInit" xml:space="preserve">
-    <value>Sector {0} iniciado correctamente.</value>
+    <value>{0} iniciado correctamente.</value>
   </data>
   <data name="SectorStoreEmpty" xml:space="preserve">
     <value>El nombre de sector es requerido.</value>
@@ -181,7 +184,19 @@
   <data name="StoreIdEmpty" xml:space="preserve">
     <value>Seleccione un restaurante.</value>
   </data>
+  <data name="TextError" xml:space="preserve">
+    <value>Error</value>
+  </data>
   <data name="TextNotice" xml:space="preserve">
     <value>Aviso</value>
+  </data>
+  <data name="UpdatePreferences" xml:space="preserve">
+    <value>Preferencias {0}</value>
+  </data>
+  <data name="UpdatePrintPreferencesOK" xml:space="preserve">
+    <value>{0} Se ha actualizado el sector de impresión de forma exitosa.</value>
+  </data>
+  <data name="WarningCloseClient" xml:space="preserve">
+    <value>¿Desea apagar este sector de impresión?</value>
   </data>
 </root>

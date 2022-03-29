@@ -37,20 +37,6 @@ namespace Menoo.PrinterService.Client
             return new Guid(entityId.RegistrationId);
         }
 
-        public async Task<bool> IsExistsConfiguration(string storeId)
-        {
-            var request = new RestRequest(string.Format(ApiResources.EXISTS_CONFIGURATION, storeId), Method.GET);
-            request.AddHeader("Content-Type", "application/json");
-            request.AddHeader("Accept", "application/json");
-            var response = await _restClient.ExecuteAsync(request);
-            if (response?.StatusCode != HttpStatusCode.OK)
-            {
-                throw new ApiException(response.ErrorMessage, response.ErrorException, response.StatusCode);
-            }
-            var isExists = response.Content.ToObject<ExistsConfigurationDTO>();
-            return isExists.Exists;
-        }
-
         public async Task<List<PrintEventsDTO>> GetAllPrintEventsAsync()
         {
             List<PrintEventsDTO> printEvents = new List<PrintEventsDTO>();
@@ -87,6 +73,47 @@ namespace Menoo.PrinterService.Client
             }
             stores.AddRange(response.Content.ToObject<List<StoreInfoDTO>>());
             return stores;
+        }
+
+        public async Task<UpdatePrinterPreferencesRequest> GetPrinterConfigurationAsync(string sectorId)
+        {
+            var request = new RestRequest(string.Format(ApiResources.PRINTER_CONFIGURATION, sectorId), Method.GET);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Accept", "application/json");
+            var response = await _restClient.ExecuteAsync(request);
+            if (response?.StatusCode != HttpStatusCode.OK)
+            {
+                throw new ApiException(response.ErrorMessage, response.ErrorException, response.StatusCode);
+            }
+            var configuration = response.Content.ToObject<UpdatePrinterPreferencesRequest>();
+            return configuration;
+        }
+
+        public async Task<bool> IsExistsConfiguration(string sectorId)
+        {
+            var request = new RestRequest(string.Format(ApiResources.EXISTS_CONFIGURATION, sectorId), Method.GET);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Accept", "application/json");
+            var response = await _restClient.ExecuteAsync(request);
+            if (response?.StatusCode != HttpStatusCode.OK)
+            {
+                throw new ApiException(response.ErrorMessage, response.ErrorException, response.StatusCode);
+            }
+            var isExists = response.Content.ToObject<ExistsConfigurationDTO>();
+            return isExists.Exists;
+        }
+
+        public async Task UpdatePrintPreferencesAsync(UpdatePrinterPreferencesRequest configuration)
+        {
+            var request = new RestRequest(ApiResources.UPDATE_CONFIGURATION, Method.PUT);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Accept", "application/json");
+            request.AddJsonBody(configuration);
+            var response = await _restClient.ExecuteAsync(request);
+            if (response?.StatusCode != HttpStatusCode.OK)
+            {
+                throw new ApiException(response.ErrorMessage, response.ErrorException, response.StatusCode);
+            }
         }
     }
 }

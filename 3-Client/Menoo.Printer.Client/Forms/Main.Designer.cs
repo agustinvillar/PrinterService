@@ -98,6 +98,7 @@ namespace Menoo.Printer.Client
             this.propertiesToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P)));
             this.propertiesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.propertiesToolStripMenuItem.Text = "Propiedades";
+            this.propertiesToolStripMenuItem.Click += new System.EventHandler(this.PropertiesMenuItem_Click);
             // 
             // toolStripSeparator
             // 
