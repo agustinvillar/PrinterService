@@ -41,7 +41,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
         public async Task<List<PrinterConfiguration>> GetPrinterConfigurationAsync(string storeId, string printEvent)
         {
             var printEventId = await this.PrinterEvents.FirstOrDefaultAsync(f => f.Value == printEvent);
-            var configuration = await this.PrinterConfiguration.Where(f => f.StoreId == storeId && f.PrintEventsId.Contains(printEventId.Id)).ToListAsync();
+            var configuration = await this.PrinterConfiguration.Where(f => f.StoreId == storeId && f.PrintEvents.Contains(printEventId.Id.ToString())).ToListAsync();
             return configuration;
         }
 
@@ -97,7 +97,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             }
         }
 
-        public async Task<Guid> WriteToHistory(
+        public async Task WriteToHistory(
             Guid historyId,
             Store store,
             PrinterConfiguration sector,
@@ -125,12 +125,12 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
                 StoreId = store.Id,
                 PrintEvent = printEvent,
                 Details = $"Ticket enviado al sector de impresión: {sector.Name}",
-                Status = printerStatus
+                Status = printerStatus,
+                CreatedAt = DateTime.Now
             };
             this.PrinterEventSourcing.Add(eventLog);
             this.TicketHistory.Add(history);
             await this.SaveChangesAsync();
-            return history.Id;
         }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)

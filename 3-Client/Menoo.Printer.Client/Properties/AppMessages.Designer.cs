@@ -280,6 +280,24 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Impresión exitosa.
+        /// </summary>
+        internal static string TicketPrinted {
+            get {
+                return ResourceManager.GetString("TicketPrinted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Recibido.
+        /// </summary>
+        internal static string TicketRecieved {
+            get {
+                return ResourceManager.GetString("TicketRecieved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca una cadena traducida similar a Preferencias {0}.
         /// </summary>
         internal static string UpdatePreferences {

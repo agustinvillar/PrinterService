@@ -117,92 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ButtonReconnectPrinters" xml:space="preserve">
-    <value>Obtener listado de impresoras instaladas.</value>
+  <data name="Target" xml:space="preserve">
+    <value>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</value>
   </data>
-  <data name="ButtonReconnectPrintEvents" xml:space="preserve">
-    <value>Obtener listado de eventos de impresión.</value>
-  </data>
-  <data name="ButtonReconnectStores" xml:space="preserve">
-    <value>Obtener listado de restaurantes.</value>
-  </data>
-  <data name="ConfigurationSectorOK" xml:space="preserve">
-    <value>{0} Se ha configurado el sector de impresión de forma exitosa.</value>
-  </data>
-  <data name="CopiesZero" xml:space="preserve">
-    <value>Debe indicar el número de copias a ser impresas.</value>
-  </data>
-  <data name="Empty" xml:space="preserve">
-    <value>Seleccione</value>
-  </data>
-  <data name="ErrorListPrinters" xml:space="preserve">
-    <value>No se han obtenido el listado de las impresoras. Intente de nuevo, usando el botón de reconectar.</value>
-  </data>
-  <data name="ErrorListPrintEvents" xml:space="preserve">
-    <value>No se han obtenidos el listado de eventos de impresión. Intente de nuevo, usando el botón de reconectar.</value>
-  </data>
-  <data name="ErrorListStores" xml:space="preserve">
-    <value>No se han obtenido el listado de restaurantes. Intente de nuevo, usando el botón de reconectar.</value>
-  </data>
-  <data name="FormEmpty" xml:space="preserve">
-    <value>Debe configurar el sector de impresión.</value>
-  </data>
-  <data name="GroupBasicInfo" xml:space="preserve">
-    <value>Datos básicos</value>
-  </data>
-  <data name="GroupDataPrinter" xml:space="preserve">
-    <value>Datos de la impresora</value>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="menoo" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\menoo.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="printer" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\printer.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="PrinterEmpty" xml:space="preserve">
-    <value>Seleccione la impresora.</value>
-  </data>
-  <data name="PrinterPreferences" xml:space="preserve">
-    <value>Configuración del Sector</value>
-  </data>
-  <data name="PrintEventsEmpty" xml:space="preserve">
-    <value>Seleccione al menos un ticket a ser impreso.</value>
-  </data>
-  <data name="reconnect" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\reconnect.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="SectorInit" xml:space="preserve">
-    <value>{0} iniciado correctamente.</value>
-  </data>
-  <data name="SectorStoreEmpty" xml:space="preserve">
-    <value>El nombre de sector es requerido.</value>
-  </data>
-  <data name="SectorStoreMaxLength" xml:space="preserve">
-    <value>El máximo de caracteres permitidos es 25.</value>
-  </data>
-  <data name="StoreIdEmpty" xml:space="preserve">
-    <value>Seleccione un restaurante.</value>
-  </data>
-  <data name="TextError" xml:space="preserve">
-    <value>Error</value>
-  </data>
-  <data name="TextNotice" xml:space="preserve">
-    <value>Aviso</value>
-  </data>
-  <data name="TicketPrinted" xml:space="preserve">
-    <value>Impresión exitosa</value>
-  </data>
-  <data name="TicketRecieved" xml:space="preserve">
-    <value>Recibido</value>
-  </data>
-  <data name="UpdatePreferences" xml:space="preserve">
-    <value>Preferencias {0}</value>
-  </data>
-  <data name="UpdatePrintPreferencesOK" xml:space="preserve">
-    <value>{0} Se ha actualizado el sector de impresión de forma exitosa.</value>
-  </data>
-  <data name="WarningCloseClient" xml:space="preserve">
-    <value>¿Desea apagar este sector de impresión?</value>
+  <data name="DefaultSchema" xml:space="preserve">
+    <value>printer</value>
   </data>
 </root>

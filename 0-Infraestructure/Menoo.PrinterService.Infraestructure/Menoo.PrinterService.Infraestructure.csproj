@@ -397,6 +397,10 @@
     <Compile Include="Migrations\202203241959371_PrinterSchema.designer.cs">
       <DependentUpon>202203241959371_PrinterSchema.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202203291452494_UpdatePrinterLog_CreatedAt.cs" />
+    <Compile Include="Migrations\202203291452494_UpdatePrinterLog_CreatedAt.designer.cs">
+      <DependentUpon>202203291452494_UpdatePrinterLog_CreatedAt.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="OnStartUpAttribute.cs" />
     <Compile Include="PrintInfo.cs" />
@@ -429,6 +433,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202203241959371_PrinterSchema.resx">
       <DependentUpon>202203241959371_PrinterSchema.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202203291452494_UpdatePrinterLog_CreatedAt.resx">
+      <DependentUpon>202203291452494_UpdatePrinterLog_CreatedAt.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

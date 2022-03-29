@@ -20,6 +20,9 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
             Property(d => d.Details)
                 .HasColumnOrder(3)
                 .IsRequired();
+            Property(d => d.CreatedAt)
+                .HasColumnOrder(4)
+                .IsRequired();
             this.HasRequired(d => d.Status)
                 .WithMany(d => d.EntriesLog);
         }

@@ -55,6 +55,9 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ESC-POS-USB-NET, Version=1.1.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ESC-POS-USB-NET.1.1.3\lib\netstandard2.0\ESC-POS-USB-NET.dll</HintPath>
+    </Reference>
     <Reference Include="FluentValidation, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7de548da2fbae0f0, processorArchitecture=MSIL">
       <HintPath>..\..\packages\FluentValidation.10.4.0\lib\netstandard2.0\FluentValidation.dll</HintPath>
     </Reference>
@@ -79,6 +82,9 @@
     </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing.Common, Version=4.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Drawing.Common.4.6.0\lib\net461\System.Drawing.Common.dll</HintPath>
+    </Reference>
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -89,6 +95,7 @@
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
+    <Reference Include="System.Printing" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
@@ -124,6 +131,7 @@
     <Compile Include="DTOs\ExistsConfigurationDTO.cs" />
     <Compile Include="DTOs\PrinterConfiguredDTO.cs" />
     <Compile Include="DTOs\PrinterInfoDTO.cs" />
+    <Compile Include="DTOs\PrinterMessageDTO.cs" />
     <Compile Include="DTOs\PrintEventsDTO.cs" />
     <Compile Include="DTOs\ConfigurePrinterRequest.cs" />
     <Compile Include="DTOs\UpdatePrinterPreferencesRequest.cs" />
@@ -156,6 +164,7 @@
     <Compile Include="Validators\UpdatePreferencesPrinterRequestValidator.cs" />
     <Compile Include="Validators\ConfigurePrinterRequestValidator.cs" />
     <None Include="Properties\DataSources\Menoo.PrinterService.Client.DTOs.ConfigurePrinterRequest.datasource" />
+    <None Include="Properties\DataSources\Menoo.PrinterService.Client.DTOs.PrinterMessageDTO.datasource" />
     <None Include="Properties\DataSources\Menoo.PrinterService.Client.DTOs.UpdatePrinterPreferencesRequest.datasource" />
     <None Include="Resources\reconnect.ico" />
     <EmbeddedResource Include="Forms\Main.resx">

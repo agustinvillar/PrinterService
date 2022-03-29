@@ -35,6 +35,12 @@ namespace Menoo.Printer.Client
             this.statusArea = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainPanel = new System.Windows.Forms.Panel();
+            this.dataGridViewPrintEvents = new System.Windows.Forms.DataGridView();
+            this.eventDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.copiesDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Status = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.TicketImage = new System.Windows.Forms.DataGridViewButtonColumn();
+            this.printerMessageDTOBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.configurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.propertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,6 +49,8 @@ namespace Menoo.Printer.Client
             this.notifyClient = new System.Windows.Forms.NotifyIcon(this.components);
             this.statusArea.SuspendLayout();
             this.mainPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewPrintEvents)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.printerMessageDTOBindingSource)).BeginInit();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -52,7 +60,7 @@ namespace Menoo.Printer.Client
             this.toolStripStatusLabel});
             this.statusArea.Location = new System.Drawing.Point(0, 245);
             this.statusArea.Name = "statusArea";
-            this.statusArea.Size = new System.Drawing.Size(672, 22);
+            this.statusArea.Size = new System.Drawing.Size(443, 22);
             this.statusArea.TabIndex = 0;
             this.statusArea.Text = "statusArea";
             // 
@@ -63,12 +71,69 @@ namespace Menoo.Printer.Client
             // 
             // mainPanel
             // 
+            this.mainPanel.Controls.Add(this.dataGridViewPrintEvents);
             this.mainPanel.Controls.Add(this.menuStrip);
             this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainPanel.Location = new System.Drawing.Point(0, 0);
             this.mainPanel.Name = "mainPanel";
-            this.mainPanel.Size = new System.Drawing.Size(672, 245);
+            this.mainPanel.Size = new System.Drawing.Size(443, 245);
             this.mainPanel.TabIndex = 1;
+            // 
+            // dataGridViewPrintEvents
+            // 
+            this.dataGridViewPrintEvents.AllowUserToAddRows = false;
+            this.dataGridViewPrintEvents.AllowUserToDeleteRows = false;
+            this.dataGridViewPrintEvents.AllowUserToOrderColumns = true;
+            this.dataGridViewPrintEvents.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridViewPrintEvents.AutoGenerateColumns = false;
+            this.dataGridViewPrintEvents.BackgroundColor = System.Drawing.SystemColors.ControlLightLight;
+            this.dataGridViewPrintEvents.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewPrintEvents.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.eventDataGridViewTextBoxColumn,
+            this.copiesDataGridViewTextBoxColumn,
+            this.Status,
+            this.TicketImage});
+            this.dataGridViewPrintEvents.DataSource = this.printerMessageDTOBindingSource;
+            this.dataGridViewPrintEvents.Location = new System.Drawing.Point(0, 30);
+            this.dataGridViewPrintEvents.Name = "dataGridViewPrintEvents";
+            this.dataGridViewPrintEvents.ReadOnly = true;
+            this.dataGridViewPrintEvents.Size = new System.Drawing.Size(443, 215);
+            this.dataGridViewPrintEvents.TabIndex = 1;
+            // 
+            // eventDataGridViewTextBoxColumn
+            // 
+            this.eventDataGridViewTextBoxColumn.DataPropertyName = "Event";
+            this.eventDataGridViewTextBoxColumn.HeaderText = "Tipo de ticket";
+            this.eventDataGridViewTextBoxColumn.Name = "eventDataGridViewTextBoxColumn";
+            this.eventDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // copiesDataGridViewTextBoxColumn
+            // 
+            this.copiesDataGridViewTextBoxColumn.DataPropertyName = "Copies";
+            this.copiesDataGridViewTextBoxColumn.HeaderText = "Copias";
+            this.copiesDataGridViewTextBoxColumn.Name = "copiesDataGridViewTextBoxColumn";
+            this.copiesDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // Status
+            // 
+            this.Status.DataPropertyName = "Status";
+            this.Status.HeaderText = "Estado";
+            this.Status.Name = "Status";
+            this.Status.ReadOnly = true;
+            // 
+            // TicketImage
+            // 
+            this.TicketImage.HeaderText = "Vista previa";
+            this.TicketImage.Name = "TicketImage";
+            this.TicketImage.ReadOnly = true;
+            this.TicketImage.ToolTipText = "Ver imagen";
+            this.TicketImage.UseColumnTextForButtonValue = true;
+            // 
+            // printerMessageDTOBindingSource
+            // 
+            this.printerMessageDTOBindingSource.DataSource = typeof(Menoo.PrinterService.Client.DTOs.PrinterMessageDTO);
             // 
             // menuStrip
             // 
@@ -78,7 +143,7 @@ namespace Menoo.Printer.Client
             this.menuStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(672, 24);
+            this.menuStrip.Size = new System.Drawing.Size(443, 24);
             this.menuStrip.TabIndex = 0;
             // 
             // configurationToolStripMenuItem
@@ -126,7 +191,7 @@ namespace Menoo.Printer.Client
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ClientSize = new System.Drawing.Size(672, 267);
+            this.ClientSize = new System.Drawing.Size(443, 267);
             this.Controls.Add(this.mainPanel);
             this.Controls.Add(this.statusArea);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -144,6 +209,8 @@ namespace Menoo.Printer.Client
             this.statusArea.PerformLayout();
             this.mainPanel.ResumeLayout(false);
             this.mainPanel.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewPrintEvents)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.printerMessageDTOBindingSource)).EndInit();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -160,6 +227,12 @@ namespace Menoo.Printer.Client
         internal System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;
         internal System.Windows.Forms.NotifyIcon notifyClient;
         internal System.Windows.Forms.MenuStrip menuStrip;
+        private System.Windows.Forms.DataGridView dataGridViewPrintEvents;
+        private System.Windows.Forms.BindingSource printerMessageDTOBindingSource;
+        private System.Windows.Forms.DataGridViewTextBoxColumn eventDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn copiesDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Status;
+        private System.Windows.Forms.DataGridViewButtonColumn TicketImage;
     }
 }
 

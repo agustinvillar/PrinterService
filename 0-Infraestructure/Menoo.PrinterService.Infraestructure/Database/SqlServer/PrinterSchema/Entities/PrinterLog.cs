@@ -13,6 +13,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.
         public string Details { get; set; }
 
         public virtual PrinterStatus Status { get; set; }
+
+        public DateTime CreatedAt { get; set; }
     }
 
     public enum Status

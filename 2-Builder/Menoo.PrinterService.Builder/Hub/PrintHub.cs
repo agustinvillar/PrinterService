@@ -55,9 +55,9 @@ namespace Menoo.PrinterService.Builder.Hub
             }
         }
 
-        public void SendToClient(Guid ticketId, string printEvent, string storeId, string ticket, int copies)
+        public void SendToClient(Guid ticketId, string printEvent, Guid sectorId, string ticket, int copies)
         {
-            _hub.Clients.Group(storeId).recieveTicket(ticketId, printEvent, ticket, copies);
+            _hub.Clients.Group(sectorId.ToString()).recieveTicket(ticketId.ToString(), printEvent, ticket, copies);
         }
 
         #region private methods

@@ -290,10 +290,10 @@ namespace Menoo.PrinterService.Builder
             try
             {
                 var ticketId = Guid.NewGuid();
-                _hub.SendToClient(ticketId, printEvent, info.Store.Id, image, sector.Copies);
+                _hub.SendToClient(ticketId, printEvent, sector.Id, image, sector.Copies);
                 using (var sqlServerContext = new PrinterContext())
                 {
-                    ticketId = await sqlServerContext.WriteToHistory(ticketId, info.Store, sector, printEvent, image);
+                    await sqlServerContext.WriteToHistory(ticketId, info.Store, sector, printEvent, image);
                 }
             }
             catch (Exception e)
