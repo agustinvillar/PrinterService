@@ -59,11 +59,11 @@ namespace Menoo.Printer.Client
                     _logger.Info($"InitializeSignalRConnection():: Conectado, id de conexión: {connectionTask.Id}");
                     string storeId = ConfigurationManager.AppSettings["storeId"];
                     string sectorId = ConfigurationManager.AppSettings["sectorId"];
-                    _proxy.Invoke("subscribe", storeId, sectorId);
-                    _proxy.On<string, int>("recieveTicket", (ticket, copies) =>
+                    _proxy.Invoke("subscribe", connectionTask.Id, sectorId);
+                    _proxy.On<Guid, string, string, int>("recieveTicket", (ticketId, printEvent, ticket, copies) =>
                     {
                         //TODO: Imprimir ticket
-                        _logger.Info($"Ticket de impresión recibido, copias: {copies}.{Environment.NewLine}{ticket}")
+                        _logger.Info($"Ticket de impresión recibido, copias: {copies}.{Environment.NewLine}{ticket}");
                     });
                 }
                 else

@@ -382,8 +382,6 @@
     <Compile Include="Enums\DiscountTypeEnum.cs" />
     <Compile Include="Enums\ProviderEnum.cs" />
     <Compile Include="Exceptions\BadFormatTicketException.cs" />
-    <Compile Include="Exceptions\UnifiedSectorException.cs" />
-    <Compile Include="Extensions\PrintExtensions.cs" />
     <Compile Include="HandlerAttribute.cs" />
     <Compile Include="Interfaces\IConfigurationManager.cs" />
     <Compile Include="Interfaces\IFirebaseListener.cs" />

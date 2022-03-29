@@ -1,4 +1,5 @@
 ﻿using Menoo.PrinterService.Infraestructure;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using System;
@@ -35,19 +36,28 @@ namespace Menoo.PrinterService.Builder.Hub
             return base.OnDisconnected(stopCalled);
         }
 
-        [HubMethodName("subscribe")]
-        public void SubscribeToPrinterGroup(string storeId, string clientPrinterId)
+        [HubMethodName("markAsPrinted")]
+        public void MarkAsPrinted(Guid ticketId, string storeId, string printEvent)
         {
-            if (_printers.ContainsKey(clientPrinterId))
+            using (var sqlServerContext = new PrinterContext())
             {
-                _printers[clientPrinterId] = storeId;
-                this.Groups.Add(clientPrinterId, storeId);
+                sqlServerContext.MarkAsPrintedAsync(ticketId, storeId, printEvent).GetAwaiter().GetResult();
             }
         }
 
-        public void SendToPrint(string storeId, string ticket, int copies, string printer)
+        [HubMethodName("subscribe")]
+        public void SubscribeToPrinterGroup(string connectionId, string clientPrinterId)
         {
-            _hub.Clients.Group(storeId).recieveTicket(ticket, copies, printer);
+            if (_printers.ContainsKey(connectionId))
+            {
+                _printers[connectionId] = clientPrinterId;
+                this.Groups.Add(connectionId, clientPrinterId);
+            }
+        }
+
+        public void SendToClient(Guid ticketId, string printEvent, string storeId, string ticket, int copies)
+        {
+            _hub.Clients.Group(storeId).recieveTicket(ticketId, printEvent, ticket, copies);
         }
 
         #region private methods

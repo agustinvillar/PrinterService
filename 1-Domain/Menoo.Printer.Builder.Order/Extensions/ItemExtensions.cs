@@ -1,7 +1,4 @@
-﻿using Menoo.Printer.Builder.Orders.Repository;
-using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
-using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using Newtonsoft.Json;
 
 namespace Menoo.Printer.Builder.Orders.Extensions
 {
@@ -12,24 +9,6 @@ namespace Menoo.Printer.Builder.Orders.Extensions
             dynamic obj = JsonConvert.DeserializeObject(json);
             var result = JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(obj["promotions"]));
             return result;
-        }
-
-        public static List<SectorItem> GetPrintSectorByItems(this List<ItemOrder> items, ItemRepository repository)
-        {
-            var sectorItems = new List<SectorItem>();
-            foreach (var item in items)
-            {
-                if (string.IsNullOrEmpty(item.Id)) 
-                {
-                    continue;
-                }
-                var sectorByItem = repository.GetSectorItemById(item.Id).GetAwaiter().GetResult();
-                if (sectorByItem != null)
-                {
-                    sectorItems.Add(sectorByItem);
-                }
-            }
-            return sectorItems;
         }
     }
 }

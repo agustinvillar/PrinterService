@@ -1,14 +1,12 @@
 ﻿using Menoo.Backend.Integrations.Constants;
 using Menoo.Backend.Integrations.Messages;
-using Menoo.Printer.Builder.Orders.Extensions;
 using Menoo.Printer.Builder.Orders.Repository;
 using Menoo.PrinterService.Builder.Hub;
 using Menoo.PrinterService.Infraestructure;
 using Menoo.PrinterService.Infraestructure.Constants;
 using Menoo.PrinterService.Infraestructure.Database.Firebase.Entities;
 using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema;
-using Menoo.PrinterService.Infraestructure.Exceptions;
-using Menoo.PrinterService.Infraestructure.Extensions;
+using Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema.Entities;
 using Menoo.PrinterService.Infraestructure.Interfaces;
 using Menoo.PrinterService.Infraestructure.Services;
 using Microsoft.Owin.Hosting;
@@ -26,23 +24,23 @@ namespace Menoo.PrinterService.Builder
 {
     public partial class Builder : ServiceBase, ISubscriptionService
     {
-        private readonly ItemRepository _itemRepository;
+        private readonly BuiltinHandlerActivator _adapter;
 
         private readonly EventLog _generalWriter;
 
-        private readonly BuiltinHandlerActivator _adapter;
-
         private readonly PrintHub _hub;
 
-        private System.Timers.Timer _timer;
-
-        private readonly string _queueName;
+        private readonly ItemRepository _itemRepository;
 
         private readonly string _queueConnectionString;
 
-        private readonly string _signalR_Endpoint;
+        private readonly string _queueName;
+
+        private readonly string _signalR;
 
         private long _tickCounter;
+
+        private System.Timers.Timer _timer;
 
         public Builder()
         {
@@ -51,7 +49,7 @@ namespace Menoo.PrinterService.Builder
             _queueName = GlobalConfig.ConfigurationManager.GetSetting("QueuePrint");
             _queueConnectionString = GlobalConfig.ConfigurationManager.GetSetting("queueConnectionString");
             _generalWriter = GlobalConfig.DependencyResolver.ResolveByName<EventLog>("builder");
-            _signalR_Endpoint = GlobalConfig.ConfigurationManager.GetSetting("signalR");
+            _signalR = GlobalConfig.ConfigurationManager.GetSetting("signalR");
             _itemRepository = GlobalConfig.DependencyResolver.Resolve<ItemRepository>();
             _hub = new PrintHub();
         }
@@ -76,14 +74,6 @@ namespace Menoo.PrinterService.Builder
                         var dataToPrint = await builder.BuildAsync(data);
                         await SendToPrintAsync(dataToPrint, data.TypeDocument, data.PrintEvent);
                     }
-                    catch (UnifiedSectorException sectorException)
-                    {
-                        _generalWriter.WriteEntry(
-                                $"{builder}::RecieveAsync(). {sectorException.Message}. {Environment.NewLine}" +
-                                $"Evento: {data.PrintEvent}{Environment.NewLine}" +
-                                $"Tipo: {type}{Environment.NewLine}" +
-                                $"PrintEventId: {documentsId}{Environment.NewLine}", EventLogEntryType.Error);
-                    }
                     catch (BadImageFormatException imageException)
                     {
                         _generalWriter.WriteEntry(
@@ -105,17 +95,6 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
-        protected override void OnStart(string[] args)
-        {
-#if DEBUG
-            Debugger.Launch();
-#endif
-            _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
-            ConfigureWorker();
-            _timer.Start();
-            WebApp.Start<Startup>(_signalR_Endpoint);
-        }
-
         protected override void OnShutdown()
         {
             if (_adapter != null)
@@ -124,6 +103,17 @@ namespace Menoo.PrinterService.Builder
             }
             _generalWriter.WriteEntry("Builder::OnShutdown(). Apagando servicio.", EventLogEntryType.Warning);
             base.OnShutdown();
+        }
+
+        protected override void OnStart(string[] args)
+        {
+#if DEBUG
+            Debugger.Launch();
+#endif
+            _generalWriter.WriteEntry("Builder::OnStart(). Iniciando servicio.", EventLogEntryType.Information);
+            ConfigureWorker();
+            _timer.Start();
+            WebApp.Start<Startup>(_signalR);
         }
 
         protected override void OnStop()
@@ -164,6 +154,16 @@ namespace Menoo.PrinterService.Builder
             _adapter.Bus.Subscribe<PrintMessage>().GetAwaiter().GetResult();
         }
 
+        private async Task<List<PrinterConfiguration>> GetSectorsAsync(string storeId, string printEvent)
+        {
+            List<PrinterConfiguration> sectors = null;
+            using (var sqlServerContext = new PrinterContext())
+            {
+                sectors = await sqlServerContext.GetPrinterConfigurationAsync(storeId, printEvent);
+            }
+            return sectors;
+        }
+
         private void InitializeService()
         {
             try
@@ -186,66 +186,7 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
-        private async Task SendToPrintAsync(PrintInfo data, string typeDocument, string printEvent)
-        {
-            if (data == null || data.Content.Count == 0)
-            {
-                return;
-            }
-            var sectors = new List<PrintSettings>();
-            if (typeDocument != PrintTypes.ORDER)
-            {
-                sectors = data.Store.GetPrintSettings(printEvent);
-                await PrintAsync(data, printEvent, sectors);
-            }
-            else
-            {
-                var orderData = (Order)data.Content["orderData"];
-                string clientName = orderData.UserName;
-                bool isTakeAway = orderData.OrderType == SubOrderPrintTypes.ORDER_TA;
-                switch (printEvent)
-                {
-                    case PrintEvents.NEW_TAKE_AWAY:
-                        if (!string.IsNullOrEmpty(orderData.GuestComment))
-                        {
-                            data.Content.Add("tableNumber", orderData.GuestComment);
-                        }
-                        sectors = data.Store.GetPrintSettings(PrintEvents.NEW_TAKE_AWAY);
-                        await PrintAsync(data, printEvent, sectors, true);
-                        var items = ItemExtensions.GetPrintSectorByItems(orderData.Items, _itemRepository);
-                        await PrintAsync(data, clientName, items);
-                        break;
-                    case PrintEvents.NEW_TABLE_ORDER:
-                        var unifiedSector = data.Store.SectorUnifiedTicket();
-                        if (unifiedSector == null)
-                        {
-                            _generalWriter.WriteEntry($"Builder::PrintAsync(). El restaurante {data.Store.Name} no tiene asignado el sector unificado. {Environment.NewLine}" +
-                                $"Id del restaurante: {data.Store.Id}{Environment.NewLine}" +
-                                $"Evento: {PrintEvents.NEW_TABLE_ORDER}{Environment.NewLine}" +
-                                $"Tipo: {SubOrderPrintTypes.ORDER_TABLE}{Environment.NewLine}", EventLogEntryType.Warning);
-                        }
-                        else
-                        {
-                            sectors.Add(unifiedSector);
-                            await PrintAsync(data, PrintEvents.NEW_TABLE_ORDER, sectors);
-                        }
-                        var sectorsByItems = ItemExtensions.GetPrintSectorByItems(orderData.Items, _itemRepository);
-                        await PrintAsync(data, clientName, sectorsByItems);
-                        break;
-                    case PrintEvents.REPRINT_ORDER:
-                        printEvent = orderData.OrderType == SubOrderPrintTypes.ORDER_TA ? PrintEvents.NEW_TAKE_AWAY : PrintEvents.NEW_TABLE_ORDER;
-                        sectors = data.Store.GetPrintSettings(printEvent);
-                        await PrintAsync(data, printEvent, sectors, isTakeAway);
-                        break;
-                    case PrintEvents.ORDER_CANCELLED:
-                        sectors = data.Store.GetPrintSettings(PrintEvents.ORDER_CANCELLED);
-                        await PrintAsync(data, printEvent, sectors, isTakeAway);
-                        break;
-                }
-            }
-        }
-
-        private async Task PrintAsync(PrintInfo data, string printEvent, List<PrintSettings> sectors, bool isTakeAway = false)
+        private async Task PrintAsync(PrintInfo data, string printEvent, List<PrinterConfiguration> sectors, bool isTakeAway = false)
         {
             foreach (var sector in sectors)
             {
@@ -253,14 +194,14 @@ namespace Menoo.PrinterService.Builder
                 {
                     if (!data.Content.ContainsKey("printQR"))
                     {
-                        data.Content.Add("printQR", sector.PrintQR);
+                        data.Content.Add("printQR", sector.AllowPrintQR);
                     }
                     else
                     {
-                        data.Content["printQR"] = sector.PrintQR;
+                        data.Content["printQR"] = sector.AllowPrintQR;
                     }
                 }
-                bool allowLogo = sector.AllowLogo.GetValueOrDefault();
+                bool allowLogo = sector.AllowLogo;
                 if (!data.Content.ContainsKey("allowLogo"))
                 {
                     data.Content.Add("allowLogo", allowLogo);
@@ -278,10 +219,9 @@ namespace Menoo.PrinterService.Builder
                     data.Content["sector"] = sector.Name;
                 }
 
-                IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), data.Content, data.Template);
+                IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHtml, data.Content, data.Template);
                 var ticketData = formatterService.Create();
-                _hub.SendToPrint(data.Store.Id, ticketData.Item2, sector.Copies, sector.Printer);
-                await SetPrintedAsync(sector, data, printEvent, ticketData.Item2);
+                await SendTicketAsync(sector, data, printEvent, ticketData.Item2);
                 _generalWriter.WriteEntry($"Builder::SendToPrint(). Enviando a imprimir el ticket con la siguiente información. {Environment.NewLine}" +
                     $"Detalles:{Environment.NewLine}" +
                     $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
@@ -333,8 +273,8 @@ namespace Menoo.PrinterService.Builder
                     }
                     IFormaterService formatterService = FormaterFactory.Resolve(sector.IsHTML.GetValueOrDefault(), viewData, PrintTemplates.NEW_ITEM_ORDER);
                     var ticketData = formatterService.Create();
-                    _hub.SendToPrint(orderItem.StoreId, ticketData.Item2, sector.Copies, sector.Printer);
-                    await SetPrintedAsync(sector, extraData, PrintEvents.NEW_TABLE_ORDER_ITEM, ticketData.Item2);
+
+
                     _generalWriter.WriteEntry($"Builder::SendToPrint(). Enviando a imprimir el ticket con la siguiente información. {Environment.NewLine}" +
                         $"Detalles:{Environment.NewLine}" +
                         $"Nombre de la impresora: {sector.Printer}{Environment.NewLine}" +
@@ -345,23 +285,73 @@ namespace Menoo.PrinterService.Builder
             }
         }
 
-        private async Task SetPrintedAsync(PrintSettings sector, PrintInfo info, string printEvent, string image)
+        private async Task SendTicketAsync(PrinterConfiguration sector, PrintInfo info, string printEvent, string image)
         {
             try
             {
+                var ticketId = Guid.NewGuid();
+                _hub.SendToClient(ticketId, printEvent, info.Store.Id, image, sector.Copies);
                 using (var sqlServerContext = new PrinterContext())
                 {
-                    await sqlServerContext.SetPrintedAsync(sector, info, printEvent, image);
+                    ticketId = await sqlServerContext.WriteToHistory(ticketId, info.Store, sector, printEvent, image);
                 }
             }
             catch (Exception e)
             {
-                _generalWriter.WriteEntry($"Builder::SetPrintedAsync(). Ha ocurrido un error en la base de datos. {Environment.NewLine}" +
+                _generalWriter.WriteEntry($"Builder::SendTicket(). Ha ocurrido un error en la base de datos. {Environment.NewLine}" +
                         $"Detalles:{Environment.NewLine}" +
                         $"{e.ToString()}", EventLogEntryType.Error);
             }
         }
 
+        private async Task SendToPrintAsync(PrintInfo data, string typeDocument, string printEvent)
+        {
+            if (data == null || data.Content.Count == 0)
+            {
+                return;
+            }
+            var sectors = new List<PrinterConfiguration>();
+            if (typeDocument != PrintTypes.ORDER)
+            {
+                sectors = await GetSectorsAsync(data.Store.Id, printEvent);
+                await PrintAsync(data, printEvent, sectors);
+            }
+            else
+            {
+                var orderData = (Order)data.Content["orderData"];
+                //string clientName = orderData.UserName;
+                bool isTakeAway = orderData.OrderType == SubOrderPrintTypes.ORDER_TA;
+                switch (printEvent)
+                {
+                    case PrintEvents.NEW_TAKE_AWAY:
+                        if (!string.IsNullOrEmpty(orderData.GuestComment))
+                        {
+                            data.Content.Add("tableNumber", orderData.GuestComment);
+                        }
+                        sectors = await GetSectorsAsync(data.Store.Id, PrintEvents.NEW_TAKE_AWAY);
+                        await PrintAsync(data, printEvent, sectors, true);
+                        //TODO: Modificar la impresión de platos.
+                        //var items = ItemExtensions.GetPrintSectorByItems(orderData.Items, _itemRepository);
+                        //await PrintAsync(data, clientName, items);
+                        break;
+                    case PrintEvents.NEW_TABLE_ORDER:
+                        await PrintAsync(data, PrintEvents.NEW_TABLE_ORDER, sectors);
+                        //TODO: Modificar la impresión de platos.
+                        //var sectorsByItems = ItemExtensions.GetPrintSectorByItems(orderData.Items, _itemRepository);
+                        //await PrintAsync(data, clientName, sectorsByItems);
+                        break;
+                    case PrintEvents.REPRINT_ORDER:
+                        printEvent = orderData.OrderType == SubOrderPrintTypes.ORDER_TA ? PrintEvents.NEW_TAKE_AWAY : PrintEvents.NEW_TABLE_ORDER;
+                        sectors = await GetSectorsAsync(data.Store.Id, printEvent);
+                        await PrintAsync(data, printEvent, sectors, isTakeAway);
+                        break;
+                    case PrintEvents.ORDER_CANCELLED:
+                        sectors = await GetSectorsAsync(data.Store.Id, printEvent);
+                        await PrintAsync(data, printEvent, sectors, isTakeAway);
+                        break;
+                }
+            }
+        }
         private void ServiceTimer_Tick(object sender, ElapsedEventArgs e)
         {
             try
