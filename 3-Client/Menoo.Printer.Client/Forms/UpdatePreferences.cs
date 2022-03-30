@@ -175,7 +175,7 @@ namespace Menoo.Printer.Client
             this.printEventsListBox.Enabled = true;
             this.buttonPrinterEvents.Enabled = true;
             this.copiesNumericUpDown.Enabled = true;
-            //this.allowLogoCheckBox.Enabled = true;
+            this.allowLogoCheckBox.Enabled = true;
             this.allowPrintQRCheckBox.Enabled = true;
             #endregion
         }

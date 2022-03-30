@@ -191,7 +191,6 @@ namespace Menoo.Printer.Client
             // allowLogoCheckBox
             // 
             this.allowLogoCheckBox.DataBindings.Add(new System.Windows.Forms.Binding("CheckState", this.configurePrinterRequestBindingSource, "AllowLogo", true));
-            this.allowLogoCheckBox.Enabled = false;
             this.allowLogoCheckBox.Location = new System.Drawing.Point(261, 194);
             this.allowLogoCheckBox.Name = "allowLogoCheckBox";
             this.allowLogoCheckBox.Size = new System.Drawing.Size(15, 14);
