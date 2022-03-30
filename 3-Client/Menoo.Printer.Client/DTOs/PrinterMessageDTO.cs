@@ -11,5 +11,7 @@ namespace Menoo.PrinterService.Client.DTOs
         public int Copies { get; set; }
 
         public string Status { get; set; }
+
+        public DateTime RecievedAt { get; set; }
     }
 }

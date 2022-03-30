@@ -153,6 +153,9 @@
   <data name="GroupDataPrinter" xml:space="preserve">
     <value>Datos de la impresora</value>
   </data>
+  <data name="LastTicketPrinted" xml:space="preserve">
+    <value>Última impresión {0}</value>
+  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="menoo" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\menoo.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -180,6 +183,12 @@
   </data>
   <data name="SectorStoreMaxLength" xml:space="preserve">
     <value>El máximo de caracteres permitidos es 25.</value>
+  </data>
+  <data name="SignalRConnectionEntablished" xml:space="preserve">
+    <value>{0} Se ha conectado con el servidor de impresión</value>
+  </data>
+  <data name="SignalRConnectionNotEntablished" xml:space="preserve">
+    <value>Reconectando con el servidor.</value>
   </data>
   <data name="StoreIdEmpty" xml:space="preserve">
     <value>Seleccione un restaurante.</value>

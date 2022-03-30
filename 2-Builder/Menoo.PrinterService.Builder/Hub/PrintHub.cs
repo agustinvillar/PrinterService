@@ -37,11 +37,12 @@ namespace Menoo.PrinterService.Builder.Hub
         }
 
         [HubMethodName("markAsPrinted")]
-        public void MarkAsPrinted(Guid ticketId, string storeId, string printEvent)
+        public void MarkAsPrinted(string ticketId, string storeId, string printEvent)
         {
+            var id = Guid.Parse(ticketId);
             using (var sqlServerContext = new PrinterContext())
             {
-                sqlServerContext.MarkAsPrintedAsync(ticketId, storeId, printEvent).GetAwaiter().GetResult();
+                sqlServerContext.MarkAsPrintedAsync(id, storeId, printEvent).GetAwaiter().GetResult();
             }
         }
 

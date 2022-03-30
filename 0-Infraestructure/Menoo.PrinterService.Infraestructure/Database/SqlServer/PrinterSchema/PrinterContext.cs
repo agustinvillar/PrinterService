@@ -50,6 +50,7 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
             var record = await this.TicketHistory.FirstOrDefaultAsync(f => f.Id == ticketId);
             record.IsPrinted = true;
             record.UpdatedAt = DateTime.Now;
+            await this.SaveChangesAsync();
             var printerStatus = await this.PrinterStatus.FirstOrDefaultAsync(f => f.Id == (int)Status.Readed);
             var eventLog = new PrinterLog
             {
@@ -57,7 +58,8 @@ namespace Menoo.PrinterService.Infraestructure.Database.SqlServer.PrinterSchema
                 StoreId = storeId,
                 PrintEvent = printEvent,
                 Details = $"Ticket {ticketId.ToString()} impreso {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}",
-                Status = printerStatus
+                Status = printerStatus,
+                CreatedAt = DateTime.Now
             };
             this.PrinterEventSourcing.Add(eventLog);
             await this.SaveChangesAsync();

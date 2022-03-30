@@ -101,6 +101,7 @@ namespace Menoo.PrinterService.Builder
             {
                 _adapter.Dispose();
             }
+            _timer.Stop();
             _generalWriter.WriteEntry("Builder::OnShutdown(). Apagando servicio.", EventLogEntryType.Warning);
             base.OnShutdown();
         }
@@ -352,6 +353,7 @@ namespace Menoo.PrinterService.Builder
                 }
             }
         }
+
         private void ServiceTimer_Tick(object sender, ElapsedEventArgs e)
         {
             try

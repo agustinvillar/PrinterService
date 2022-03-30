@@ -36,10 +36,6 @@ namespace Menoo.Printer.Client
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.mainPanel = new System.Windows.Forms.Panel();
             this.dataGridViewPrintEvents = new System.Windows.Forms.DataGridView();
-            this.eventDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.copiesDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Status = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.TicketImage = new System.Windows.Forms.DataGridViewButtonColumn();
             this.printerMessageDTOBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.configurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,6 +43,10 @@ namespace Menoo.Printer.Client
             this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyClient = new System.Windows.Forms.NotifyIcon(this.components);
+            this.eventDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.copiesDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Status = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.RecievedAt = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.statusArea.SuspendLayout();
             this.mainPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewPrintEvents)).BeginInit();
@@ -83,7 +83,6 @@ namespace Menoo.Printer.Client
             // 
             this.dataGridViewPrintEvents.AllowUserToAddRows = false;
             this.dataGridViewPrintEvents.AllowUserToDeleteRows = false;
-            this.dataGridViewPrintEvents.AllowUserToOrderColumns = true;
             this.dataGridViewPrintEvents.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -94,42 +93,14 @@ namespace Menoo.Printer.Client
             this.eventDataGridViewTextBoxColumn,
             this.copiesDataGridViewTextBoxColumn,
             this.Status,
-            this.TicketImage});
+            this.RecievedAt});
             this.dataGridViewPrintEvents.DataSource = this.printerMessageDTOBindingSource;
             this.dataGridViewPrintEvents.Location = new System.Drawing.Point(0, 30);
+            this.dataGridViewPrintEvents.MultiSelect = false;
             this.dataGridViewPrintEvents.Name = "dataGridViewPrintEvents";
             this.dataGridViewPrintEvents.ReadOnly = true;
             this.dataGridViewPrintEvents.Size = new System.Drawing.Size(443, 215);
             this.dataGridViewPrintEvents.TabIndex = 1;
-            // 
-            // eventDataGridViewTextBoxColumn
-            // 
-            this.eventDataGridViewTextBoxColumn.DataPropertyName = "Event";
-            this.eventDataGridViewTextBoxColumn.HeaderText = "Tipo de ticket";
-            this.eventDataGridViewTextBoxColumn.Name = "eventDataGridViewTextBoxColumn";
-            this.eventDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // copiesDataGridViewTextBoxColumn
-            // 
-            this.copiesDataGridViewTextBoxColumn.DataPropertyName = "Copies";
-            this.copiesDataGridViewTextBoxColumn.HeaderText = "Copias";
-            this.copiesDataGridViewTextBoxColumn.Name = "copiesDataGridViewTextBoxColumn";
-            this.copiesDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // Status
-            // 
-            this.Status.DataPropertyName = "Status";
-            this.Status.HeaderText = "Estado";
-            this.Status.Name = "Status";
-            this.Status.ReadOnly = true;
-            // 
-            // TicketImage
-            // 
-            this.TicketImage.HeaderText = "Vista previa";
-            this.TicketImage.Name = "TicketImage";
-            this.TicketImage.ReadOnly = true;
-            this.TicketImage.ToolTipText = "Ver imagen";
-            this.TicketImage.UseColumnTextForButtonValue = true;
             // 
             // printerMessageDTOBindingSource
             // 
@@ -186,6 +157,36 @@ namespace Menoo.Printer.Client
             this.notifyClient.Visible = true;
             this.notifyClient.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotifyPrinter_MouseDoubleClick);
             // 
+            // eventDataGridViewTextBoxColumn
+            // 
+            this.eventDataGridViewTextBoxColumn.DataPropertyName = "Event";
+            this.eventDataGridViewTextBoxColumn.HeaderText = "Tipo de ticket";
+            this.eventDataGridViewTextBoxColumn.Name = "eventDataGridViewTextBoxColumn";
+            this.eventDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // copiesDataGridViewTextBoxColumn
+            // 
+            this.copiesDataGridViewTextBoxColumn.DataPropertyName = "Copies";
+            this.copiesDataGridViewTextBoxColumn.HeaderText = "Copias";
+            this.copiesDataGridViewTextBoxColumn.Name = "copiesDataGridViewTextBoxColumn";
+            this.copiesDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // Status
+            // 
+            this.Status.DataPropertyName = "Status";
+            this.Status.HeaderText = "Estado";
+            this.Status.Name = "Status";
+            this.Status.ReadOnly = true;
+            // 
+            // RecievedAt
+            // 
+            this.RecievedAt.DataPropertyName = "RecievedAt";
+            this.RecievedAt.FillWeight = 20F;
+            this.RecievedAt.HeaderText = "Hora recepción";
+            this.RecievedAt.Name = "RecievedAt";
+            this.RecievedAt.ReadOnly = true;
+            this.RecievedAt.Width = 150;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -232,7 +233,7 @@ namespace Menoo.Printer.Client
         private System.Windows.Forms.DataGridViewTextBoxColumn eventDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn copiesDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn Status;
-        private System.Windows.Forms.DataGridViewButtonColumn TicketImage;
+        private System.Windows.Forms.DataGridViewTextBoxColumn RecievedAt;
     }
 }
 

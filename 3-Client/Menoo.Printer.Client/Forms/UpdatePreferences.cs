@@ -77,6 +77,8 @@ namespace Menoo.Printer.Client
                 UpdateMainForm();
                 _logger.Info($"ButtonSave_Click():: Sector de impresión : { this.nameTextBox.Text } actualizado correctamente.");
                 this.Close();
+                Application.Exit();
+                Application.Restart();
             }
         }
 
@@ -153,6 +155,7 @@ namespace Menoo.Printer.Client
             string sectorId = ConfigurationManager.AppSettings["sectorId"].ToString();
             var currentConfiguration = await _apiClient.GetPrinterConfigurationAsync(sectorId);
             updatePrinterPreferencesRequestBindingSource.DataSource = currentConfiguration;
+            printEventsListBox.ClearSelected();
             foreach (var @event in currentConfiguration.PrintEvents)
             {
                 var element = this._prinEvents.FirstOrDefault(f => f.Id == @event);
@@ -172,7 +175,7 @@ namespace Menoo.Printer.Client
             this.printEventsListBox.Enabled = true;
             this.buttonPrinterEvents.Enabled = true;
             this.copiesNumericUpDown.Enabled = true;
-            this.allowLogoCheckBox.Enabled = true;
+            //this.allowLogoCheckBox.Enabled = true;
             this.allowPrintQRCheckBox.Enabled = true;
             #endregion
         }
@@ -243,6 +246,8 @@ namespace Menoo.Printer.Client
         private void ButtonCloseUpdatePreferences_Click(object sender, EventArgs e)
         {
             this.Close();
+            Application.Exit();
+            Application.Restart();
         }
     }
 }

@@ -169,6 +169,15 @@ namespace Menoo.PrinterService.Client.Properties {
         }
         
         /// <summary>
+        ///   Busca una cadena traducida similar a Última impresión {0}.
+        /// </summary>
+        internal static string LastTicketPrinted {
+            get {
+                return ResourceManager.GetString("LastTicketPrinted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Busca un recurso adaptado de tipo System.Drawing.Icon similar a (Icono).
         /// </summary>
         internal static System.Drawing.Icon menoo {
@@ -249,6 +258,24 @@ namespace Menoo.PrinterService.Client.Properties {
         internal static string SectorStoreMaxLength {
             get {
                 return ResourceManager.GetString("SectorStoreMaxLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a {0} Se ha conectado con el servidor de impresión.
+        /// </summary>
+        internal static string SignalRConnectionEntablished {
+            get {
+                return ResourceManager.GetString("SignalRConnectionEntablished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Busca una cadena traducida similar a Reconectando con el servidor..
+        /// </summary>
+        internal static string SignalRConnectionNotEntablished {
+            get {
+                return ResourceManager.GetString("SignalRConnectionNotEntablished", resourceCulture);
             }
         }
         
