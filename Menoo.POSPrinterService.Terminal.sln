@@ -5,6 +5,8 @@ VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menoo.Printer.Client", "3-Client\Menoo.Printer.Client\Menoo.Printer.Client.csproj", "{6F464AED-D68E-4AAE-8B82-F164C15DFA40}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Menoo.Printer.Setup.Testing", "MenooPrinterSetup\MenooPrinterSetup.vdproj", "{C30931A4-02CB-48C2-A35D-C2EF9B28B9D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,11 @@ Global
 		{6F464AED-D68E-4AAE-8B82-F164C15DFA40}.PRO|Any CPU.Build.0 = Debug|Any CPU
 		{6F464AED-D68E-4AAE-8B82-F164C15DFA40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F464AED-D68E-4AAE-8B82-F164C15DFA40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C30931A4-02CB-48C2-A35D-C2EF9B28B9D6}.Debug|Any CPU.ActiveCfg = Debug
+		{C30931A4-02CB-48C2-A35D-C2EF9B28B9D6}.PRE|Any CPU.ActiveCfg = Debug
+		{C30931A4-02CB-48C2-A35D-C2EF9B28B9D6}.PREpro|Any CPU.ActiveCfg = Debug
+		{C30931A4-02CB-48C2-A35D-C2EF9B28B9D6}.PRO|Any CPU.ActiveCfg = Debug
+		{C30931A4-02CB-48C2-A35D-C2EF9B28B9D6}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
